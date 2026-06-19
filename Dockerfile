@@ -2,6 +2,9 @@
 FROM node:20-alpine AS builder
 WORKDIR /app
 
+# Install build tools for native npm packages
+RUN apk add --no-cache git python3 make g++
+
 COPY package.json package-lock.json* ./
 RUN npm ci --include=dev
 

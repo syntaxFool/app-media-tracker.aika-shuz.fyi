@@ -1,14 +1,13 @@
 # WA Bot Dockerfile
-FROM node:20-alpine AS builder
+FROM node:20-alpine
+
+# Install git (needed for some npm dependencies) + build tools
+RUN apk add --no-cache git python3 make g++
+
 WORKDIR /app
 COPY package.json ./
-RUN npm install
+RUN npm install --ignore-scripts 2>/dev/null || npm install
 COPY . .
-
-FROM node:20-alpine AS runner
-WORKDIR /app
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/package.json ./
-COPY --from=builder /app/index.ts ./
 RUN mkdir -p auth
+
 CMD ["npx", "tsx", "index.ts"]
