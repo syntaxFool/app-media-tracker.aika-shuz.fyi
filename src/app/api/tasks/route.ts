@@ -62,7 +62,7 @@ export async function POST(req: NextRequest) {
     const session = await requireAdmin();
     const body = await req.json();
 
-    const { customerName, shootDate, service, gender, isInfluencer, note, photoPath } = body;
+    const { customerName, shootDate, dueDate, service, gender, isInfluencer, note, photoPath } = body;
 
     if (!customerName || !shootDate || !service || !gender) {
       return NextResponse.json(
@@ -83,7 +83,7 @@ export async function POST(req: NextRequest) {
         isInfluencer: isInfluencer || false,
         photoPath: photoPath || null,
         note: note || null,
-        status: "New",
+        dueDate: dueDate ? new Date(dueDate) : null,
         createdBy: session.username,
       },
     });

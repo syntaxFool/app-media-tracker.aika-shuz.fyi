@@ -8,7 +8,7 @@ const SERVICES = ["Wedding","Pre-Wedding","Engagement","Reception","Birthday","B
 const GENDERS = ["Male","Female","Other"];
 
 interface TaskFormProps {
-  initialData?: { customerName?: string; shootDate?: string; service?: string; gender?: string; isInfluencer?: boolean; note?: string; photoPath?: string | null };
+  initialData?: { customerName?: string; shootDate?: string; dueDate?: string | null; service?: string; gender?: string; isInfluencer?: boolean; note?: string; photoPath?: string | null };
   mode: "create" | "edit";
   taskId?: string;
 }
@@ -21,6 +21,7 @@ export default function TaskForm({ initialData, mode, taskId }: TaskFormProps) {
     service: initialData?.service || "",
     gender: initialData?.gender || "",
     isInfluencer: initialData?.isInfluencer || false,
+    dueDate: initialData?.dueDate || null as string | null,
     note: initialData?.note || "",
     photoPath: initialData?.photoPath || null as string | null,
   });
@@ -47,6 +48,7 @@ export default function TaskForm({ initialData, mode, taskId }: TaskFormProps) {
     <form onSubmit={handleSubmit} className="space-y-5 animate-fade-in">
       <div><label className="block text-label text-fg-tertiary mb-1.5">Customer Name <span className="text-danger">*</span></label><input type="text" value={form.customerName} onChange={e => updateField("customerName", e.target.value)} className="input-linear w-full" placeholder="Enter customer name" required /></div>
       <div><label className="block text-label text-fg-tertiary mb-1.5">Shoot Date <span className="text-danger">*</span></label><input type="date" value={form.shootDate} onChange={e => updateField("shootDate", e.target.value)} className="input-linear w-full" required /></div>
+      <div><label className="block text-label text-fg-tertiary mb-1.5">Due Date</label><input type="date" value={form.dueDate||""} onChange={e => updateField("dueDate", e.target.value||null)} className="input-linear w-full" /><p className="text-micro text-fg-quaternary mt-0.5">Optional deadline for this task</p></div>
       <div className="grid grid-cols-2 gap-3">
         <div><label className="block text-label text-fg-tertiary mb-1.5">Service <span className="text-danger">*</span></label><select value={form.service} onChange={e => updateField("service", e.target.value)} className="select-linear w-full" required><option value="">Select...</option>{SERVICES.map(s => <option key={s} value={s}>{s}</option>)}</select></div>
         <div><label className="block text-label text-fg-tertiary mb-1.5">Gender <span className="text-danger">*</span></label><select value={form.gender} onChange={e => updateField("gender", e.target.value)} className="select-linear w-full" required><option value="">Select...</option>{GENDERS.map(g => <option key={g} value={g}>{g}</option>)}</select></div>

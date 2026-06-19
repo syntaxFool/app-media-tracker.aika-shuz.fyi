@@ -39,7 +39,7 @@ export async function PUT(
 
     // Staff can ONLY update status
     if (session.role === "staff") {
-      const { status } = body;
+      const { status, dueDate } = body;
 
       if (!status) {
         return NextResponse.json({ error: "Staff can only update status" }, { status: 400 });
@@ -74,11 +74,20 @@ export async function PUT(
         type: "status_update",
       });
 
+      // Create in-app notification
+      await prisma.notification.create({
+        data: {
+          taskId: params.id,
+          type: "status_update",
+          message: `${session.username} moved ${params.id} from "${oldStatus}" to "${status}"`,
+        },
+      });
+
       return NextResponse.json({ task: updatedTask });
     }
 
     // Admin: full update
-    const { customerName, shootDate, service, gender, isInfluencer, note, photoPath, status } = body;
+    const { customerName, shootDate, dueDate, service, gender, isInfluencer, note, photoPath, status } = body;
 
     const updateData: any = {
       updatedBy: session.username,
@@ -90,7 +99,7 @@ export async function PUT(
     if (service !== undefined) updateData.service = service;
     if (gender !== undefined) updateData.gender = gender;
     if (isInfluencer !== undefined) updateData.isInfluencer = isInfluencer;
-    if (note !== undefined) updateData.note = note;
+    if (dueDate !== undefined) updateData.dueDate = dueDate ? new Date(dueDate) : null;
     if (photoPath !== undefined) updateData.photoPath = photoPath;
 
     // Admin can also update status
@@ -113,6 +122,14 @@ export async function PUT(
           updatedBy: session.username,
           nextResponsible: getResponsibleForStatus(status),
           type: "status_update",
+        });
+
+        await prisma.notification.create({
+          data: {
+            taskId: params.id,
+            type: "status_update",
+            message: `${session.username} moved ${params.id} from "${task.status}" to "${status}"`,
+          },
         });
       }
     }

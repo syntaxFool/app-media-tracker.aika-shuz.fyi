@@ -16,11 +16,16 @@ model Task {
   isInfluencer Boolean  @default(false) @map("is_influencer")
   photoPath    String?  @map("photo_path")
   note         String?
+  dueDate      DateTime? @map("due_date")
   status       String   @default("New") @map("current_status")
   createdBy    String   @map("created_by")
   createdAt    DateTime @default(now()) @map("created_at")
   updatedBy    String?  @map("updated_by")
   updatedAt    DateTime? @map("updated_at")
+
+  comments     Comment[]
+  notifications Notification[]
+  shotItems    ShotItem[]
 
   @@map("tasks")
 }
@@ -33,4 +38,43 @@ model User {
   createdAt DateTime @default(now()) @map("created_at")
 
   @@map("users")
+}
+
+model Notification {
+  id        Int      @id @default(autoincrement())
+  taskId    String   @map("task_id")
+  type      String   // "status_update" | "ping_admin" | "comment"
+  message   String
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  task      Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  @@map("notifications")
+}
+
+model Comment {
+  id        Int      @id @default(autoincrement())
+  taskId    String   @map("task_id")
+  author    String
+  text      String
+  createdAt DateTime @default(now()) @map("created_at")
+
+  task      Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  @@map("comments")
+}
+
+model ShotItem {
+  id          Int       @id @default(autoincrement())
+  taskId      String    @map("task_id")
+  description String
+  completed   Boolean   @default(false)
+  completedBy String?   @map("completed_by")
+  completedAt DateTime? @map("completed_at")
+  sortOrder   Int       @default(0) @map("sort_order")
+
+  task        Task      @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  @@map("shot_items")
 }
