@@ -28,12 +28,12 @@
   ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.08); border-radius: 3px; }
   ::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.12); }
 
-  ::selection { background: rgba(94, 106, 210, 0.3); color: #f7f8f8; }
+  ::selection { background: rgba(0, 85, 129, 0.3); color: #fffffa; }
 
   *:focus-visible {
     outline: none;
     box-shadow:
-      0 0 0 2px color-mix(in oklab, #5e6ad2, transparent 30%),
+      0 0 0 2px color-mix(in oklab, #005581, transparent 30%),
       0 4px 12px rgba(0, 0, 0, 0.1);
   }
 }
@@ -45,8 +45,8 @@
   }
 
   .btn-primary {
-    @apply bg-[#5e6ad2] text-white rounded-sm px-4 py-2 text-sm font-[510]
-      hover:bg-[#828fff] transition-all duration-150 ease-standard active:scale-[0.98];
+    @apply bg-[#005581] text-white rounded-sm px-4 py-2 text-sm font-[510]
+      hover:bg-[#006b9e] transition-all duration-150 ease-standard active:scale-[0.98];
   }
 
   .btn-danger {

@@ -7,21 +7,21 @@ const config: Config = {
     extend: {
       colors: {
         background: "#08090a",
-        foreground: "#f7f8f8",
+        foreground: "#fffffa",
         panel: "#0f1011",
         surface: "#191a1b",
         "surface-2": "#28282c",
 
-        "fg-primary": "#f7f8f8",
+        "fg-primary": "#fffffa",
         "fg-secondary": "#d0d6e0",
         "fg-tertiary": "#8a8f98",
         "fg-quaternary": "#62666d",
 
-        primary: { DEFAULT: "#5e6ad2", foreground: "#ffffff", hover: "#828fff" },
-        accent: { DEFAULT: "#7170ff", foreground: "#ffffff", hover: "#828fff" },
+        primary: { DEFAULT: "#005581", foreground: "#fffffa", hover: "#006b9e" },
+        accent: { DEFAULT: "#72cdf4", foreground: "#08090a", hover: "#8ed8f7" },
 
         success: "#27a644",
-        warning: "#eab308",
+        warning: "#ffd200",
         danger: "#dc2626",
 
         border: "rgba(255,255,255,0.08)",
@@ -29,7 +29,7 @@ const config: Config = {
         "border-solid": "#23252a",
 
         muted: { DEFAULT: "#1a1b1e", foreground: "#8a8f98" },
-        card: { DEFAULT: "#0f1011", foreground: "#f7f8f8" },
+        card: { DEFAULT: "#0f1011", foreground: "#fffffa" },
       },
       borderRadius: {
         sm: "6px",
