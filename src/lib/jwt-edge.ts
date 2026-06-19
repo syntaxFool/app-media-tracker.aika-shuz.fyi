@@ -11,7 +11,7 @@ const COOKIE_NAME = "shanuzz_token";
 export interface JWTPayload {
   userId: number;
   username: string;
-  role: "admin" | "staff";
+  role: "su" | "admin" | "staff";
 }
 
 export async function verifyToken(token: string): Promise<JWTPayload | null> {

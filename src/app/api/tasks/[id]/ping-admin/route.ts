@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/db";
 import { requireAuth } from "@/lib/auth";
 import { enqueueWhatsAppMessage } from "@/lib/whatsapp";
+import { sendPushNotifications } from "@/lib/push";
 
 export async function POST(
   req: NextRequest,
@@ -37,6 +38,7 @@ export async function POST(
         message: `${session.username} requested admin correction on ${params.id} (${task.customerName})`,
       },
     });
+    sendPushNotifications(params.id, `${session.username} requested admin correction on ${params.id}`);
 
     return NextResponse.json({ success: true, message: `Admin notified about task ${params.id}` });
   } catch (err: any) {

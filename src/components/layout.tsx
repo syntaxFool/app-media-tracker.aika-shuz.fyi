@@ -46,12 +46,28 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     fetchUser();
   }, [fetchUser, pathname]);
 
+  // Poll notification count periodically (every 30s for real-time PWA badge)
   useEffect(() => {
-    // Fetch notification count
+    const updateBadge = () => {
+      fetch("/api/notifications/count")
+        .then((r) => { if(r.ok) r.json().then((d) => {
+          setNotifCount(d.count || 0);
+          if (typeof navigator !== "undefined" && "setAppBadge" in navigator) {
+            (navigator as any).setAppBadge(d.count || 0).catch(() => {});
+          }
+        });})
+        .catch(() => {});
+    };
+    updateBadge(); // Initial fetch
+    const interval = setInterval(updateBadge, 30000); // Every 30 seconds
+    return () => clearInterval(interval);
+  }, []);
+
+  // Also update badge on navigation
+  useEffect(() => {
     fetch("/api/notifications/count")
       .then((r) => { if(r.ok) r.json().then((d) => {
         setNotifCount(d.count || 0);
-        // PWA app badge
         if (typeof navigator !== "undefined" && "setAppBadge" in navigator) {
           (navigator as any).setAppBadge(d.count || 0).catch(() => {});
         }
@@ -70,7 +86,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     { path: "/", label: "Dashboard", icon: LayoutDashboard },
     { path: "/kanban", label: "Kanban", icon: Columns },
     { path: "/history", label: "History", icon: History },
-    ...(user?.role === "admin"
+    ...(user?.role === "admin" || user?.role === "su"
       ? [
           { path: "/analytics", label: "Analytics", icon: BarChart3 },
           { path: "/admin/users", label: "Users", icon: Users },

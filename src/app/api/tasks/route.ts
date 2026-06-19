@@ -84,7 +84,7 @@ export async function POST(req: NextRequest) {
         photoPath: photoPath || null,
         note: note || null,
         dueDate: new Date(dueDate),
-        assignedTo: assignedTo || [],
+        assignedTo: (assignedTo && assignedTo.length > 0) ? assignedTo : [session.username],
         createdBy: session.username,
       },
     });

@@ -4,6 +4,7 @@ import prisma from "@/lib/db";
 import { requireAuth, requireAdmin } from "@/lib/auth";
 import { isValidTransition, getResponsibleForStatus } from "@/lib/tasks";
 import { enqueueWhatsAppMessage } from "@/lib/whatsapp";
+import { sendPushNotifications } from "@/lib/push";
 
 export async function GET(_req: NextRequest, { params }: { params: { id: string } }) {
   try {
@@ -45,6 +46,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
         data: { taskId: params.id, type: "status_update",
           message: `${session.username} moved ${params.id} from "${task.status}" to "${status}"` },
       });
+      sendPushNotifications(params.id, `${session.username} moved ${params.id} from "${task.status}" to "${status}"`);
 
       return NextResponse.json({ task: updated });
     }
@@ -71,6 +73,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
         data: { taskId: params.id, type: "status_update",
           message: `${session.username} moved ${params.id} from "${task.status}" to "${status}"` },
       });
+      sendPushNotifications(params.id, `${session.username} moved ${params.id} from "${task.status}" to "${status}"`);
     }
 
     const updated = await prisma.task.update({ where: { id: params.id }, data: updateData });

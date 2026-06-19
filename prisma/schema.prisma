@@ -80,3 +80,14 @@ model ShotItem {
 
   @@map("shot_items")
 }
+
+model PushSubscription {
+  id         Int      @id @default(autoincrement())
+  endpoint   String   @unique
+  p256dh     String
+  auth       String
+  username   String
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  @@map("push_subscriptions")
+}

@@ -48,7 +48,7 @@ export async function middleware(req: NextRequest) {
     ADMIN_API_PREFIXES.some((p) => pathname.startsWith(p)) ||
     ADMIN_PAGE_PREFIXES.some((p) => pathname.startsWith(p));
 
-  if (needsAdmin && payload.role !== "admin") {
+  if (needsAdmin && payload.role !== "admin" && payload.role !== "su") {
     if (pathname.startsWith("/api/")) {
       return NextResponse.json({ error: "Admin access required" }, { status: 403 });
     }
