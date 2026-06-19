@@ -14,7 +14,7 @@ const JWT_EXPIRES_IN = "7d";
 export interface JWTPayload {
   userId: number;
   username: string;
-  role: "admin" | "staff";
+  role: "su" | "admin" | "staff";
 }
 
 export { COOKIE_NAME };
@@ -57,7 +57,7 @@ export async function getSession(): Promise<JWTPayload | null> {
 export async function requireAdmin(): Promise<JWTPayload> {
   const session = await getSession();
   if (!session) throw new Error("Unauthorized");
-  if (session.role !== "admin") throw new Error("Forbidden: admin only");
+  if (session.role !== "admin" && session.role !== "su") throw new Error("Forbidden: admin only");
   return session;
 }
 

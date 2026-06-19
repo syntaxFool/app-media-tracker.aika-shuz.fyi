@@ -174,7 +174,26 @@ export default function TaskDetailPage() {
 
         {/* Status Update */}
         <div className="bg-white dark:bg-gray-900 border border-border dark:border-gray-800 rounded-md p-4 space-y-3 shadow-sm">
-          <StatusButtons currentStatus={task.status} nextStatuses={nextStatuses} onUpdate={handleStatusUpdate} />
+          {(userRole === "admin" || userRole === "su") ? (
+            <>
+              <p className="text-label text-fg-tertiary">Status (Admin)</p>
+              <div className="flex gap-2">
+                <select
+                  defaultValue={task.status}
+                  onChange={(e) => {
+                    if (e.target.value !== task.status) handleStatusUpdate(e.target.value);
+                  }}
+                  className="select-linear flex-1"
+                >
+                  {Object.keys(STATUS_FLOW).map((s) => (
+                    <option key={s} value={s}>{s}</option>
+                  ))}
+                </select>
+              </div>
+            </>
+          ) : (
+            <StatusButtons currentStatus={task.status} nextStatuses={nextStatuses} onUpdate={handleStatusUpdate} />
+          )}
           {userRole==="staff"&&task.status!=="Task Completed"&&<div className="pt-3 border-t border-border dark:border-gray-800"><PingAdminButton taskId={task.id}/></div>}
         </div>
 

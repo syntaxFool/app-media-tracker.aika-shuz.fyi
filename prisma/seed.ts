@@ -16,7 +16,7 @@ async function main() {
     create: {
       username: "su",
       password: suPassword,
-      role: "admin",
+      role: "su",
       isSuperuser: true,
     },
   });

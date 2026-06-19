@@ -20,7 +20,7 @@ import { useTheme } from "@/lib/theme";
 interface User {
   id: number;
   username: string;
-  role: "admin" | "staff";
+  role: "su" | "admin" | "staff";
 }
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
@@ -49,7 +49,13 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     // Fetch notification count
     fetch("/api/notifications/count")
-      .then((r) => { if(r.ok) r.json().then((d) => setNotifCount(d.count || 0)); })
+      .then((r) => { if(r.ok) r.json().then((d) => {
+        setNotifCount(d.count || 0);
+        // PWA app badge
+        if (typeof navigator !== "undefined" && "setAppBadge" in navigator) {
+          (navigator as any).setAppBadge(d.count || 0).catch(() => {});
+        }
+      });})
       .catch(() => {});
   }, [pathname]);
 
@@ -107,7 +113,11 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
             <div className="flex items-center gap-2 pl-2 border-l border-white/15">
               <span className="text-caption text-white/70 hidden sm:inline">{user?.username}</span>
-              <span className="text-micro px-1.5 py-0.5 rounded-sm bg-white/15 text-white/90">{user?.role}</span>
+              <span className={`text-micro px-1.5 py-0.5 rounded-sm ${
+                user?.role === "su" ? "bg-accent/20 text-accent font-[590]" :
+                user?.role === "admin" ? "bg-white/15 text-white/90" :
+                "bg-white/10 text-white/70"
+              }`}>{user?.role}</span>
               <button onClick={handleLogout} className="p-1.5 rounded-sm hover:bg-white/15 transition-colors text-white/70 hover:text-white" title="Logout">
                 <LogOut className="w-4 h-4" />
               </button>

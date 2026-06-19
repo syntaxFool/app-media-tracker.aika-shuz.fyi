@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import ImageUploader from "./image-uploader";
 
@@ -8,7 +8,7 @@ const SERVICES = ["Treatment","Haircut","Perming","Patch","Dread lock","Braid","
 const GENDERS = ["Male","Female","Other"];
 
 interface TaskFormProps {
-  initialData?: { customerName?: string; shootDate?: string; dueDate?: string | null; service?: string; gender?: string; isInfluencer?: boolean; note?: string; photoPath?: string | null };
+  initialData?: { customerName?: string; shootDate?: string; dueDate?: string | null; service?: string; gender?: string; isInfluencer?: boolean; note?: string; photoPath?: string | null; assignedTo?: string[] };
   mode: "create" | "edit";
   taskId?: string;
 }
@@ -24,9 +24,20 @@ export default function TaskForm({ initialData, mode, taskId }: TaskFormProps) {
     dueDate: initialData?.dueDate || null as string | null,
     note: initialData?.note || "",
     photoPath: initialData?.photoPath || null as string | null,
+    assignedTo: initialData?.assignedTo || [] as string[],
   });
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const [staffList, setStaffList] = useState<any[]>([]);
+  const [assignedTo, setAssignedTo] = useState<string[]>(initialData?.assignedTo || []);
+
+  useEffect(() => {
+    fetch("/api/auth/me").then(r => { if (r.ok) r.json().then(d => {
+      if (d.user.role === "admin" || d.user.role === "su") {
+        fetch("/api/users").then(r => { if (r.ok) r.json().then(d2 => setStaffList(d2.users || [])); });
+      }
+    }); });
+  }, []);
 
   function updateField(field: string, value: any) { setForm(prev => ({ ...prev, [field]: value })); }
 
@@ -37,7 +48,7 @@ export default function TaskForm({ initialData, mode, taskId }: TaskFormProps) {
     try {
       const url = mode === "create" ? "/api/tasks" : `/api/tasks/${taskId}`;
       const method = mode === "create" ? "POST" : "PUT";
-      const res = await fetch(url, { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(form) });
+      const res = await fetch(url, { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...form, assignedTo }) });
       const data = await res.json();
       if (!res.ok) { setError(data.error || "Failed"); return; }
       router.push(`/tasks/${data.task.id}`); router.refresh();
@@ -62,6 +73,26 @@ export default function TaskForm({ initialData, mode, taskId }: TaskFormProps) {
       </div>
 
       <ImageUploader currentPhoto={form.photoPath} onPhotoChange={(path) => updateField("photoPath", path)} />
+
+      {staffList.length > 0 && (
+        <div>
+          <label className="block text-label text-fg-tertiary mb-1.5">Assign Staff</label>
+          <div className="flex flex-wrap gap-1.5">
+            {staffList.map((s: any) => {
+              const isSelected = assignedTo.includes(s.username);
+              return (
+                <button key={s.id} type="button"
+                  onClick={() => {
+                    const next = isSelected ? assignedTo.filter(u => u !== s.username) : [...assignedTo, s.username];
+                    setAssignedTo(next);
+                  }}
+                  className={`text-label px-2.5 py-1 rounded-sm border transition-colors ${isSelected ? "bg-primary text-white border-primary" : "bg-white dark:bg-gray-800 text-fg-tertiary border-border dark:border-gray-700 hover:border-primary/30"}`}
+                >{s.username}{s.isSuperuser && <span className="ml-1 text-tiny">🔒</span>}</button>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       <div><label className="block text-label text-fg-tertiary mb-1.5">Note</label><textarea value={form.note} onChange={e => updateField("note", e.target.value)} className="input-linear w-full min-h-[80px] resize-y" placeholder="Any additional notes..." rows={3} /></div>
 
