@@ -3,6 +3,7 @@
 import { SignJWT, jwtVerify } from "jose";
 import bcrypt from "bcryptjs";
 import { cookies } from "next/headers";
+import prisma from "./db";
 
 const JWT_SECRET = new TextEncoder().encode(
   process.env.JWT_SECRET || "dev-secret-change-me-in-production"
@@ -58,6 +59,11 @@ export async function requireAdmin(): Promise<JWTPayload> {
   if (!session) throw new Error("Unauthorized");
   if (session.role !== "admin") throw new Error("Forbidden: admin only");
   return session;
+}
+
+export async function requireNotSuperuser(username: string): Promise<void> {
+  const user = await prisma.user.findUnique({ where: { username } });
+  if (user?.isSuperuser) throw new Error("Cannot modify superuser");
 }
 
 export async function requireAuth(): Promise<JWTPayload> {

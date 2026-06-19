@@ -7,7 +7,7 @@ const PUBLIC_PATHS = ["/login", "/api/auth/login", "/api/auth/me"];
 
 // Paths that require admin role
 const ADMIN_API_PREFIXES = ["/api/users"];
-const ADMIN_PAGE_PREFIXES = ["/admin", "/tasks/new"];
+const ADMIN_PAGE_PREFIXES = ["/admin"];
 
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;

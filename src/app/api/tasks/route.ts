@@ -59,14 +59,14 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
-    const session = await requireAdmin();
+    const session = await requireAuth();
     const body = await req.json();
 
-    const { customerName, shootDate, dueDate, service, gender, isInfluencer, note, photoPath } = body;
+    const { customerName, shootDate, dueDate, service, gender, isInfluencer, note, photoPath, assignedTo } = body;
 
-    if (!customerName || !shootDate || !service || !gender) {
+    if (!customerName || !shootDate || !dueDate || !service || !gender) {
       return NextResponse.json(
-        { error: "Missing required fields: customerName, shootDate, service, gender" },
+        { error: "Missing required fields: customerName, shootDate, dueDate, service, gender" },
         { status: 400 }
       );
     }
@@ -83,7 +83,8 @@ export async function POST(req: NextRequest) {
         isInfluencer: isInfluencer || false,
         photoPath: photoPath || null,
         note: note || null,
-        dueDate: dueDate ? new Date(dueDate) : null,
+        dueDate: new Date(dueDate),
+        assignedTo: assignedTo || [],
         createdBy: session.username,
       },
     });

@@ -17,6 +17,7 @@ model Task {
   photoPath    String?  @map("photo_path")
   note         String?
   dueDate      DateTime? @map("due_date")
+  assignedTo   Json      @default("[]") @map("assigned_to") // ["username1", "username2"]
   status       String   @default("New") @map("current_status")
   createdBy    String   @map("created_by")
   createdAt    DateTime @default(now()) @map("created_at")
@@ -34,7 +35,8 @@ model User {
   id        Int      @id @default(autoincrement())
   username  String   @unique
   password  String   // bcrypt hash
-  role      String   @default("staff") // "admin" | "staff"
+  role      String   @default("staff")
+  isSuperuser Boolean @default(false) @map("is_superuser") // "admin" | "staff"
   createdAt DateTime @default(now()) @map("created_at")
 
   @@map("users")

@@ -8,6 +8,20 @@ const prisma = new PrismaClient();
 async function main() {
   console.log("🌱 Seeding database...");
 
+  // Create superuser (locked, cannot be modified from frontend)
+  const suPassword = await bcrypt.hash("nox18", 12);
+  await prisma.user.upsert({
+    where: { username: "su" },
+    update: {},
+    create: {
+      username: "su",
+      password: suPassword,
+      role: "admin",
+      isSuperuser: true,
+    },
+  });
+  console.log("  ✅ Superuser: su / nox18 (locked)");
+
   // Create admin user
   const adminPassword = await bcrypt.hash("admin123", 12);
   await prisma.user.upsert({

@@ -4,6 +4,7 @@ import { useRouter, usePathname } from "next/navigation";
 import { useState, useEffect, useCallback } from "react";
 import {
   LayoutDashboard,
+  Columns,
   History,
   Users,
   LogOut,
@@ -61,6 +62,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const isActive = (path: string) => pathname === path;
   const navItems = [
     { path: "/", label: "Dashboard", icon: LayoutDashboard },
+    { path: "/kanban", label: "Kanban", icon: Columns },
     { path: "/history", label: "History", icon: History },
     ...(user?.role === "admin"
       ? [
@@ -95,15 +97,13 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
               )}
             </button>
 
-            {user?.role === "admin" && (
-              <button
-                onClick={() => router.push("/tasks/new")}
-                className="flex items-center gap-1.5 px-3 py-1.5 text-label font-[510] rounded-sm bg-white/15 hover:bg-white/25 transition-colors"
-              >
-                <Plus className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">New Task</span>
-              </button>
-            )}
+            <button
+              onClick={() => router.push("/tasks/new")}
+              className="flex items-center gap-1.5 px-3 py-1.5 text-label font-[510] rounded-sm bg-white/15 hover:bg-white/25 transition-colors"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">New Task</span>
+            </button>
 
             <div className="flex items-center gap-2 pl-2 border-l border-white/15">
               <span className="text-caption text-white/70 hidden sm:inline">{user?.username}</span>
