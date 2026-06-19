@@ -10,6 +10,7 @@ import {
   Plus,
   Sun,
   Moon,
+  BarChart3,
   Bell,
   ChevronDown,
 } from "lucide-react";
@@ -62,7 +63,10 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     { path: "/", label: "Dashboard", icon: LayoutDashboard },
     { path: "/history", label: "History", icon: History },
     ...(user?.role === "admin"
-      ? [{ path: "/admin/users", label: "Users", icon: Users }]
+      ? [
+          { path: "/analytics", label: "Analytics", icon: BarChart3 },
+          { path: "/admin/users", label: "Users", icon: Users },
+        ]
       : []),
   ];
 
