@@ -3,6 +3,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/db";
 import { requireAuth } from "@/lib/auth";
+import { sendPushNotifications } from "@/lib/push";
 
 export async function GET(_req: NextRequest, { params }: { params: { id: string } }) {
   try {
@@ -35,6 +36,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
         message: `${session.username} commented on ${params.id}`,
       },
     });
+    sendPushNotifications(params.id, `${session.username} commented on ${params.id}`);
 
     return NextResponse.json({ comment }, { status: 201 });
   } catch (err: any) {

@@ -10,11 +10,13 @@ interface Task {
   id: string;
   customerName: string;
   shootDate: string;
+  dueDate: string | null;
   service: string;
   gender: string;
   isInfluencer: boolean;
   photoPath: string | null;
   note: string | null;
+  assignedTo: string[];
 }
 
 export default function EditTaskPage() {
@@ -74,7 +76,8 @@ export default function EditTaskPage() {
           initialData={{
             customerName: task.customerName,
             shootDate: task.shootDate,
-            service: task.service,
+            dueDate: task.dueDate,
+            assignedTo: task.assignedTo,
             gender: task.gender,
             isInfluencer: task.isInfluencer,
             note: task.note || "",
