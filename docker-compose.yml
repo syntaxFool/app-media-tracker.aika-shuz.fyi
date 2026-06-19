@@ -1,0 +1,71 @@
+# ── Docker Compose — Shanuzz Media Tracker ─────────────
+# Self-hosted on NAS office server. Connects to existing
+# PostgreSQL (coolify-db) and Redis (coolify-redis).
+# Traefik handles SSL via Let's Encrypt.
+#
+# Deploy:
+#   1. Copy to server:  scp -P 2222 -r . nas@154.84.215.26:/home/nas/media-tracker/
+#   2. SSH in:           ssh nas-office
+#   3. Set up env:       cp .env.example .env && nano .env
+#   4. Start:            docker compose up -d
+#   5. Migrate DB:       docker compose exec web npx prisma migrate deploy
+#   6. Seed:             docker compose exec web npx tsx prisma/seed.ts
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: media-tracker-web
+    restart: unless-stopped
+    expose:
+      - "3000"
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=${DATABASE_URL}
+      - REDIS_URL=${REDIS_URL}
+      - JWT_SECRET=${JWT_SECRET}
+      - NEXT_PUBLIC_APP_URL=${NEXT_PUBLIC_APP_URL}
+    env_file: .env
+    volumes:
+      - ./uploads:/app/uploads
+    networks:
+      - coolify
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.media-tracker.rule=Host(`app-media-tracker.aika-shuz.fyi`)"
+      - "traefik.http.routers.media-tracker.entrypoints=https"
+      - "traefik.http.routers.media-tracker.tls=true"
+      - "traefik.http.routers.media-tracker.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.media-tracker-http.rule=Host(`app-media-tracker.aika-shuz.fyi`)"
+      - "traefik.http.routers.media-tracker-http.entrypoints=http"
+      - "traefik.http.routers.media-tracker-http.middlewares=redirect-to-https"
+      - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
+      - "traefik.http.services.media-tracker.loadbalancer.server.port=3000"
+      - "traefik.docker.network=coolify"
+
+  wa-bot:
+    build:
+      context: ./wa-bot
+      dockerfile: ../wa-bot/Dockerfile
+    container_name: media-tracker-wa
+    restart: unless-stopped
+    environment:
+      - REDIS_URL=${REDIS_URL}
+      - WA_GROUP_JID=${WA_GROUP_JID}
+      - WA_ADMIN_JID=${WA_ADMIN_JID}
+      - WA_VIDEOGRAPHER_JID=${WA_VIDEOGRAPHER_JID}
+      - WA_EDITOR_JID=${WA_EDITOR_JID}
+      - WA_REVIEWER_JID=${WA_REVIEWER_JID}
+      - WA_UPLOADER_JID=${WA_UPLOADER_JID}
+    env_file: .env
+    volumes:
+      - ./wa-bot/auth:/app/auth
+      - ./wa-bot/store.json:/app/store.json
+    networks:
+      - coolify
+
+networks:
+  coolify:
+    external: true
+    name: coolify

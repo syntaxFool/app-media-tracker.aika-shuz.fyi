@@ -1,0 +1,11 @@
+node_modules/
+.next/
+.env
+.env.local
+*.tsbuildinfo
+uploads/*
+!uploads/.gitkeep
+wa-bot/auth/
+wa-bot/node_modules/
+output/
+.pi/

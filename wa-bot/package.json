@@ -1,0 +1,15 @@
+{
+  "name": "shanuzz-wa-bot",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "tsx index.ts",
+    "start": "tsx index.ts"
+  },
+  "dependencies": {
+    "@whiskeysockets/baileys": "^6.7.0",
+    "ioredis": "^5.4.1",
+    "qrcode-terminal": "^0.12.0",
+    "tsx": "^4.16.0"
+  }
+}

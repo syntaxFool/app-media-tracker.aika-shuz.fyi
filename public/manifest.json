@@ -1,0 +1,22 @@
+{
+  "name": "Shanuzz Media Tracker",
+  "short_name": "MediaTracker",
+  "description": "Track the Shanuzz digital media pipeline from shoot to upload.",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#08090a",
+  "theme_color": "#5e6ad2",
+  "icons": [
+    {
+      "src": "/icons/icon-192.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml"
+    },
+    {
+      "src": "/icons/icon-512.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml"
+    }
+  ]
+}
