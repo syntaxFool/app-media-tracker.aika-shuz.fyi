@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { ThemeProvider } from "@/lib/theme";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -39,8 +40,10 @@ export default function RootLayout({
           href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,510;14..32,590&display=swap"
         />
       </head>
-      <body className="min-h-screen bg-background">
-        {children}
+      <body className="min-h-screen bg-background dark:bg-gray-950">
+        <ThemeProvider>
+          {children}
+        </ThemeProvider>
       </body>
     </html>
   );
