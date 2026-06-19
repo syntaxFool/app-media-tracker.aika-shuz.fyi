@@ -96,7 +96,7 @@ export default function TaskDetailPage() {
         <div className="flex items-center gap-3">
           <button onClick={()=>router.back()} className="btn-icon p-1.5"><ArrowLeft className="w-5 h-5" /></button>
           <div className="flex-1"><div className="flex items-center gap-2"><span className="text-micro text-fg-quaternary font-mono">{task.id}</span><StatusBadge status={task.status} />{task.isInfluencer&&<Star className="w-3.5 h-3.5 text-accent" fill="currentColor"/>}</div></div>
-          {userRole==="admin"&&<div className="flex gap-1"><button onClick={()=>router.push(`/tasks/${task.id}/edit`)} className="btn-subtle p-2"><Edit className="w-4 h-4"/></button><button onClick={()=>setDeleteConfirm(true)} className="btn-subtle p-2 hover:text-danger"><Trash2 className="w-4 h-4"/></button></div>}
+          {(userRole === "admin" || userRole === "su") && <div className="flex gap-1"><button onClick={()=>router.push(`/tasks/${task.id}/edit`)} className="btn-subtle p-2"><Edit className="w-4 h-4"/></button><button onClick={()=>setDeleteConfirm(true)} className="btn-subtle p-2 hover:text-danger"><Trash2 className="w-4 h-4"/></button></div>}
         </div>
 
         <h1 className="text-heading-2 text-fg-primary">{task.customerName}</h1>
@@ -140,7 +140,7 @@ export default function TaskDetailPage() {
                 {item.completed && <span className="text-white text-tiny">✓</span>}
               </button>
               <span className={`text-sm flex-1 ${item.completed ? "text-fg-quaternary line-through" : "text-fg-primary dark:text-gray-200"}`}>{item.description}</span>
-              {userRole==="admin"&&<button onClick={()=>deleteShotItem(item.id)} className="text-fg-quaternary hover:text-danger text-micro">✕</button>}
+              {(userRole === "admin" || userRole === "su") && <button onClick={()=>deleteShotItem(item.id)} className="text-fg-quaternary hover:text-danger text-micro">✕</button>}
             </div>
           ))}
           <div className="flex gap-2">

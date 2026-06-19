@@ -129,7 +129,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             </button>
 
             <div className="flex items-center gap-2 pl-2 border-l border-white/15">
-              <span className="text-caption text-white/70 hidden sm:inline">{user?.displayName || user?.username}</span>
+              <span className="text-caption text-white/90">{user?.displayName || user?.username}</span>
               <span className={`text-micro px-1.5 py-0.5 rounded-sm ${
                 user?.role === "su" ? "bg-accent/20 text-accent font-[590]" :
                 user?.role === "admin" ? "bg-white/15 text-white/90" :
