@@ -7,11 +7,9 @@ import StatusBadge from "@/components/status-badge";
 import StatusButtons from "@/components/status-buttons";
 import PingAdminButton from "@/components/ping-admin-button";
 import { ArrowLeft, Edit, Trash2, Calendar, Star, MessageSquare, CheckSquare, Plus, Clock } from "lucide-react";
+import { STATUS_FLOW } from "@/lib/tasks";
 
-const NEXT_STATUS: Record<string, string[]> = {
-  New: ["Video Shot"], "Video Shot": ["Data Copied"], "Data Copied": ["Video Edited"],
-  "Video Edited": ["Reviewed"], Reviewed: ["Uploaded"], Uploaded: ["Task Completed"], "Task Completed": [],
-};
+const NEXT_STATUS = STATUS_FLOW;
 
 export default function TaskDetailPage() {
   const params = useParams(); const router = useRouter(); const taskId = params.id as string;

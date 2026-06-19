@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import AppLayout from "@/components/layout";
 import { useRouter } from "next/navigation";
 import { Loader2, Star } from "lucide-react";
+import { STATUS_FLOW } from "@/lib/tasks";
 
 const STATUSES = ["New", "Video Shot", "Data Copied", "Video Edited", "Reviewed", "Uploaded", "Task Completed"];
 const COLORS: Record<string, string> = {
@@ -92,16 +93,22 @@ export default function KanbanPage() {
                       <span className="text-tiny text-fg-quaternary font-mono">{task.id}</span>
                       <span className="text-tiny text-fg-quaternary">{task.service}</span>
                     </div>
-                    {/* Quick move buttons */}
-                    <div className="flex gap-1 mt-2 pt-2 border-t border-border dark:border-gray-700">
-                      {STATUSES.filter(s => s !== col.status).slice(0, 3).map((s) => (
-                        <button
-                          key={s}
-                          onClick={(e) => { e.stopPropagation(); moveTask(task.id, s); }}
-                          className="text-tiny px-2 py-0.5 rounded-sm bg-surface dark:bg-gray-900 text-fg-tertiary dark:text-gray-400 hover:bg-primary/10 hover:text-primary transition-colors"
-                        >→ {s}</button>
-                      ))}
-                    </div>
+                    {/* Quick move buttons — valid transitions only */}
+                    {(() => {
+                      const allowed = (STATUS_FLOW[task.status] || []).slice(0, 3);
+                      if (allowed.length === 0) return null;
+                      return (
+                        <div className="flex gap-1 mt-2 pt-2 border-t border-border dark:border-gray-700">
+                          {allowed.map((s) => (
+                            <button
+                              key={s}
+                              onClick={(e) => { e.stopPropagation(); moveTask(task.id, s); }}
+                              className="text-tiny px-2 py-0.5 rounded-sm bg-surface dark:bg-gray-900 text-fg-tertiary dark:text-gray-400 hover:bg-primary/10 hover:text-primary transition-colors"
+                            >→ {s}</button>
+                          ))}
+                        </div>
+                      );
+                    })()}
                   </div>
                 ))}
               </div>

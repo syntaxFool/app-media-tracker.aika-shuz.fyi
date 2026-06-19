@@ -5,6 +5,7 @@ import AppLayout from "@/components/layout";
 import TaskCard from "@/components/task-card";
 import FilterBar from "@/components/filter-bar";
 import { Loader2, ArrowUpDown, CheckSquare, Download } from "lucide-react";
+import { STATUS_FLOW, ALL_STATUSES } from "@/lib/tasks";
 
 interface Task {
   id: string;
@@ -13,6 +14,7 @@ interface Task {
   service: string;
   gender: string;
   isInfluencer: boolean;
+  dueDate: string | null;
   status: string;
   createdBy: string;
   updatedAt: string | null;
@@ -104,10 +106,10 @@ export default function DashboardPage() {
     for (const id of Array.from(selectedIds)) {
       const task = tasks.find((t) => t.id === id);
       if (!task) continue;
-      const nextMap: Record<string, string> = {
-        New: "Video Shot", "Video Shot": "Data Copied", "Data Copied": "Video Edited",
-        "Video Edited": "Reviewed", Reviewed: "Uploaded", Uploaded: "Task Completed",
-      };
+      const nextMap: Record<string, string> = {};
+      for (const [k, v] of Object.entries(STATUS_FLOW)) {
+        if (v.length > 0) nextMap[k] = v[0];
+      }
       const next = nextMap[task.status];
       if (next) {
         await fetch(`/api/tasks/${id}`, {

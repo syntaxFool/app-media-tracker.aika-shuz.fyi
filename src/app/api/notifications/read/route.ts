@@ -1,16 +1,16 @@
-// GET  /api/notifications — List notifications
+// POST /api/notifications/read — Mark all notifications as read
 import { NextResponse } from "next/server";
 import prisma from "@/lib/db";
 import { requireAuth } from "@/lib/auth";
 
-export async function GET() {
+export async function POST() {
   try {
     await requireAuth();
-    const notifications = await prisma.notification.findMany({
-      orderBy: { createdAt: "desc" },
-      take: 50,
+    await prisma.notification.updateMany({
+      where: { read: false },
+      data: { read: true },
     });
-    return NextResponse.json({ notifications });
+    return NextResponse.json({ success: true });
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
