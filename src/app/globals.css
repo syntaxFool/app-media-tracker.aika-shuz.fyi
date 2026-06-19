@@ -112,6 +112,28 @@
     @apply bg-white/[0.02];
   }
 
+  /* Sidebar navigation */
+  .sidebar-nav-item {
+    @apply w-full text-left px-3 py-2 rounded-sm text-sm flex items-center gap-2.5 transition-all duration-150 font-[510];
+  }
+  .sidebar-nav-item-active {
+    @apply bg-white/[0.06] text-fg-primary border-l-2 border-primary pl-2.5;
+  }
+  .sidebar-nav-item-inactive {
+    @apply text-fg-tertiary hover:bg-white/[0.03] hover:text-fg-secondary;
+  }
+
+  /* Bottom nav item */
+  .bottom-nav-item {
+    @apply flex flex-col items-center justify-center gap-0.5 w-full h-full transition-colors duration-150;
+  }
+  .bottom-nav-item-active {
+    @apply text-primary;
+  }
+  .bottom-nav-item-inactive {
+    @apply text-fg-tertiary;
+  }
+
   .dialog-overlay {
     @apply fixed inset-0 bg-black/85 z-50 animate-fade-in;
   }

@@ -8,8 +8,6 @@ import {
   Users,
   LogOut,
   Plus,
-  Menu,
-  X,
 } from "lucide-react";
 
 interface User {
@@ -22,7 +20,6 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
   const [user, setUser] = useState<User | null>(null);
-  const [menuOpen, setMenuOpen] = useState(false);
 
   const fetchUser = useCallback(async () => {
     try {
@@ -63,13 +60,12 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       {/* Top Bar */}
       <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-xl border-b border-white/[0.05]">
         <div className="flex items-center justify-between px-4 h-14">
+          {/* Left: Brand */}
           <div className="flex items-center gap-3">
-            <button onClick={() => setMenuOpen(!menuOpen)} className="btn-icon p-1.5 md:hidden">
-              {menuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-            </button>
-            <span className="text-small font-[590] text-fg-primary">Shanuzz Tracker</span>
+            <span className="text-body-sb text-fg-primary tracking-tight">Shanuzz Tracker</span>
           </div>
 
+          {/* Right: Actions + User */}
           <div className="flex items-center gap-2">
             {user?.role === "admin" && (
               <button
@@ -82,14 +78,19 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             )}
 
             <div className="flex items-center gap-2 pl-2 border-l border-white/[0.08]">
-              <span className="text-caption text-fg-tertiary hidden sm:block">{user?.username}</span>
-              <span className={`
-                text-micro px-1.5 py-0.5 rounded-sm
-                ${user?.role === "admin" ? "bg-primary/10 text-primary" : "bg-white/[0.04] text-fg-tertiary"}
-              `}>
+              <span className="text-caption text-fg-tertiary hidden sm:inline">
+                {user?.username}
+              </span>
+              <span
+                className={`text-micro px-1.5 py-0.5 rounded-sm ${
+                  user?.role === "admin"
+                    ? "bg-primary/10 text-primary"
+                    : "bg-white/[0.04] text-fg-tertiary"
+                }`}
+              >
                 {user?.role}
               </span>
-              <button onClick={handleLogout} className="btn-subtle p-1.5">
+              <button onClick={handleLogout} className="btn-subtle p-1.5" title="Logout">
                 <LogOut className="w-4 h-4" />
               </button>
             </div>
@@ -97,43 +98,26 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         </div>
       </header>
 
-      {/* Mobile Menu Drawer */}
-      {menuOpen && (
-        <div className="fixed inset-0 z-30 md:hidden" onClick={() => setMenuOpen(false)}>
-          <div className="absolute inset-0 bg-black/60" />
-          <div
-            className="absolute left-0 top-0 bottom-0 w-64 bg-surface border-r border-white/[0.08] animate-slide-in"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="p-4 pt-16 space-y-1">
-              {navItems.map((item) => (
-                <button
-                  key={item.path}
-                  onClick={() => { router.push(item.path); setMenuOpen(false); }}
-                  className={`sidebar-nav-item w-full ${isActive(item.path) ? "sidebar-nav-item-active" : "sidebar-nav-item-inactive"}`}
-                >
-                  <item.icon className="w-4 h-4" />
-                  {item.label}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Desktop Sidebar */}
+      {/* Content Area */}
       <div className="flex flex-1">
-        <aside className="hidden md:block w-56 border-r border-white/[0.05] p-3 space-y-1">
-          {navItems.map((item) => (
-            <button
-              key={item.path}
-              onClick={() => router.push(item.path)}
-              className={`sidebar-nav-item w-full ${isActive(item.path) ? "sidebar-nav-item-active" : "sidebar-nav-item-inactive"}`}
-            >
-              <item.icon className="w-4 h-4" />
-              {item.label}
-            </button>
-          ))}
+        {/* Desktop Sidebar */}
+        <aside className="hidden md:flex md:flex-col md:w-52 border-r border-white/[0.05] py-2">
+          <nav className="flex-1 px-2 space-y-0.5">
+            {navItems.map((item) => (
+              <button
+                key={item.path}
+                onClick={() => router.push(item.path)}
+                className={
+                  isActive(item.path)
+                    ? "sidebar-nav-item sidebar-nav-item-active"
+                    : "sidebar-nav-item sidebar-nav-item-inactive"
+                }
+              >
+                <item.icon className="w-4 h-4 flex-shrink-0" />
+                <span>{item.label}</span>
+              </button>
+            ))}
+          </nav>
         </aside>
 
         {/* Main Content */}
@@ -144,14 +128,16 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
       {/* Mobile Bottom Nav */}
       <nav className="fixed bottom-0 left-0 right-0 z-40 md:hidden bg-surface/90 backdrop-blur-xl border-t border-white/[0.08]">
-        <div className="flex items-center justify-around h-16 px-2">
+        <div className="flex items-center justify-around h-16 px-1">
           {navItems.map((item) => (
             <button
               key={item.path}
               onClick={() => router.push(item.path)}
-              className={`flex flex-col items-center justify-center gap-0.5 w-full h-full ${
-                isActive(item.path) ? "text-primary" : "text-fg-tertiary"
-              }`}
+              className={
+                isActive(item.path)
+                  ? "bottom-nav-item bottom-nav-item-active"
+                  : "bottom-nav-item bottom-nav-item-inactive"
+              }
             >
               <item.icon className="w-5 h-5" />
               <span className="text-tiny font-[510]">{item.label}</span>
