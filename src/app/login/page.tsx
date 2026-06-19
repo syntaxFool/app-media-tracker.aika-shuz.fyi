@@ -39,19 +39,17 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4">
+    <div className="min-h-screen bg-surface flex items-center justify-center p-4">
       <div className="w-full max-w-sm animate-fade-in">
-        {/* Logo / Brand */}
         <div className="text-center mb-8">
-          <div className="w-16 h-16 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center mx-auto mb-4">
+          <div className="w-16 h-16 rounded-xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
             <span className="text-2xl font-[590] text-primary">S</span>
           </div>
           <h1 className="text-heading-3 text-fg-primary">Shanuzz Media Tracker</h1>
           <p className="text-small text-fg-tertiary mt-1">Sign in to continue</p>
         </div>
 
-        {/* Form */}
-        <form onSubmit={handleSubmit} className="card-linear p-6 space-y-4">
+        <form onSubmit={handleSubmit} className="bg-white border border-border rounded-md p-6 space-y-4 shadow-sm">
           <div>
             <label className="block text-label text-fg-tertiary mb-1.5">Username</label>
             <input
@@ -65,7 +63,6 @@ export default function LoginPage() {
               autoFocus
             />
           </div>
-
           <div>
             <label className="block text-label text-fg-tertiary mb-1.5">Password</label>
             <input
@@ -98,10 +95,6 @@ export default function LoginPage() {
             {loading ? "Signing in..." : "Sign In"}
           </button>
         </form>
-
-        <p className="text-tiny text-fg-quaternary text-center mt-6">
-          Shanuzz Content Production Tracker
-        </p>
       </div>
     </div>
   );

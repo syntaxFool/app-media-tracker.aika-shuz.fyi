@@ -1,5 +1,3 @@
-"use client";
-
 import { Search } from "lucide-react";
 
 interface SearchBarProps {
@@ -8,7 +6,7 @@ interface SearchBarProps {
   placeholder?: string;
 }
 
-export default function SearchBar({ value, onChange, placeholder = "Search by name or Task ID..." }: SearchBarProps) {
+export default function SearchBar({ value, onChange, placeholder = "Search..." }: SearchBarProps) {
   return (
     <div className="relative">
       <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-fg-quaternary" />
@@ -20,12 +18,7 @@ export default function SearchBar({ value, onChange, placeholder = "Search by na
         className="input-linear w-full pl-9"
       />
       {value && (
-        <button
-          onClick={() => onChange("")}
-          className="absolute right-3 top-1/2 -translate-y-1/2 text-fg-quaternary hover:text-fg-secondary"
-        >
-          ✕
-        </button>
+        <button onClick={() => onChange("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-fg-quaternary hover:text-fg-secondary">✕</button>
       )}
     </div>
   );

@@ -6,30 +6,38 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        background: "#08090a",
-        foreground: "#fffffa",
-        panel: "#0f1011",
-        surface: "#191a1b",
-        "surface-2": "#28282c",
+        // Base
+        background: "#ffffff",
+        foreground: "#0a1628",
+        panel: "#ffffff",
+        surface: "#f5f7fa",
+        "surface-2": "#e8ecf2",
 
-        "fg-primary": "#fffffa",
-        "fg-secondary": "#d0d6e0",
-        "fg-tertiary": "#8a8f98",
-        "fg-quaternary": "#62666d",
+        // Text
+        "fg-primary": "#0a1628",
+        "fg-secondary": "#3a4a5c",
+        "fg-tertiary": "#6b7d8e",
+        "fg-quaternary": "#95a5b5",
 
-        primary: { DEFAULT: "#005581", foreground: "#fffffa", hover: "#006b9e" },
-        accent: { DEFAULT: "#72cdf4", foreground: "#08090a", hover: "#8ed8f7" },
+        // Brand — navy + gold
+        primary: { DEFAULT: "#005581", foreground: "#ffffff", hover: "#006b9e" },
+        accent: { DEFAULT: "#ffd200", foreground: "#0a1628", hover: "#ffe552" },
 
         success: "#27a644",
         warning: "#ffd200",
         danger: "#dc2626",
 
-        border: "rgba(255,255,255,0.08)",
-        "border-subtle": "rgba(255,255,255,0.05)",
-        "border-solid": "#23252a",
+        // Borders
+        border: "rgba(0,0,0,0.07)",
+        "border-subtle": "rgba(0,0,0,0.04)",
+        "border-solid": "#dde3ea",
 
-        muted: { DEFAULT: "#1a1b1e", foreground: "#8a8f98" },
-        card: { DEFAULT: "#0f1011", foreground: "#fffffa" },
+        // Misc
+        muted: { DEFAULT: "#f0f4f8", foreground: "#6b7d8e" },
+        card: { DEFAULT: "#ffffff", foreground: "#0a1628" },
+        brand: { DEFAULT: "#ffd200", foreground: "#0a1628", hover: "#ffe552" },
+        ocean: { DEFAULT: "#72cdf4", foreground: "#0a1628", hover: "#8ed8f7" },
+        navy: { DEFAULT: "#005581", foreground: "#ffffff", hover: "#006b9e" },
       },
       borderRadius: {
         sm: "6px",
@@ -72,9 +80,9 @@ const config: Config = {
         "12": "48px",
       },
       boxShadow: {
-        "elev-raised": "rgba(0,0,0,0.4) 0px 2px 4px, 0 0 0 1px rgba(255,255,255,0.05)",
+        "elev-raised": "0 1px 3px rgba(0,0,0,0.06), 0 0 0 1px rgba(0,0,0,0.04)",
         "elev-dialog":
-          "rgba(0,0,0,0) 0px 8px 2px, rgba(0,0,0,0.01) 0px 5px 2px, rgba(0,0,0,0.04) 0px 3px 2px, rgba(0,0,0,0.07) 0px 1px 1px, rgba(0,0,0,0.08) 0px 0px 1px",
+          "0 8px 32px rgba(0,0,0,0.12), 0 0 0 1px rgba(0,0,0,0.06)",
       },
       keyframes: {
         "fade-in": {

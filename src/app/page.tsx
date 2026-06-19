@@ -38,18 +38,11 @@ export default function DashboardPage() {
     setLoading(false);
   }, [influencerFilter, serviceFilter, genderFilter]);
 
-  useEffect(() => {
-    fetchTasks();
-  }, [fetchTasks]);
+  useEffect(() => { fetchTasks(); }, [fetchTasks]);
 
-  // Extract unique services for filter
   const services = Array.from(new Set(tasks.map((t) => t.service))).sort();
-
-  // Status counts
   const statusCounts: Record<string, number> = {};
-  tasks.forEach((t) => {
-    statusCounts[t.status] = (statusCounts[t.status] || 0) + 1;
-  });
+  tasks.forEach((t) => { statusCounts[t.status] = (statusCounts[t.status] || 0) + 1; });
 
   return (
     <AppLayout>
@@ -57,17 +50,13 @@ export default function DashboardPage() {
         {/* Stats Bar */}
         <div className="flex gap-2 overflow-x-auto pb-2">
           {Object.entries(statusCounts).map(([status, count]) => (
-            <div
-              key={status}
-              className="flex-shrink-0 bg-white/[0.02] border border-white/[0.06] rounded-sm px-3 py-2"
-            >
+            <div key={status} className="flex-shrink-0 bg-white border border-border rounded-sm px-3 py-2 shadow-sm">
               <span className="text-micro text-fg-quaternary block">{status}</span>
               <span className="text-body font-[510] text-fg-primary">{count}</span>
             </div>
           ))}
         </div>
 
-        {/* Filters */}
         <FilterBar
           influencerFilter={influencerFilter}
           serviceFilter={serviceFilter}
@@ -78,7 +67,6 @@ export default function DashboardPage() {
           onGenderChange={setGenderFilter}
         />
 
-        {/* Task List */}
         {loading ? (
           <div className="flex items-center justify-center py-8">
             <Loader2 className="w-6 h-6 text-fg-tertiary animate-spin" />
@@ -87,22 +75,12 @@ export default function DashboardPage() {
           <div className="text-center py-12">
             <div className="text-3xl mb-3">🎬</div>
             <p className="text-body text-fg-secondary">No tasks found</p>
-            <p className="text-caption text-fg-tertiary mt-1">
-              Create a new task to get started
-            </p>
+            <p className="text-caption text-fg-tertiary mt-1">Create a new task to get started</p>
           </div>
         ) : (
           <div className="space-y-2">
-            {tasks.map((task) => (
-              <TaskCard key={task.id} task={task} />
-            ))}
+            {tasks.map((task) => <TaskCard key={task.id} task={task} />)}
           </div>
-        )}
-
-        {!loading && tasks.length > 0 && (
-          <p className="text-center text-micro text-fg-quaternary">
-            {tasks.length} task{tasks.length !== 1 ? "s" : ""}
-          </p>
         )}
       </div>
     </AppLayout>

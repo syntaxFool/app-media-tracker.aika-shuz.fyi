@@ -56,41 +56,33 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   ];
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="min-h-screen bg-surface flex flex-col">
       {/* Top Bar */}
-      <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-xl border-b border-white/[0.05]">
+      <header className="sticky top-0 z-40 bg-primary text-white">
         <div className="flex items-center justify-between px-4 h-14">
-          {/* Left: Brand */}
           <div className="flex items-center gap-3">
-            <span className="text-body-sb text-fg-primary tracking-tight">Shanuzz Tracker</span>
+            <span className="text-body-sb tracking-tight">Shanuzz Tracker</span>
           </div>
 
-          {/* Right: Actions + User */}
           <div className="flex items-center gap-2">
             {user?.role === "admin" && (
               <button
                 onClick={() => router.push("/tasks/new")}
-                className="btn-primary flex items-center gap-1.5 px-3 py-1.5 text-label"
+                className="flex items-center gap-1.5 px-3 py-1.5 text-label font-[510] rounded-sm bg-white/15 hover:bg-white/25 transition-colors"
               >
                 <Plus className="w-3.5 h-3.5" />
                 <span className="hidden sm:inline">New Task</span>
               </button>
             )}
 
-            <div className="flex items-center gap-2 pl-2 border-l border-white/[0.08]">
-              <span className="text-caption text-fg-tertiary hidden sm:inline">
+            <div className="flex items-center gap-2 pl-2 border-l border-white/15">
+              <span className="text-caption text-white/70 hidden sm:inline">
                 {user?.username}
               </span>
-              <span
-                className={`text-micro px-1.5 py-0.5 rounded-sm ${
-                  user?.role === "admin"
-                    ? "bg-primary/10 text-primary"
-                    : "bg-white/[0.04] text-fg-tertiary"
-                }`}
-              >
+              <span className="text-micro px-1.5 py-0.5 rounded-sm bg-white/15 text-white/90">
                 {user?.role}
               </span>
-              <button onClick={handleLogout} className="btn-subtle p-1.5" title="Logout">
+              <button onClick={handleLogout} className="p-1.5 rounded-sm hover:bg-white/15 transition-colors text-white/70 hover:text-white" title="Logout">
                 <LogOut className="w-4 h-4" />
               </button>
             </div>
@@ -101,7 +93,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       {/* Content Area */}
       <div className="flex flex-1">
         {/* Desktop Sidebar */}
-        <aside className="hidden md:flex md:flex-col md:w-52 border-r border-white/[0.05] py-2">
+        <aside className="hidden md:flex md:flex-col md:w-52 bg-white border-r border-border py-2">
           <nav className="flex-1 px-2 space-y-0.5">
             {navItems.map((item) => (
               <button
@@ -127,7 +119,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       </div>
 
       {/* Mobile Bottom Nav */}
-      <nav className="fixed bottom-0 left-0 right-0 z-40 md:hidden bg-surface/90 backdrop-blur-xl border-t border-white/[0.08]">
+      <nav className="fixed bottom-0 left-0 right-0 z-40 md:hidden bg-white/95 backdrop-blur-xl border-t border-border">
         <div className="flex items-center justify-around h-16 px-1">
           {navItems.map((item) => (
             <button

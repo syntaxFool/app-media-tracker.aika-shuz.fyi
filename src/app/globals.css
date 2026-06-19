@@ -20,74 +20,71 @@
       "Segoe UI", Roboto, sans-serif;
   }
 
-  ::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
-  }
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
   ::-webkit-scrollbar-track { background: transparent; }
-  ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.08); border-radius: 3px; }
-  ::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.12); }
+  ::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.10); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: rgba(0,0,0,0.18); }
 
-  ::selection { background: rgba(0, 85, 129, 0.3); color: #fffffa; }
+  ::selection { background: rgba(0, 85, 129, 0.15); color: #0a1628; }
 
   *:focus-visible {
     outline: none;
     box-shadow:
-      0 0 0 2px color-mix(in oklab, #005581, transparent 30%),
-      0 4px 12px rgba(0, 0, 0, 0.1);
+      0 0 0 2px color-mix(in oklab, #005581, transparent 60%),
+      0 2px 8px rgba(0,0,0,0.06);
   }
 }
 
 @layer components {
   .btn-ghost {
-    @apply bg-white/[0.02] text-fg-secondary border border-white/[0.08] rounded-sm px-4 py-2 text-sm font-[510]
-      hover:bg-white/[0.04] hover:text-fg-primary transition-all duration-150 ease-standard;
+    @apply bg-black/[0.03] text-fg-secondary border border-black/[0.06] rounded-sm px-4 py-2 text-sm font-[510]
+      hover:bg-black/[0.06] hover:text-fg-primary transition-all duration-150 ease-standard;
   }
 
   .btn-primary {
-    @apply bg-[#005581] text-white rounded-sm px-4 py-2 text-sm font-[510]
-      hover:bg-[#006b9e] transition-all duration-150 ease-standard active:scale-[0.98];
+    @apply bg-primary text-white rounded-sm px-4 py-2 text-sm font-[510]
+      hover:bg-primary-hover transition-all duration-150 ease-standard active:scale-[0.98];
   }
 
   .btn-danger {
-    @apply bg-danger/10 text-danger border border-danger/25 rounded-sm px-4 py-2 text-sm font-[510]
-      hover:bg-danger/20 transition-all duration-150 ease-standard active:scale-[0.98];
+    @apply bg-danger/10 text-danger border border-danger/20 rounded-sm px-4 py-2 text-sm font-[510]
+      hover:bg-danger/15 transition-all duration-150 ease-standard active:scale-[0.98];
   }
 
   .btn-subtle {
-    @apply bg-white/[0.04] text-fg-secondary rounded-sm px-1.5 py-1 text-sm font-[510]
-      hover:bg-white/[0.06] hover:text-fg-primary transition-all duration-150;
+    @apply bg-black/[0.04] text-fg-secondary rounded-sm px-1.5 py-1 text-sm font-[510]
+      hover:bg-black/[0.07] hover:text-fg-primary transition-all duration-150;
   }
 
   .btn-icon {
-    @apply bg-white/[0.03] text-fg-primary rounded-full border border-white/[0.08] p-2
-      hover:bg-white/[0.05] transition-all duration-150;
+    @apply bg-black/[0.03] text-fg-primary rounded-full border border-black/[0.06] p-2
+      hover:bg-black/[0.06] transition-all duration-150;
   }
 
   .btn-pill {
     @apply bg-transparent text-fg-secondary rounded-pill border border-border-solid px-2.5 py-1 text-label
-      hover:bg-white/[0.03] transition-all duration-150;
+      hover:bg-black/[0.03] transition-all duration-150;
   }
 
   .input-linear {
-    @apply bg-white/[0.02] text-fg-primary border border-white/[0.08] rounded-sm px-3 py-2.5 text-sm
+    @apply bg-black/[0.02] text-fg-primary border border-black/[0.08] rounded-sm px-3 py-2.5 text-sm
       placeholder:text-fg-quaternary
-      focus:outline-none focus:border-white/[0.12] focus:bg-white/[0.03]
+      focus:outline-none focus:border-[#005581]/30 focus:bg-white
       transition-all duration-150;
   }
 
   .select-linear {
     @apply input-linear appearance-none bg-no-repeat pr-8;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238a8f98' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b7d8e' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
     background-position: right 10px center;
   }
 
   .card-linear {
-    @apply bg-white/[0.02] border border-white/[0.08] rounded-md;
+    @apply bg-white border border-black/[0.06] rounded-md;
   }
 
   .card-elevated {
-    @apply bg-surface border border-white/[0.08] rounded-md shadow-elev-raised;
+    @apply bg-white border border-black/[0.06] rounded-md shadow-elev-raised;
   }
 
   .badge {
@@ -95,7 +92,7 @@
   }
 
   .badge-success { @apply badge text-success bg-success/10; }
-  .badge-warning { @apply badge text-warning bg-warning/10; }
+  .badge-warning { @apply badge text-warning bg-warning/15; }
   .badge-danger { @apply badge text-danger bg-danger/10; }
   .badge-neutral { @apply badge text-fg-secondary border border-border-solid bg-transparent; }
 
@@ -103,27 +100,27 @@
     @apply w-full;
   }
   .table-linear th {
-    @apply text-left text-label text-fg-tertiary font-[510] px-4 py-3 border-b border-white/[0.05];
+    @apply text-left text-label text-fg-tertiary font-[510] px-4 py-3 border-b border-black/[0.05];
   }
   .table-linear td {
-    @apply text-sm text-fg-secondary px-4 py-3 border-b border-white/[0.05];
+    @apply text-sm text-fg-secondary px-4 py-3 border-b border-black/[0.05];
   }
   .table-linear tr:hover td {
-    @apply bg-white/[0.02];
+    @apply bg-black/[0.02];
   }
 
-  /* Sidebar navigation */
+  /* Sidebar */
   .sidebar-nav-item {
     @apply w-full text-left px-3 py-2 rounded-sm text-sm flex items-center gap-2.5 transition-all duration-150 font-[510];
   }
   .sidebar-nav-item-active {
-    @apply bg-white/[0.06] text-fg-primary border-l-2 border-primary pl-2.5;
+    @apply bg-[#00558114] text-primary border-l-2 border-accent pl-2.5;
   }
   .sidebar-nav-item-inactive {
-    @apply text-fg-tertiary hover:bg-white/[0.03] hover:text-fg-secondary;
+    @apply text-fg-tertiary hover:bg-black/[0.04] hover:text-fg-secondary;
   }
 
-  /* Bottom nav item */
+  /* Bottom nav */
   .bottom-nav-item {
     @apply flex flex-col items-center justify-center gap-0.5 w-full h-full transition-colors duration-150;
   }
@@ -135,10 +132,10 @@
   }
 
   .dialog-overlay {
-    @apply fixed inset-0 bg-black/85 z-50 animate-fade-in;
+    @apply fixed inset-0 bg-black/40 z-50 animate-fade-in;
   }
   .dialog-content {
-    @apply fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-surface border border-white/[0.08] rounded-lg shadow-elev-dialog z-50 w-[90vw] max-w-lg max-h-[85vh] overflow-y-auto animate-scale-in;
+    @apply fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white border border-black/[0.06] rounded-lg shadow-elev-dialog z-50 w-[90vw] max-w-lg max-h-[85vh] overflow-y-auto animate-scale-in;
   }
 }
 
