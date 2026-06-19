@@ -122,6 +122,9 @@ export default function TaskDetailPage() {
           <DetailRow label="Service" value={task.service} />
           <DetailRow label="Gender" value={task.gender} />
           <DetailRow icon={<Star className="w-4 h-4"/>} label="Influencer" value={task.isInfluencer?"Yes ⭐":"No"} />
+          {Array.isArray(task.assignedTo) && task.assignedTo.length > 0 && (
+            <DetailRow label="Assigned" value={task.assignedTo.join(", ")} />
+          )}
         </div>
 
         {task.photoPath&&<div className="bg-white dark:bg-gray-900 border border-border dark:border-gray-800 rounded-md overflow-hidden shadow-sm"><img src={task.photoPath} alt={task.customerName} className="w-full h-64 object-cover"/></div>}

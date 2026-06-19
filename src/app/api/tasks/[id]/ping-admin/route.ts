@@ -29,6 +29,15 @@ export async function POST(
       requestedBy: session.username,
     });
 
+    // Create in-app notification
+    await prisma.notification.create({
+      data: {
+        taskId: params.id,
+        type: "ping_admin",
+        message: `${session.username} requested admin correction on ${params.id} (${task.customerName})`,
+      },
+    });
+
     return NextResponse.json({ success: true, message: `Admin notified about task ${params.id}` });
   } catch (err: any) {
     if (err.message === "Unauthorized") return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
