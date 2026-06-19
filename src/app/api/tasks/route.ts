@@ -71,6 +71,14 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // su must select at least one staff member
+    if (session.role === "su" && (!assignedTo || assignedTo.length === 0)) {
+      return NextResponse.json(
+        { error: "Superuser must assign at least one staff member to the task" },
+        { status: 400 }
+      );
+    }
+
     const id = await generateTaskId();
 
     const task = await prisma.task.create({
@@ -84,7 +92,9 @@ export async function POST(req: NextRequest) {
         photoPath: photoPath || null,
         note: note || null,
         dueDate: new Date(dueDate),
-        assignedTo: (assignedTo && assignedTo.length > 0) ? assignedTo : [session.username],
+        assignedTo: (session.role === "su")
+          ? (assignedTo || [])
+          : ((assignedTo && assignedTo.length > 0) ? assignedTo : [session.username]),
         createdBy: session.username,
       },
     });

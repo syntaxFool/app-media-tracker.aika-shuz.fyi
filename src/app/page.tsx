@@ -15,6 +15,7 @@ interface Task {
   gender: string;
   isInfluencer: boolean;
   dueDate: string | null;
+  assignedTo?: string[];
   status: string;
   createdBy: string;
   updatedAt: string | null;

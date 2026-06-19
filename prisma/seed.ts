@@ -17,6 +17,7 @@ async function main() {
       username: "su",
       password: suPassword,
       role: "su",
+      displayName: "Super User",
       isSuperuser: true,
     },
   });
@@ -31,6 +32,7 @@ async function main() {
       username: "admin",
       password: adminPassword,
       role: "admin",
+      displayName: "Admin",
     },
   });
   console.log("  ✅ Admin user: admin / admin123");
@@ -44,6 +46,7 @@ async function main() {
       username: "staff",
       password: staffPassword,
       role: "staff",
+      displayName: "Staff Member",
     },
   });
   console.log("  ✅ Staff user: staff / staff123");

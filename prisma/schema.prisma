@@ -36,6 +36,7 @@ model User {
   username  String   @unique
   password  String   // bcrypt hash
   role      String   @default("staff")
+  displayName String? @map("display_name")
   isSuperuser Boolean @default(false) @map("is_superuser") // "admin" | "staff"
   createdAt DateTime @default(now()) @map("created_at")
 
