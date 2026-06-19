@@ -11,7 +11,7 @@ export const metadata: Metadata = {
     title: "MediaTracker",
   },
   icons: {
-    icon: "/icons/icon-192.svg",
+    icon: "/icons/favicon.svg",
     apple: "/icons/icon-512.svg",
   },
 };
