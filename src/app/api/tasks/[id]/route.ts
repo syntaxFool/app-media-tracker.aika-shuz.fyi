@@ -26,6 +26,12 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     const body = await req.json();
     const { customerName, shootDate, dueDate, service, gender, isInfluencer, note, photoPath, status, assignedTo } = body;
 
+    // Helper: creates an ActivityLog promise (for use inside prisma.$transaction)
+    const logActivity = (actor: string, action: string, detail: string, metadata?: any) =>
+      prisma.activityLog.create({
+        data: { taskId: params.id, actor, action, detail, metadata },
+      });
+
     const updateData: any = { updatedBy: session.username, updatedAt: new Date() };
 
     // Staff: ONLY status (forward only) — must be assigned
@@ -40,7 +46,14 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
         return NextResponse.json({ error: `Cannot move from "${task.status}" to "${status}"` }, { status: 400 });
 
       updateData.status = status;
-      const updated = await prisma.task.update({ where: { id: params.id }, data: updateData });
+
+      // Transaction: task update + activity log are atomic
+      const [updated] = await prisma.$transaction([
+        prisma.task.update({ where: { id: params.id }, data: updateData }),
+        logActivity(session.username, "status_change",
+          `Status: ${task.status} → ${status}`,
+          { oldStatus: task.status, newStatus: status }),
+      ]);
 
       await enqueueWhatsAppMessage({
         taskId: params.id, customerName: task.customerName,
@@ -52,17 +65,6 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
           message: `${session.username} moved ${params.id} from "${task.status}" to "${status}"` },
       });
       sendPushNotifications(params.id, `${session.username} moved ${params.id} from "${task.status}" to "${status}"`);
-
-      // Log the status change
-      await prisma.activityLog.create({
-        data: {
-          taskId: params.id,
-          actor: session.username,
-          action: "status_change",
-          detail: `Status: ${task.status} → ${status}`,
-          metadata: { oldStatus: task.status, newStatus: status },
-        },
-      });
 
       return NextResponse.json({ task: updated });
     }
@@ -78,7 +80,8 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     if (photoPath !== undefined) updateData.photoPath = photoPath;
     if (assignedTo !== undefined) updateData.assignedTo = assignedTo;
 
-    if (status !== undefined && status !== task.status) {
+    const statusChanged = status !== undefined && status !== task.status;
+    if (statusChanged) {
       updateData.status = status;
       await enqueueWhatsAppMessage({
         taskId: params.id, customerName: task.customerName,
@@ -90,45 +93,62 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
           message: `${session.username} moved ${params.id} from "${task.status}" to "${status}"` },
       });
       sendPushNotifications(params.id, `${session.username} moved ${params.id} from "${task.status}" to "${status}"`);
-
-      // Log the status change
-      await prisma.activityLog.create({
-        data: {
-          taskId: params.id,
-          actor: session.username,
-          action: "status_change",
-          detail: `Status: ${task.status} → ${status}`,
-          metadata: { oldStatus: task.status, newStatus: status },
-        },
-      });
-    } else {
-      // Log field-level changes for metadata-only updates
-      const changedFields: string[] = [];
-      if (customerName !== undefined && customerName !== task.customerName) changedFields.push("customerName");
-      if (service !== undefined && service !== task.service) changedFields.push("service");
-      if (gender !== undefined && gender !== task.gender) changedFields.push("gender");
-      if (isInfluencer !== undefined && isInfluencer !== task.isInfluencer) changedFields.push("isInfluencer");
-      if (note !== undefined && note !== task.note) changedFields.push("note");
-      if (shootDate !== undefined) changedFields.push("shootDate");
-      if (dueDate !== undefined) changedFields.push("dueDate");
-      if (photoPath !== undefined && photoPath !== task.photoPath) {
-        changedFields.push(photoPath ? "photo_added" : "photo_removed");
-      }
-      if (assignedTo !== undefined) changedFields.push("assignedTo");
-      if (changedFields.length > 0) {
-        await prisma.activityLog.create({
-          data: {
-            taskId: params.id,
-            actor: session.username,
-            action: "field_update",
-            detail: `Updated: ${changedFields.join(", ")}`,
-            metadata: { fields: changedFields },
-          },
-        });
-      }
     }
 
-    const updated = await prisma.task.update({ where: { id: params.id }, data: updateData });
+    // Always detect field-level changes (regardless of status change)
+    const changedFields: string[] = [];
+    if (customerName !== undefined && customerName !== task.customerName) changedFields.push("customerName");
+    if (service !== undefined && service !== task.service) changedFields.push("service");
+    if (gender !== undefined && gender !== task.gender) changedFields.push("gender");
+    if (isInfluencer !== undefined && isInfluencer !== task.isInfluencer) changedFields.push("isInfluencer");
+    if (note !== undefined && note !== task.note) changedFields.push("note");
+    if (shootDate !== undefined) {
+      const newVal = shootDate ? new Date(shootDate).toISOString() : null;
+      const oldVal = task.shootDate ? new Date(task.shootDate).toISOString() : null;
+      if (newVal !== oldVal) changedFields.push("shootDate");
+    }
+    if (dueDate !== undefined) {
+      const newVal = dueDate ? new Date(dueDate).toISOString() : null;
+      const oldVal = task.dueDate ? new Date(task.dueDate).toISOString() : null;
+      if (newVal !== oldVal) changedFields.push("dueDate");
+    }
+    if (assignedTo !== undefined && JSON.stringify(assignedTo) !== JSON.stringify(task.assignedTo)) {
+      changedFields.push("assignedTo");
+    }
+
+    // Detect photo change separately for dedicated action types
+    const photoChanged = photoPath !== undefined && photoPath !== task.photoPath;
+
+    // Build transaction: task update + all applicable activity logs
+    const transactionOps: any[] = [
+      prisma.task.update({ where: { id: params.id }, data: updateData }),
+    ];
+
+    // Status change log
+    if (statusChanged) {
+      transactionOps.push(logActivity(session.username, "status_change",
+        `Status: ${task.status} → ${status}`,
+        { oldStatus: task.status, newStatus: status }));
+    }
+
+    // Photo-only change (no other fields, no status change) → dedicated action
+    if (photoChanged && changedFields.length === 0 && !statusChanged) {
+      transactionOps.push(logActivity(session.username,
+        photoPath ? "photo_added" : "photo_removed",
+        photoPath ? "Photo added" : "Photo removed"));
+    } else if (photoChanged) {
+      // Photo changed alongside other field or status changes — include in field list
+      changedFields.push("photoPath");
+    }
+
+    // Field update log
+    if (changedFields.length > 0) {
+      transactionOps.push(logActivity(session.username, "field_update",
+        `Updated: ${changedFields.join(", ")}`,
+        { fields: changedFields }));
+    }
+
+    const [updated] = await prisma.$transaction(transactionOps);
     return NextResponse.json({ task: updated });
   } catch (err: any) {
     if (err.message === "Unauthorized") return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
