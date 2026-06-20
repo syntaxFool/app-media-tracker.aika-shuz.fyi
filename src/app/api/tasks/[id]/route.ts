@@ -53,6 +53,17 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
       });
       sendPushNotifications(params.id, `${session.username} moved ${params.id} from "${task.status}" to "${status}"`);
 
+      // Log the status change
+      await prisma.activityLog.create({
+        data: {
+          taskId: params.id,
+          actor: session.username,
+          action: "status_change",
+          detail: `Status: ${task.status} → ${status}`,
+          metadata: { oldStatus: task.status, newStatus: status },
+        },
+      });
+
       return NextResponse.json({ task: updated });
     }
 
@@ -79,6 +90,42 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
           message: `${session.username} moved ${params.id} from "${task.status}" to "${status}"` },
       });
       sendPushNotifications(params.id, `${session.username} moved ${params.id} from "${task.status}" to "${status}"`);
+
+      // Log the status change
+      await prisma.activityLog.create({
+        data: {
+          taskId: params.id,
+          actor: session.username,
+          action: "status_change",
+          detail: `Status: ${task.status} → ${status}`,
+          metadata: { oldStatus: task.status, newStatus: status },
+        },
+      });
+    } else {
+      // Log field-level changes for metadata-only updates
+      const changedFields: string[] = [];
+      if (customerName !== undefined && customerName !== task.customerName) changedFields.push("customerName");
+      if (service !== undefined && service !== task.service) changedFields.push("service");
+      if (gender !== undefined && gender !== task.gender) changedFields.push("gender");
+      if (isInfluencer !== undefined && isInfluencer !== task.isInfluencer) changedFields.push("isInfluencer");
+      if (note !== undefined && note !== task.note) changedFields.push("note");
+      if (shootDate !== undefined) changedFields.push("shootDate");
+      if (dueDate !== undefined) changedFields.push("dueDate");
+      if (photoPath !== undefined && photoPath !== task.photoPath) {
+        changedFields.push(photoPath ? "photo_added" : "photo_removed");
+      }
+      if (assignedTo !== undefined) changedFields.push("assignedTo");
+      if (changedFields.length > 0) {
+        await prisma.activityLog.create({
+          data: {
+            taskId: params.id,
+            actor: session.username,
+            action: "field_update",
+            detail: `Updated: ${changedFields.join(", ")}`,
+            metadata: { fields: changedFields },
+          },
+        });
+      }
     }
 
     const updated = await prisma.task.update({ where: { id: params.id }, data: updateData });
