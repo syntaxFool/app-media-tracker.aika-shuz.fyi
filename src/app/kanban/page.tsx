@@ -136,6 +136,11 @@ export default function KanbanPage() {
 
                         {/* Meta row */}
                         <div className="flex flex-wrap items-center gap-x-2 gap-y-1 mb-2">
+                          {task.photoPath && (
+                            <div className="w-5 h-5 rounded-sm overflow-hidden border border-border dark:border-gray-700 flex-shrink-0">
+                              <img src={task.photoPath} alt="" className="w-full h-full object-cover" />
+                            </div>
+                          )}
                           <span className="text-tiny text-fg-quaternary dark:text-gray-500 font-mono">{task.id}</span>
                           <span className="text-tiny text-fg-quaternary dark:text-gray-500">{task.service}</span>
                         </div>
