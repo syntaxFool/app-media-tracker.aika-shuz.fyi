@@ -27,6 +27,32 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
   useEffect(() => { fetchUser(); }, [fetchUser, pathname]);
 
+  // Auto-subscribe to push notifications
+  useEffect(() => {
+    if (!user || typeof navigator === "undefined" || !("serviceWorker" in navigator)) return;
+    const subscribe = async () => {
+      try {
+        const permission = await Notification.requestPermission();
+        if (permission !== "granted") return;
+        const reg = await navigator.serviceWorker.ready;
+        const vapidKey = process.env.NEXT_PUBLIC_VAPID_KEY || "BJx07W4rWR8uwiVSiC1C2N3Xh1JQCZh1SK8RGWdrYg--SDYK40D16sp0pGkdB02cJeZazhqWIpJmF6Fiyb2K0DE";
+        let sub = await reg.pushManager.getSubscription();
+        if (!sub) {
+          sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: vapidKey });
+        }
+        const raw = sub.toJSON();
+        if (raw.endpoint && raw.keys) {
+          await fetch("/api/push/subscribe", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ endpoint: raw.endpoint, p256dh: raw.keys.p256dh, auth: raw.keys.auth }),
+          });
+        }
+      } catch (e) { /* silent */ }
+    };
+    subscribe();
+  }, [user]);
+
   useEffect(() => {
     const updateBadge = () => {
       fetch("/api/notifications/count")
