@@ -147,4 +147,13 @@
   .ease-standard {
     transition-timing-function: cubic-bezier(0.2, 0, 0, 1);
   }
+
+  /* Hide scrollbar while preserving scroll — native mobile clip-to-edge affordance */
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
 }

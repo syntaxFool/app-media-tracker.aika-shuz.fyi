@@ -27,6 +27,8 @@ model Task {
   comments     Comment[]
   notifications Notification[]
   shotItems    ShotItem[]
+  activityLogs ActivityLog[]
+  urls         TaskUrl[]
 
   @@map("tasks")
 }
@@ -80,6 +82,32 @@ model ShotItem {
   task        Task      @relation(fields: [taskId], references: [id], onDelete: Cascade)
 
   @@map("shot_items")
+}
+
+model ActivityLog {
+  id        Int      @id @default(autoincrement())
+  taskId    String   @map("task_id")
+  actor     String
+  action    String   // "status_change" | "field_update" | "created" | "comment" | "photo_added" | "photo_removed"
+  detail    String   // e.g. "Status: New → Video Shot" or "Updated: customerName, service" or "Photo added"
+  metadata  Json?    // arbitrary extra data e.g. {oldStatus, newStatus, fields:["customerName","service"]}
+  createdAt DateTime @default(now()) @map("created_at")
+
+  task      Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  @@map("activity_logs")
+}
+
+model TaskUrl {
+  id       Int    @id @default(autoincrement())
+  taskId   String @map("task_id")
+  platform String // "Instagram" | "YouTube Shorts" | "YouTube" | "Snapchat" | "Facebook" | "Google Business Profile" | "Custom"
+  url      String
+  label    String? // custom label when platform = "Custom"
+
+  task     Task   @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  @@map("task_urls")
 }
 
 model PushSubscription {

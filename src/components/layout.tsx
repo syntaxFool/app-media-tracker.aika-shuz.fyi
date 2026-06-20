@@ -3,7 +3,7 @@
 import { useRouter, usePathname } from "next/navigation";
 import { useState, useEffect, useCallback } from "react";
 import {
-  LayoutDashboard, Columns, History, Users, LogOut, Plus, Sun, Moon, BarChart3, Bell,
+  LayoutDashboard, Columns, History, LogOut, Plus, Sun, Moon, BarChart3, Bell, MoreVertical, Users, Settings,
 } from "lucide-react";
 import { useTheme } from "@/lib/theme";
 
@@ -16,6 +16,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const { theme, toggle } = useTheme();
   const [notifCount, setNotifCount] = useState(0);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   const fetchUser = useCallback(async () => {
     try {
@@ -87,7 +88,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     { path: "/kanban", label: "Kanban", icon: Columns },
     { path: "/history", label: "History", icon: History },
     ...(user?.role === "admin" || user?.role === "su"
-      ? [{ path: "/analytics", label: "Analytics", icon: BarChart3 }, { path: "/admin/users", label: "Users", icon: Users }]
+      ? [{ path: "/analytics", label: "Analytics", icon: BarChart3 }]
       : []),
   ];
 
@@ -118,8 +119,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
               )}
             </button>
 
-            {/* User pill */}
-            <div className="flex items-center gap-2 pl-2 border-l border-white/15">
+            {/* User pill + menu */}
+            <div className="relative flex items-center gap-2 pl-2 border-l border-white/15">
               <div className="w-7 h-7 rounded-full bg-white/15 flex items-center justify-center text-sm font-[590]">
                 {initials}
               </div>
@@ -128,9 +129,35 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                 user?.role === "su" ? "bg-accent/30 text-accent font-[590]" :
                 user?.role === "admin" ? "bg-white/15 text-white/90" : "bg-white/10 text-white/60"
               }`}>{user?.role}</span>
-              <button onClick={handleLogout} className="p-1.5 rounded-full hover:bg-white/15 transition-colors text-white/70 hover:text-white" title="Logout">
-                <LogOut className="w-4 h-4" />
+              <button onClick={() => setMenuOpen(!menuOpen)} className="p-1.5 rounded-full hover:bg-white/15 transition-colors text-white/70 hover:text-white" title="Menu">
+                <MoreVertical className="w-4 h-4" />
               </button>
+
+              {/* Dropdown menu */}
+              {menuOpen && (
+                <>
+                  <div className="fixed inset-0 z-50" onClick={() => setMenuOpen(false)} />
+                  <div className="absolute right-0 top-full mt-1.5 w-48 bg-white dark:bg-gray-900 border border-border dark:border-gray-700 rounded-lg shadow-elev-dialog z-50 overflow-hidden animate-scale-in origin-top-right">
+                    {(user?.role === "admin" || user?.role === "su") && (
+                      <button onClick={() => { router.push("/admin/users"); setMenuOpen(false); }} className="w-full text-left px-4 py-2.5 text-sm text-fg-primary dark:text-gray-200 hover:bg-surface dark:hover:bg-gray-800 flex items-center gap-2.5 transition-colors">
+                        <Users className="w-4 h-4 text-fg-tertiary dark:text-gray-400" />
+                        User Management
+                      </button>
+                    )}
+                    <button onClick={() => { router.push("/settings"); setMenuOpen(false); }} className="w-full text-left px-4 py-2.5 text-sm text-fg-primary dark:text-gray-200 hover:bg-surface dark:hover:bg-gray-800 flex items-center gap-2.5 transition-colors">
+                      <Settings className="w-4 h-4 text-fg-tertiary dark:text-gray-400" />
+                      Settings
+                    </button>
+                    <div className="border-t border-border dark:border-gray-700" />
+                    <button onClick={() => { handleLogout(); setMenuOpen(false); }} className="w-full text-left px-4 py-2.5 text-sm text-danger hover:bg-surface dark:hover:bg-gray-800 flex items-center gap-2.5 transition-colors">
+                      <LogOut className="w-4 h-4" />
+                      Logout
+                    </button>
+                    <div className="border-t border-border dark:border-gray-700" />
+                    <div className="px-4 py-2 text-tiny text-fg-quaternary dark:text-gray-500 font-mono">v1.0.0</div>
+                  </div>
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -178,7 +205,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           <div className="w-14 flex-shrink-0" />
 
           <div className="flex-1 flex justify-around">
-            {navItems.slice(2, 4).map(item => (
+            {navItems.slice(2).map(item => (
               <button key={item.path} onClick={() => router.push(item.path)}
                 className={isActive(item.path) ? "bottom-nav-item bottom-nav-item-active" : "bottom-nav-item bottom-nav-item-inactive"}>
                 <item.icon className="w-5 h-5" /><span className="text-tiny font-[510]">{item.label}</span>

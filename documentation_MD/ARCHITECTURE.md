@@ -106,8 +106,17 @@ Roles:
 
 ## Push Notification Flow
 
-1. Browser registers Service Worker → subscribes to push → sends to `POST /api/push/subscribe`
-2. Notification created → `sendPushNotifications()` called
-3. web-push sends payload to all subscribed browsers via Web Push Protocol
-4. Service Worker `push` event → shows system notification
-5. Click notification → opens task detail
+1. User logs in → layout triggers `Notification.requestPermission()` + `pushManager.subscribe()`
+2. Subscription saved to `push_subscriptions` table via `POST /api/push/subscribe`
+3. Status change / comment / ping-admin → `sendPushNotifications()` called
+4. web-push sends payload via Web Push Protocol to all subscribed browsers
+5. Service Worker `push` event → shows system notification
+6. Click notification → opens task detail
+7. Expired subscriptions auto-removed on 410/404 errors
+
+## Task Assignment Restrictions
+
+- **Staff:** Can only update tasks where they appear in `assignedTo[]`. API returns 403 + UI shows "🔒 You are not assigned to this task"
+- **Admin/su:** Can update any task, bidirectional status (forward + backward)
+- **Auto-assign:** Creator auto-added to `assignedTo` on task creation
+- **su exception:** su is never auto-assigned. Must manually select staff. su filtered from staff picker

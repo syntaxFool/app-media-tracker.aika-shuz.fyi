@@ -17,9 +17,10 @@ interface TaskCardProps {
 export default function TaskCard({ task, selectMode, selected, onToggleSelect }: TaskCardProps) {
   const router = useRouter();
   const shootDateStr = new Date(task.shootDate).toLocaleDateString("en-IN", { day:"numeric", month:"short", year:"numeric" });
-  const dueDateStr = task.dueDate ? new Date(task.dueDate).toLocaleDateString("en-IN", { day:"numeric", month:"short" }) : null;
-  const isOverdue = task.dueDate && new Date(task.dueDate) < new Date();
-  const isDueSoon = task.dueDate && !isOverdue && (new Date(task.dueDate).getTime() - Date.now() < 24*60*60*1000);
+  const dueDateStr = task.dueDate ? new Date(task.dueDate).toLocaleDateString("en-IN", { day:"numeric", month:"short", year:"numeric" }) : null;
+  const isCompleted = task.status === "Task Completed";
+  const isOverdue = !isCompleted && task.dueDate && new Date(task.dueDate) < new Date();
+  const isDueSoon = !isCompleted && task.dueDate && !isOverdue && (new Date(task.dueDate).getTime() - Date.now() < 24*60*60*1000);
   const assigned = Array.isArray(task.assignedTo) ? task.assignedTo : [];
 
   return (

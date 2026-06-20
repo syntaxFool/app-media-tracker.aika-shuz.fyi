@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import AppLayout from "@/components/layout";
+import PullToRefresh from "@/components/pull-to-refresh";
 import { useRouter } from "next/navigation";
 import { Loader2, Star, Clock, Users } from "lucide-react";
 import { STATUS_FLOW, ALL_STATUSES } from "@/lib/tasks";
@@ -76,12 +77,12 @@ export default function KanbanPage() {
             <h1 className="text-body font-[590] text-fg-primary dark:text-gray-100">Kanban</h1>
             <span className="text-micro text-fg-quaternary bg-surface dark:bg-gray-800 px-2 py-0.5 rounded-pill">{tasks.length} tasks</span>
           </div>
-          <button onClick={fetchTasks} className="text-micro text-fg-quaternary hover:text-fg-secondary transition-colors">Refresh</button>
         </div>
 
         {/* Horizontal scroll with snap + peek on mobile */}
+        <PullToRefresh onRefresh={async () => { await fetchTasks(); }}>
         <div className="flex-1 overflow-x-auto overflow-y-hidden -mx-4 px-4">
-          <div className="flex gap-3 h-full min-h-[60vh] pb-24 snap-x snap-mandatory md:snap-none">
+          <div className="flex gap-3 h-full min-h-[60vh] pb-24 snap-x snap-mandatory md:snap-none" style={{ scrollSnapType: "x mandatory" }}>
             {columns.map((col) => (
               <div
                 key={col.status}
@@ -106,7 +107,7 @@ export default function KanbanPage() {
                 </div>
 
                 {/* Cards */}
-                <div className="flex-1 overflow-y-auto p-2 space-y-2">
+                <div className="flex-1 overflow-y-auto p-2 space-y-2 pb-16">
                   {col.tasks.length === 0 && (
                     <div className="flex flex-col items-center justify-center py-10 text-center">
                       <div className="text-2xl mb-2 opacity-30">📭</div>
@@ -114,7 +115,7 @@ export default function KanbanPage() {
                     </div>
                   )}
                   {col.tasks.map((task) => {
-                    const isOverdue = task.dueDate && new Date(task.dueDate) < new Date();
+                    const isOverdue = task.status !== "Task Completed" && task.dueDate && new Date(task.dueDate) < new Date();
                     const assigned = Array.isArray(task.assignedTo) ? task.assignedTo : [];
 
                     return (
@@ -145,7 +146,7 @@ export default function KanbanPage() {
                             isOverdue ? "text-danger" : "text-fg-quaternary dark:text-gray-500"
                           }`}>
                             <Clock className="w-3 h-3"/>
-                            <span>{new Date(task.dueDate).toLocaleDateString("en-IN", { day:"numeric", month:"short" })}</span>
+                            <span>{new Date(task.dueDate).toLocaleDateString("en-IN", { day:"numeric", month:"short", year:"numeric" })}</span>
                             {isOverdue && <span className="font-[590]">Overdue</span>}
                           </div>
                         )}
@@ -182,6 +183,7 @@ export default function KanbanPage() {
             ))}
           </div>
         </div>
+        </PullToRefresh>
       </div>
     </AppLayout>
   );

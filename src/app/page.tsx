@@ -84,9 +84,9 @@ export default function DashboardPage() {
 
   return (
     <AppLayout>
-      <div className="p-4 max-w-3xl mx-auto space-y-4">
+      <div className="p-4 max-w-3xl mx-auto space-y-4 pb-16">
         {/* Stats Bar — with colored dots */}
-        <div className="flex gap-2 overflow-x-auto pb-1">
+        <div className="flex gap-2 overflow-x-auto pb-1 no-scrollbar">
           {Object.entries(statusCounts).map(([status, count]) => (
             <div key={status} className="flex-shrink-0 bg-white dark:bg-gray-900 border border-border dark:border-gray-800 rounded-md px-3 py-2 shadow-sm flex items-center gap-2">
               <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{backgroundColor: STATUS_DOT_COLORS[status] || "#95a5b5"}}/>
@@ -109,7 +109,7 @@ export default function DashboardPage() {
           <button onClick={() => setMyTasksOnly(!myTasksOnly)}
             className={`text-label font-[510] px-2.5 py-1.5 rounded-md border transition-all flex-shrink-0 ${
               myTasksOnly ? "bg-primary/10 text-primary border-primary/30 dark:bg-primary/20 dark:text-primary" : "bg-white dark:bg-gray-800 text-fg-tertiary border-border dark:border-gray-700"
-            }`}><ListFilter className="w-3.5 h-3.5 inline mr-1"/>{myTasksOnly ? "Active" : "All"}
+            }`}><ListFilter className="w-3.5 h-3.5 inline-block align-[-0.125em] mr-1"/>{myTasksOnly ? "Active" : "All"}
           </button>
 
           <button onClick={() => { setSelectMode(!selectMode); setSelectedIds(new Set()); }}

@@ -1,6 +1,6 @@
 const STATUS_COLORS: Record<string, string> = {
   New: "bg-ocean/15 text-ocean border-ocean/30",
-  "Video Shot": "bg-accent/10 text-fg-primary border-accent/30",
+  "Video Shot": "bg-accent/10 text-accent border-accent/30",
   "Data Copied": "bg-primary/10 text-primary border-primary/30",
   "Video Edited": "bg-indigo-500/10 text-indigo-600 border-indigo-500/25",
   Reviewed: "bg-orange-500/10 text-orange-600 border-orange-500/25",

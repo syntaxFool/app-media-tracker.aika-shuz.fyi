@@ -25,15 +25,16 @@ npm run dev
 
 ## Features
 
-- **Kanban Board** — Drag-free columns with quick-move buttons, overdue indicators, assigned staff
+- **Dashboard** — Unified action bar (sort, filter, select, bulk advance, CSV export). Colored status metrics with dot indicators. Assigned staff + overdue badges on every card.
+- **Kanban Board** — Snap-scroll columns with peek preview, hover quick-move buttons, overdue indicators, assigned staff display, column-level task counts
 - **Bulk Operations** — Select multiple tasks, advance all at once
 - **Comments & Shot List** — Threaded comments, checkable shot items per task
-- **Notifications** — Real-time bell badge, read/unread toggle, browser push notifications
-- **PWA** — Installable on mobile/desktop, offline cache, app icon badge
+- **Notifications** — Real-time bell badge, read/unread toggle, browser push notifications with auto-subscribe on login
+- **PWA** — Installable, offline cache, app icon badge via Navigator API, push notifications outside the app
 - **Dark/Light Mode** — Theme toggle with localStorage persistence
-- **Analytics** — Status distribution, service breakdown, monthly trends
-- **WhatsApp Integration** — Status updates trigger team group + direct messages
-- **Role-Based Access** — 3 tiers (su → admin → staff)
+- **Analytics** — Status distribution, service breakdown, monthly trends (admin only)
+- **WhatsApp Integration** — Status updates trigger team group + direct messages via Redis queue
+- **Role-Based Access** — 3 tiers (su → admin → staff). Staff can only move assigned tasks. Admin/su bidirectional status. FAB "+" button with cutout design
 
 ## Documentation Index
 
