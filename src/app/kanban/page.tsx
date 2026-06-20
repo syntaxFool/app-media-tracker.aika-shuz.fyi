@@ -70,21 +70,22 @@ export default function KanbanPage() {
   return (
     <AppLayout>
       <div className="p-4 h-full flex flex-col">
-        <div className="flex items-center justify-between mb-4 flex-shrink-0">
-          <h1 className="text-heading-3 text-fg-primary dark:text-gray-100">Kanban Board</h1>
+        {/* Compact header */}
+        <div className="flex items-center justify-between mb-3 flex-shrink-0">
           <div className="flex items-center gap-2">
-            <span className="text-caption text-fg-quaternary">{tasks.length} tasks</span>
-            <button onClick={fetchTasks} className="btn-pill text-label">Refresh</button>
+            <h1 className="text-body font-[590] text-fg-primary dark:text-gray-100">Kanban</h1>
+            <span className="text-micro text-fg-quaternary bg-surface dark:bg-gray-800 px-2 py-0.5 rounded-pill">{tasks.length} tasks</span>
           </div>
+          <button onClick={fetchTasks} className="text-micro text-fg-quaternary hover:text-fg-secondary transition-colors">Refresh</button>
         </div>
 
-        {/* Horizontal scroll with snap on mobile, flex on desktop */}
-        <div className="flex-1 overflow-x-auto overflow-y-hidden">
-          <div className="flex gap-3 h-full min-h-[60vh] pb-2 snap-x snap-mandatory md:snap-none">
+        {/* Horizontal scroll with snap + peek on mobile */}
+        <div className="flex-1 overflow-x-auto overflow-y-hidden -mx-4 px-4">
+          <div className="flex gap-3 h-full min-h-[60vh] pb-24 snap-x snap-mandatory md:snap-none">
             {columns.map((col) => (
               <div
                 key={col.status}
-                className={`flex-shrink-0 w-72 snap-center flex flex-col rounded-lg border border-border dark:border-gray-800 ${COLUMN_COLORS[col.status] || ""}`}
+                className={`flex-shrink-0 w-[82vw] md:w-72 snap-center flex flex-col rounded-lg border border-border dark:border-gray-800 ${COLUMN_COLORS[col.status] || ""}`}
               >
                 {/* Column Header */}
                 <div className={`px-3 py-2.5 border-b border-border dark:border-gray-800 border-l-4 ${COLUMN_COLORS[col.status]?.split(" ")[0] || "border-l-ocean"}`}>
@@ -107,7 +108,10 @@ export default function KanbanPage() {
                 {/* Cards */}
                 <div className="flex-1 overflow-y-auto p-2 space-y-2">
                   {col.tasks.length === 0 && (
-                    <p className="text-micro text-fg-quaternary dark:text-gray-600 text-center py-8">—</p>
+                    <div className="flex flex-col items-center justify-center py-10 text-center">
+                      <div className="text-2xl mb-2 opacity-30">📭</div>
+                      <p className="text-micro text-fg-quaternary dark:text-gray-600">No tasks</p>
+                    </div>
                   )}
                   {col.tasks.map((task) => {
                     const isOverdue = task.dueDate && new Date(task.dueDate) < new Date();

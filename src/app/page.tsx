@@ -98,61 +98,44 @@ export default function DashboardPage() {
           ))}
         </div>
 
-        {/* Unified Action Bar */}
-        <div className="flex items-center gap-2 flex-wrap">
-          {/* Sort */}
+        {/* Unified Action Bar — single scrollable row */}
+        <div className="flex items-center gap-2 overflow-x-auto pb-2">
           <select value={sortBy} onChange={e => setSortBy(e.target.value)}
             className="select-linear text-label py-1.5 flex-shrink-0 bg-white dark:bg-gray-800">
             <option value="newest">Newest</option><option value="oldest">Oldest</option>
             <option value="customer">Customer</option><option value="status">Status</option>
           </select>
 
-          {/* My Tasks toggle */}
           <button onClick={() => setMyTasksOnly(!myTasksOnly)}
             className={`text-label font-[510] px-2.5 py-1.5 rounded-md border transition-all flex-shrink-0 ${
               myTasksOnly ? "bg-primary/10 text-primary border-primary/30 dark:bg-primary/20 dark:text-primary" : "bg-white dark:bg-gray-800 text-fg-tertiary border-border dark:border-gray-700"
-            }`}>
-            <ListFilter className="w-3.5 h-3.5 inline mr-1"/>{myTasksOnly ? "My Tasks" : "All Tasks"}
+            }`}><ListFilter className="w-3.5 h-3.5 inline mr-1"/>{myTasksOnly ? "Active" : "All"}
           </button>
 
-          {/* Select toggle */}
           <button onClick={() => { setSelectMode(!selectMode); setSelectedIds(new Set()); }}
             className={`text-label font-[510] px-2.5 py-1.5 rounded-md border transition-all flex-shrink-0 ${
               selectMode ? "bg-accent/20 text-fg-primary border-accent dark:text-gray-200" : "bg-white dark:bg-gray-800 text-fg-tertiary border-border dark:border-gray-700"
-            }`}>
-            <CheckSquare className="w-3.5 h-3.5 inline mr-1"/>{selectMode ? `Selected (${selectedIds.size})` : "Select"}
+            }`}><CheckSquare className="w-3.5 h-3.5 inline mr-1"/>{selectMode ? `✓ ${selectedIds.size}` : "Select"}
           </button>
 
-          {/* Filters toggle */}
           <button onClick={() => setShowFilters(!showFilters)}
             className={`text-label font-[510] px-2.5 py-1.5 rounded-md border transition-all flex-shrink-0 ${
               showFilters ? "bg-primary/10 text-primary border-primary/30" : "bg-white dark:bg-gray-800 text-fg-tertiary border-border dark:border-gray-700"
-            }`}>
-            <SlidersHorizontal className="w-3.5 h-3.5 inline mr-1"/>Filters
-          </button>
+            }`}><SlidersHorizontal className="w-3.5 h-3.5 inline mr-1"/>Filters</button>
 
-          {/* Export CSV */}
-          <button onClick={handleExportCSV}
-            className="text-label font-[510] px-2.5 py-1.5 rounded-md border border-border dark:border-gray-700 bg-white dark:bg-gray-800 text-fg-tertiary hover:bg-surface transition-all flex-shrink-0 ml-auto">
-            <Download className="w-3.5 h-3.5 inline mr-1"/>CSV
-          </button>
-
-          {/* Bulk Advance */}
           {selectMode && selectedIds.size > 0 && (
             <button onClick={handleBulkAdvance} disabled={bulkUpdating}
               className="btn-primary text-label py-1.5 flex-shrink-0">{bulkUpdating ? "Moving..." : `Advance ${selectedIds.size} →`}</button>
           )}
         </div>
 
-        {/* Expandable Filter Bar */}
+        {/* Expandable Filter Bar — includes CSV */}
         {showFilters && (
-          <div className="flex gap-2 overflow-x-auto pb-2 animate-fade-in">
+          <div className="flex items-center gap-2 overflow-x-auto pb-2 animate-fade-in">
             <button onClick={() => setInfluencerFilter(influencerFilter === "true" ? "" : "true")}
               className={`flex items-center gap-1.5 text-label px-2.5 py-1.5 rounded-md border transition-all flex-shrink-0 ${
                 influencerFilter === "true" ? "bg-accent/10 text-accent border-accent/30" : "bg-white dark:bg-gray-800 text-fg-tertiary border-border dark:border-gray-700"
-              }`}>
-              <StarIcon filled={influencerFilter === "true"}/>Influencer
-            </button>
+              }`}><StarIcon filled={influencerFilter === "true"}/>Influencer</button>
             <select value={serviceFilter} onChange={e => setServiceFilter(e.target.value)}
               className="select-linear text-label py-1.5 flex-shrink-0 bg-white dark:bg-gray-800">
               <option value="">All Services</option>
@@ -163,6 +146,9 @@ export default function DashboardPage() {
               <option value="">All Genders</option>
               <option value="Male">Male</option><option value="Female">Female</option><option value="Other">Other</option>
             </select>
+            <button onClick={handleExportCSV}
+              className="flex items-center gap-1.5 text-label px-2.5 py-1.5 rounded-md border border-border dark:border-gray-700 bg-white dark:bg-gray-800 text-fg-tertiary hover:bg-surface transition-all flex-shrink-0">
+              <Download className="w-3.5 h-3.5"/>CSV</button>
           </div>
         )}
 

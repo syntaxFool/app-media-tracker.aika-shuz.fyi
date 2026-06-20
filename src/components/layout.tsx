@@ -153,32 +153,38 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         <main className="flex-1 overflow-auto pb-28 md:pb-0">{children}</main>
       </div>
 
-      {/* Mobile Bottom Nav + FAB */}
+      {/* Mobile Bottom Nav with FAB cutout */}
       <nav className="fixed bottom-0 left-0 right-0 z-40 md:hidden bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl border-t border-border dark:border-gray-800">
-        <div className="flex items-center h-16 px-1 relative">
-          {/* Left nav items */}
-          {navItems.slice(0, 1).map(item => (
-            <button key={item.path} onClick={() => router.push(item.path)}
-              className={isActive(item.path) ? "bottom-nav-item bottom-nav-item-active" : "bottom-nav-item bottom-nav-item-inactive"}>
-              <item.icon className="w-5 h-5" /><span className="text-tiny font-[510]">{item.label}</span>
-            </button>
-          ))}
+        {/* FAB — positioned above the nav with a cutout effect */}
+        <div className="absolute left-1/2 -translate-x-1/2 -top-6 z-50">
+          <button onClick={() => router.push("/tasks/new")}
+            className="w-12 h-12 rounded-full bg-primary hover:bg-primary-hover text-white shadow-lg flex items-center justify-center transition-all active:scale-95 hover:shadow-xl ring-4 ring-white dark:ring-gray-950">
+            <Plus className="w-5 h-5" />
+          </button>
+        </div>
 
-          {/* Center FAB — Add Task */}
-          <div className="flex-1 flex justify-center">
-            <button onClick={() => router.push("/tasks/new")}
-              className="w-11 h-11 -mt-6 rounded-full bg-primary hover:bg-primary-hover text-white shadow-lg flex items-center justify-center transition-all active:scale-95 hover:shadow-xl">
-              <Plus className="w-5 h-5" />
-            </button>
+        {/* Nav items — Dashboard left, Kanban + History right of FAB */}
+        <div className="flex items-center h-16 px-1">
+          <div className="flex-1 flex justify-around">
+            {navItems.slice(0, 2).map(item => (
+              <button key={item.path} onClick={() => router.push(item.path)}
+                className={isActive(item.path) ? "bottom-nav-item bottom-nav-item-active" : "bottom-nav-item bottom-nav-item-inactive"}>
+                <item.icon className="w-5 h-5" /><span className="text-tiny font-[510]">{item.label}</span>
+              </button>
+            ))}
           </div>
 
-          {/* Right nav items */}
-          {navItems.slice(1, 4).map(item => (
-            <button key={item.path} onClick={() => router.push(item.path)}
-              className={isActive(item.path) ? "bottom-nav-item bottom-nav-item-active" : "bottom-nav-item bottom-nav-item-inactive"}>
-              <item.icon className="w-5 h-5" /><span className="text-tiny font-[510]">{item.label}</span>
-            </button>
-          ))}
+          {/* Spacer for FAB */}
+          <div className="w-14 flex-shrink-0" />
+
+          <div className="flex-1 flex justify-around">
+            {navItems.slice(2, 4).map(item => (
+              <button key={item.path} onClick={() => router.push(item.path)}
+                className={isActive(item.path) ? "bottom-nav-item bottom-nav-item-active" : "bottom-nav-item bottom-nav-item-inactive"}>
+                <item.icon className="w-5 h-5" /><span className="text-tiny font-[510]">{item.label}</span>
+              </button>
+            ))}
+          </div>
         </div>
       </nav>
     </div>

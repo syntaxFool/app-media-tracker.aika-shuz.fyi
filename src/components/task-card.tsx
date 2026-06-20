@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { Calendar, Star, ChevronRight, Clock, Users } from "lucide-react";
+import { Calendar, Star, ChevronRight, Users } from "lucide-react";
 import StatusBadge from "./status-badge";
 
 interface Task {
@@ -52,7 +52,7 @@ export default function TaskCard({ task, selectMode, selected, onToggleSelect }:
             </span>
             {dueDateStr && (
               <span className={`text-caption flex items-center gap-1 ${isOverdue ? "text-danger" : "text-fg-tertiary dark:text-gray-400"}`}>
-                <Clock className="w-3 h-3"/><span className="text-fg-quaternary dark:text-gray-500">Due:</span> {dueDateStr}
+                <span className="text-fg-quaternary dark:text-gray-500">Due:</span> {dueDateStr}
               </span>
             )}
             <span className="text-caption text-fg-tertiary dark:text-gray-400">{task.service}</span>
