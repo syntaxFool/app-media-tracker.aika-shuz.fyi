@@ -8,39 +8,39 @@ datasource db {
 }
 
 model Task {
-  id           String   @id // SHANUZZ-0001
-  customerName String   @map("customer_name")
-  shootDate    DateTime @map("shoot_date")
+  id           String    @id // SHANUZZ-0001
+  customerName String    @map("customer_name")
+  shootDate    DateTime  @map("shoot_date")
   service      String
   gender       String
-  isInfluencer Boolean  @default(false) @map("is_influencer")
-  photoPath    String?  @map("photo_path")
+  isInfluencer Boolean   @default(false) @map("is_influencer")
+  photoPath    String?   @map("photo_path")
   note         String?
   dueDate      DateTime? @map("due_date")
   assignedTo   Json      @default("[]") @map("assigned_to") // ["username1", "username2"]
-  status       String   @default("New") @map("current_status")
-  createdBy    String   @map("created_by")
-  createdAt    DateTime @default(now()) @map("created_at")
-  updatedBy    String?  @map("updated_by")
+  status       String    @default("New") @map("current_status")
+  createdBy    String    @map("created_by")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedBy    String?   @map("updated_by")
   updatedAt    DateTime? @map("updated_at")
 
-  comments     Comment[]
+  comments      Comment[]
   notifications Notification[]
-  shotItems    ShotItem[]
-  activityLogs ActivityLog[]
-  urls         TaskUrl[]
+  shotItems     ShotItem[]
+  activityLogs  ActivityLog[]
+  urls          TaskUrl[]
 
   @@map("tasks")
 }
 
 model User {
-  id        Int      @id @default(autoincrement())
-  username  String   @unique
-  password  String   // bcrypt hash
-  role      String   @default("staff")
-  displayName String? @map("display_name")
-  isSuperuser Boolean @default(false) @map("is_superuser") // "admin" | "staff"
-  createdAt DateTime @default(now()) @map("created_at")
+  id          Int      @id @default(autoincrement())
+  username    String   @unique
+  password    String // bcrypt hash
+  role        String   @default("staff")
+  displayName String?  @map("display_name")
+  isSuperuser Boolean  @default(false) @map("is_superuser") // "admin" | "staff"
+  createdAt   DateTime @default(now()) @map("created_at")
 
   @@map("users")
 }
@@ -48,12 +48,12 @@ model User {
 model Notification {
   id        Int      @id @default(autoincrement())
   taskId    String   @map("task_id")
-  type      String   // "status_update" | "ping_admin" | "comment"
+  type      String // "status_update" | "ping_admin" | "comment"
   message   String
   read      Boolean  @default(false)
   createdAt DateTime @default(now()) @map("created_at")
 
-  task      Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  task Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
 
   @@map("notifications")
 }
@@ -65,7 +65,7 @@ model Comment {
   text      String
   createdAt DateTime @default(now()) @map("created_at")
 
-  task      Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  task Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
 
   @@map("comments")
 }
@@ -79,7 +79,7 @@ model ShotItem {
   completedAt DateTime? @map("completed_at")
   sortOrder   Int       @default(0) @map("sort_order")
 
-  task        Task      @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  task Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
 
   @@map("shot_items")
 }
@@ -88,35 +88,39 @@ model ActivityLog {
   id        Int      @id @default(autoincrement())
   taskId    String   @map("task_id")
   actor     String
-  action    String   // "status_change" | "field_update" | "created" | "comment" | "photo_added" | "photo_removed"
-  detail    String   // e.g. "Status: New → Video Shot" or "Updated: customerName, service" or "Photo added"
-  metadata  Json?    // arbitrary extra data e.g. {oldStatus, newStatus, fields:["customerName","service"]}
+  action    String // "status_change" | "field_update" | "created" | "comment" | "photo_added" | "photo_removed"
+  detail    String // e.g. "Status: New → Video Shot" or "Updated: customerName, service" or "Photo added"
+  metadata  Json? // arbitrary extra data e.g. {oldStatus, newStatus, fields:["customerName","service"]}
   createdAt DateTime @default(now()) @map("created_at")
 
-  task      Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  task Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
 
+  @@index([taskId, createdAt])
   @@map("activity_logs")
 }
 
 model TaskUrl {
-  id       Int    @id @default(autoincrement())
-  taskId   String @map("task_id")
+  id       Int     @id @default(autoincrement())
+  taskId   String  @map("task_id")
   platform String // "Instagram" | "YouTube Shorts" | "YouTube" | "Snapchat" | "Facebook" | "Google Business Profile" | "Custom"
   url      String
   label    String? // custom label when platform = "Custom"
 
-  task     Task   @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now()) @map("created_at")
 
+  task Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  @@index([taskId])
   @@map("task_urls")
 }
 
 model PushSubscription {
-  id         Int      @id @default(autoincrement())
-  endpoint   String   @unique
-  p256dh     String
-  auth       String
-  username   String
-  createdAt  DateTime @default(now()) @map("created_at")
+  id        Int      @id @default(autoincrement())
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  username  String
+  createdAt DateTime @default(now()) @map("created_at")
 
   @@map("push_subscriptions")
 }
