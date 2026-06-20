@@ -24,6 +24,7 @@ export default function TaskDetailPage() {
   const [newShotDesc, setNewShotDesc] = useState("");
   const [activities, setActivities] = useState<any[]>([]);
   const [showUrlCollector, setShowUrlCollector] = useState(false);
+  const [confirmAdminStatus, setConfirmAdminStatus] = useState<string | null>(null);
   const [taskUrls, setTaskUrls] = useState<any[]>([]);
 
   const fetchTask = useCallback(async () => {
@@ -67,12 +68,14 @@ export default function TaskDetailPage() {
     }
     await fetch(`/api/tasks/${taskId}`, { method: "PUT", headers: {"Content-Type":"application/json"}, body: JSON.stringify({status:newStatus}) });
     await fetchTask();
+    await fetchActivity();
   }
 
   async function handleUrlCollectionComplete() {
     setShowUrlCollector(false);
     await fetch(`/api/tasks/${taskId}`, { method: "PUT", headers: {"Content-Type":"application/json"}, body: JSON.stringify({status:"Task Completed"}) });
     await fetchTask();
+    await fetchActivity();
   }
 
   async function handleDelete() {
@@ -242,7 +245,7 @@ export default function TaskDetailPage() {
                 <select
                   defaultValue={task.status}
                   onChange={(e) => {
-                    if (e.target.value !== task.status) handleStatusUpdate(e.target.value);
+                    if (e.target.value !== task.status) setConfirmAdminStatus(e.target.value);
                   }}
                   className="select-linear flex-1"
                 >
@@ -251,6 +254,21 @@ export default function TaskDetailPage() {
                   ))}
                 </select>
               </div>
+
+              {confirmAdminStatus && (
+                <div className="fixed inset-0 z-50 bg-black/40 flex items-end sm:items-center justify-center animate-fade-in" onClick={() => setConfirmAdminStatus(null)}>
+                  <div className="bg-white dark:bg-gray-900 rounded-t-xl sm:rounded-xl w-full sm:max-w-sm p-6 shadow-elev-dialog animate-slide-up" onClick={e => e.stopPropagation()}>
+                    <h3 className="text-heading-3 text-fg-primary mb-2">Save changes?</h3>
+                    <p className="text-small text-fg-secondary mb-6">
+                      Move task to <span className="font-[590] text-fg-primary">{confirmAdminStatus}</span>?
+                    </p>
+                    <div className="flex gap-3">
+                      <button onClick={() => setConfirmAdminStatus(null)} className="btn-ghost flex-1">Cancel</button>
+                      <button onClick={async () => { const s = confirmAdminStatus; setConfirmAdminStatus(null); await handleStatusUpdate(s!); }} className="btn-primary flex-1">Save</button>
+                    </div>
+                  </div>
+                </div>
+              )}
             </>
           ) : isAssigned ? (
             <StatusButtons currentStatus={task.status} nextStatuses={nextStatuses} onUpdate={handleStatusUpdate} />

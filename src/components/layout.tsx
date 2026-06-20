@@ -17,6 +17,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const { theme, toggle } = useTheme();
   const [notifCount, setNotifCount] = useState(0);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [pushPermission, setPushPermission] = useState<NotificationPermission>("default");
 
   const fetchUser = useCallback(async () => {
     try {
@@ -28,8 +29,13 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
   useEffect(() => { fetchUser(); }, [fetchUser, pathname]);
 
-  // Auto-subscribe to push notifications
+  // Check notification permission on mount
   useEffect(() => {
+    if (typeof Notification !== "undefined") setPushPermission(Notification.permission);
+  }, []);
+
+  // Subscribe to push notifications (only on user click, not auto)
+  async function handleSubscribePush() {
     if (!user || typeof navigator === "undefined" || !("serviceWorker" in navigator)) return;
     const subscribe = async () => {
       try {
@@ -50,9 +56,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           });
         }
       } catch (e) { /* silent */ }
-    };
+    };  
     subscribe();
-  }, [user]);
+  }
 
   useEffect(() => {
     const updateBadge = () => {
@@ -96,7 +102,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="min-h-screen bg-surface dark:bg-gray-950 flex flex-col">
-      {/* Top Bar — gradient navy */}
+      {/* Top Bar - gradient navy */}
       <header className="sticky top-0 z-40 bg-gradient-to-r from-[#005581] via-[#005581] to-[#006696] text-white shadow-md">
         <div className="flex items-center justify-between px-4 h-14">
           {/* Brand */}
@@ -148,13 +154,19 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                       <Settings className="w-4 h-4 text-fg-tertiary dark:text-gray-400" />
                       Settings
                     </button>
+                    {pushPermission === "default" && (
+                      <button onClick={() => { handleSubscribePush(); setMenuOpen(false); }} className="w-full text-left px-4 py-2.5 text-sm text-fg-primary dark:text-gray-200 hover:bg-surface dark:hover:bg-gray-800 flex items-center gap-2.5 transition-colors">
+                        <Bell className="w-4 h-4 text-fg-tertiary dark:text-gray-400" />
+                        Enable Notifications
+                      </button>
+                    )}
                     <div className="border-t border-border dark:border-gray-700" />
                     <button onClick={() => { handleLogout(); setMenuOpen(false); }} className="w-full text-left px-4 py-2.5 text-sm text-danger hover:bg-surface dark:hover:bg-gray-800 flex items-center gap-2.5 transition-colors">
                       <LogOut className="w-4 h-4" />
                       Logout
                     </button>
                     <div className="border-t border-border dark:border-gray-700" />
-                    <div className="px-4 py-2 text-tiny text-fg-quaternary dark:text-gray-500 font-mono">v1.0.0</div>
+                    <div className="px-4 py-2 text-tiny text-fg-quaternary dark:text-gray-500 font-mono">v1.0.1</div>
                   </div>
                 </>
               )}
@@ -182,7 +194,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
       {/* Mobile Bottom Nav with FAB cutout */}
       <nav className="fixed bottom-0 left-0 right-0 z-40 md:hidden bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl border-t border-border dark:border-gray-800">
-        {/* FAB — positioned above the nav with a cutout effect */}
+        {/* FAB - positioned above the nav with a cutout effect */}
         <div className="absolute left-1/2 -translate-x-1/2 -top-6 z-50">
           <button onClick={() => router.push("/tasks/new")}
             className="w-12 h-12 rounded-full bg-primary hover:bg-primary-hover text-white shadow-lg flex items-center justify-center transition-all active:scale-95 hover:shadow-xl ring-4 ring-white dark:ring-gray-950">
@@ -190,7 +202,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           </button>
         </div>
 
-        {/* Nav items — Dashboard left, Kanban + History right of FAB */}
+        {/* Nav items - Dashboard left, Kanban + History right of FAB */}
         <div className="flex items-center h-16 px-1">
           <div className="flex-1 flex justify-around">
             {navItems.slice(0, 2).map(item => (

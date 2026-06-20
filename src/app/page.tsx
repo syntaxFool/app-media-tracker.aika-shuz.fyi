@@ -115,7 +115,7 @@ export default function DashboardPage() {
           <button onClick={() => { setSelectMode(!selectMode); setSelectedIds(new Set()); }}
             className={`text-label font-[510] px-2.5 py-1.5 rounded-md border transition-all flex-shrink-0 ${
               selectMode ? "bg-accent/20 text-fg-primary border-accent dark:text-gray-200" : "bg-white dark:bg-gray-800 text-fg-tertiary border-border dark:border-gray-700"
-            }`}><CheckSquare className="w-3.5 h-3.5 inline mr-1"/>{selectMode ? `✓ ${selectedIds.size}` : "Select"}
+            }`}><CheckSquare className="w-3.5 h-3.5 inline-block align-[-0.125em] mr-1"/>{selectMode ? `✓ ${selectedIds.size}` : "Select"}
           </button>
 
           <button onClick={() => setShowFilters(!showFilters)}

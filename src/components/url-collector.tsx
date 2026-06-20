@@ -39,7 +39,8 @@ export default function UrlCollector({ taskId, onComplete, onCancel }: UrlCollec
   async function handleSubmit() {
     const valid = entries.filter(e => e.url.trim());
     if (valid.length === 0) {
-      await onComplete();
+      // Button is disabled when empty — guard against edge cases
+      setSubmitting(false);
       return;
     }
     setSubmitting(true);
@@ -108,7 +109,6 @@ export default function UrlCollector({ taskId, onComplete, onCancel }: UrlCollec
         </button>
 
         <div className="flex gap-3 mt-6 pt-4 border-t border-border dark:border-gray-700">
-          <button onClick={onCancel} className="btn-ghost flex-1">Skip</button>
           <button onClick={handleSubmit} disabled={submitting || entries.every(e => !e.url.trim())} className="btn-primary flex-1">
             {submitting ? "Saving..." : "Save & Complete"}
           </button>

@@ -7,7 +7,7 @@ import StatusBadge from "./status-badge";
 interface Task {
   id: string; customerName: string; shootDate: string; dueDate: string | null;
   service: string; gender: string; isInfluencer: boolean; status: string;
-  createdBy: string; assignedTo?: string[];
+  createdBy: string; assignedTo?: string[]; photoPath?: string | null;
 }
 
 interface TaskCardProps {
@@ -70,9 +70,16 @@ export default function TaskCard({ task, selectMode, selected, onToggleSelect }:
             </div>
           )}
 
-          {/* Row 4: ID + Status pill */}
+          {/* Row 4: ID + thumbnail + Status pill */}
           <div className="flex items-center justify-between">
-            <span className="text-micro font-mono font-[510] text-fg-tertiary dark:text-gray-400">{task.id}</span>
+            <div className="flex items-center gap-2">
+              <span className="text-micro font-mono font-[510] text-fg-tertiary dark:text-gray-400">{task.id}</span>
+              {task.photoPath && (
+                <div className="w-6 h-6 rounded-sm overflow-hidden border border-border dark:border-gray-700 flex-shrink-0">
+                  <img src={task.photoPath} alt="" className="w-full h-full object-cover" />
+                </div>
+              )}
+            </div>
             <StatusBadge status={task.status} />
           </div>
         </div>
