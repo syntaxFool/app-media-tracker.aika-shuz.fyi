@@ -7,7 +7,7 @@ import StatusBadge from "@/components/status-badge";
 import StatusButtons from "@/components/status-buttons";
 import PingAdminButton from "@/components/ping-admin-button";
 import UrlCollector from "@/components/url-collector";
-import { ArrowLeft, Edit, Trash2, Calendar, Star, MessageSquare, CheckSquare, Plus, Clock } from "lucide-react";
+import { ArrowLeft, Edit, Trash2, Calendar, Star, MessageSquare, CheckSquare, Plus, Clock, ExternalLink } from "lucide-react";
 import { STATUS_FLOW } from "@/lib/tasks";
 
 const NEXT_STATUS = STATUS_FLOW;
@@ -24,6 +24,7 @@ export default function TaskDetailPage() {
   const [newShotDesc, setNewShotDesc] = useState("");
   const [activities, setActivities] = useState<any[]>([]);
   const [showUrlCollector, setShowUrlCollector] = useState(false);
+  const [taskUrls, setTaskUrls] = useState<any[]>([]);
 
   const fetchTask = useCallback(async () => {
     const res = await fetch(`/api/tasks/${taskId}`);
@@ -46,10 +47,15 @@ export default function TaskDetailPage() {
     if (res.ok) setActivities((await res.json()).activities);
   }, [taskId]);
 
+  const fetchUrls = useCallback(async () => {
+    const res = await fetch(`/api/tasks/${taskId}/urls`);
+    if (res.ok) setTaskUrls((await res.json()).urls);
+  }, [taskId]);
+
   useEffect(() => {
-    fetchTask(); fetchComments(); fetchShotItems(); fetchActivity();
+    fetchTask(); fetchComments(); fetchShotItems(); fetchActivity(); fetchUrls();
     fetch("/api/auth/me").then(r => { if(r.ok) r.json().then(d => { setUserRole(d.user.role); setCurrentUsername(d.user.username); }); });
-  }, [fetchTask, fetchComments, fetchShotItems, fetchActivity]);
+  }, [fetchTask, fetchComments, fetchShotItems, fetchActivity, fetchUrls]);
 
   const isAssigned = Array.isArray(task?.assignedTo) ? (task.assignedTo as string[]).includes(currentUsername) : false;
   const canEdit = userRole === "admin" || userRole === "su" || isAssigned;
@@ -151,6 +157,24 @@ export default function TaskDetailPage() {
 
         {task.photoPath&&<div className="bg-white dark:bg-gray-900 border border-border dark:border-gray-800 rounded-md overflow-hidden shadow-sm"><img src={task.photoPath} alt={task.customerName} className="w-full h-64 object-cover"/></div>}
         {task.note&&<div className="bg-white dark:bg-gray-900 border border-border dark:border-gray-800 rounded-md p-4 shadow-sm"><p className="text-label text-fg-tertiary mb-1">Note</p><p className="text-sm text-fg-secondary dark:text-gray-300 whitespace-pre-wrap">{task.note}</p></div>}
+
+        {/* URLs */}
+        {taskUrls.length > 0 && (
+          <div className="bg-white dark:bg-gray-900 border border-border dark:border-gray-800 rounded-md p-4 shadow-sm space-y-2">
+            <div className="flex items-center gap-2">
+              <ExternalLink className="w-4 h-4 text-fg-tertiary" />
+              <p className="text-label text-fg-tertiary font-[510]">URLs</p>
+            </div>
+            {taskUrls.map((u: any) => (
+              <a key={u.id} href={u.url} target="_blank" rel="noopener noreferrer"
+                className="flex items-center gap-2 text-sm text-primary hover:underline break-all">
+                <ExternalLink className="w-3 h-3 flex-shrink-0" />
+                <span className="font-[510]">{u.platform === "Custom" ? (u.label || u.platform) : u.platform}:</span>
+                <span className="text-fg-secondary dark:text-gray-300">{u.url}</span>
+              </a>
+            ))}
+          </div>
+        )}
 
         {/* Shot List */}
         <div className="bg-white dark:bg-gray-900 border border-border dark:border-gray-800 rounded-md p-4 shadow-sm space-y-3">
