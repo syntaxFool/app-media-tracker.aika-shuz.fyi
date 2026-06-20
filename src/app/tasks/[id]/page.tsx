@@ -6,6 +6,7 @@ import AppLayout from "@/components/layout";
 import StatusBadge from "@/components/status-badge";
 import StatusButtons from "@/components/status-buttons";
 import PingAdminButton from "@/components/ping-admin-button";
+import UrlCollector from "@/components/url-collector";
 import { ArrowLeft, Edit, Trash2, Calendar, Star, MessageSquare, CheckSquare, Plus, Clock } from "lucide-react";
 import { STATUS_FLOW } from "@/lib/tasks";
 
@@ -22,6 +23,7 @@ export default function TaskDetailPage() {
   const [shotItems, setShotItems] = useState<any[]>([]);
   const [newShotDesc, setNewShotDesc] = useState("");
   const [activities, setActivities] = useState<any[]>([]);
+  const [showUrlCollector, setShowUrlCollector] = useState(false);
 
   const fetchTask = useCallback(async () => {
     const res = await fetch(`/api/tasks/${taskId}`);
@@ -53,7 +55,17 @@ export default function TaskDetailPage() {
   const canEdit = userRole === "admin" || userRole === "su" || isAssigned;
 
   async function handleStatusUpdate(newStatus: string) {
+    if (newStatus === "Task Completed" && task.status === "Uploaded") {
+      setShowUrlCollector(true);
+      return;
+    }
     await fetch(`/api/tasks/${taskId}`, { method: "PUT", headers: {"Content-Type":"application/json"}, body: JSON.stringify({status:newStatus}) });
+    await fetchTask();
+  }
+
+  async function handleUrlCollectionComplete() {
+    setShowUrlCollector(false);
+    await fetch(`/api/tasks/${taskId}`, { method: "PUT", headers: {"Content-Type":"application/json"}, body: JSON.stringify({status:"Task Completed"}) });
     await fetchTask();
   }
 
@@ -228,6 +240,13 @@ export default function TaskDetailPage() {
 
         {deleteConfirm&&<div className="dialog-overlay" onClick={()=>setDeleteConfirm(false)}><div className="dialog-content p-6" onClick={e=>e.stopPropagation()}><h3 className="text-heading-3 text-fg-primary mb-2">Delete?</h3><p className="text-small text-fg-secondary mb-6">Permanently delete <span className="text-fg-primary font-mono">{task.id}</span>?</p><div className="flex gap-3"><button onClick={()=>setDeleteConfirm(false)} className="btn-ghost flex-1">Cancel</button><button onClick={handleDelete} className="btn-danger flex-1">Delete</button></div></div></div>}
       </div>
+      {showUrlCollector && (
+        <UrlCollector
+          taskId={taskId}
+          onComplete={handleUrlCollectionComplete}
+          onCancel={() => setShowUrlCollector(false)}
+        />
+      )}
     </AppLayout>
   );
 }
