@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Download, X, ZoomIn, ZoomOut } from "lucide-react";
+import { createPortal } from "react-dom";
+import { Download, X } from "lucide-react";
 
 interface ImagePreviewProps {
   src: string;
@@ -17,7 +18,6 @@ export default function ImagePreview({ src, alt = "", children }: ImagePreviewPr
   const longPressRef = useRef(false);
 
   const [lightbox, setLightbox] = useState(false);
-  const [zoom, setZoom] = useState(1);
 
   // Long-press detection (mobile)
   function handleTouchStart(e: React.TouchEvent) {
@@ -105,7 +105,7 @@ export default function ImagePreview({ src, alt = "", children }: ImagePreviewPr
   useEffect(() => {
     if (!lightbox) return;
     function onKey(e: KeyboardEvent) {
-      if (e.key === "Escape") { setLightbox(false); setZoom(1); }
+      if (e.key === "Escape") { setLightbox(false); }
     }
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
@@ -161,36 +161,39 @@ export default function ImagePreview({ src, alt = "", children }: ImagePreviewPr
       ))}
 
       {/* Lightbox */}
-      {lightbox && (
-        <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center animate-fade-in" onClick={() => { setLightbox(false); setZoom(1); }}>
-          <div className="absolute top-4 right-4 flex gap-2 z-10">
-            <button onClick={handleDownload} className="p-2 rounded-full bg-white/15 text-white hover:bg-white/25 transition-colors" title="Download">
-              <Download className="w-5 h-5" />
-            </button>
-            <button onClick={() => { setLightbox(false); setZoom(1); }} className="p-2 rounded-full bg-white/15 text-white hover:bg-white/25 transition-colors" title="Close">
-              <X className="w-5 h-5" />
-            </button>
-          </div>
-          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-10">
-            <button onClick={() => setZoom(z => Math.max(0.5, z - 0.5))} className="p-2 rounded-full bg-white/15 text-white hover:bg-white/25 transition-colors" title="Zoom out">
-              <ZoomOut className="w-5 h-5" />
-            </button>
-            <button onClick={() => setZoom(1)} className="px-3 py-2 rounded-full bg-white/15 text-white text-sm hover:bg-white/25 transition-colors" title="Reset">
-              {Math.round(zoom * 100)}%
-            </button>
-            <button onClick={() => setZoom(z => Math.min(3, z + 0.5))} className="p-2 rounded-full bg-white/15 text-white hover:bg-white/25 transition-colors" title="Zoom in">
-              <ZoomIn className="w-5 h-5" />
-            </button>
-          </div>
-          <div onClick={e => e.stopPropagation()} className="cursor-grab active:cursor-grabbing">
-            <img
-              src={src}
-              alt={alt}
-              className="max-w-[90vw] max-h-[85vh] object-contain rounded-lg shadow-2xl transition-transform duration-200"
-              style={{ transform: `scale(${zoom})` }}
-            />
-          </div>
-        </div>
+      {lightbox && createPortal(
+        <div
+          className="fixed inset-0 z-[9999] flex items-center justify-center animate-fade-in"
+          style={{ backgroundColor: "rgba(0, 0, 0, 0.85)" }}
+          onClick={() => { setLightbox(false); }}
+        >
+          {/* Close button — 48x48 */}
+          <button
+            onClick={(e) => { e.stopPropagation(); setLightbox(false); }}
+            className="absolute top-4 right-4 z-10 w-12 h-12 flex items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/25 transition-colors"
+            title="Close"
+          >
+            <X className="w-5 h-5" />
+          </button>
+
+          {/* Download button */}
+          <button
+            onClick={(e) => { e.stopPropagation(); handleDownload(e); }}
+            className="absolute top-4 left-4 z-10 w-12 h-12 flex items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/25 transition-colors"
+            title="Download"
+          >
+            <Download className="w-5 h-5" />
+          </button>
+
+          {/* Image */}
+          <img
+            src={src}
+            alt={alt}
+            className="max-w-[90vw] max-h-[85vh] object-contain rounded-lg shadow-2xl select-none"
+            onClick={e => e.stopPropagation()}
+          />
+        </div>,
+        document.body
       )}
     </>
   );
