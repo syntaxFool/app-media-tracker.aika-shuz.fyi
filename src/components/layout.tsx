@@ -150,7 +150,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           </nav>
         </aside>
 
-        <main className="flex-1 overflow-auto pb-24 md:pb-0">{children}</main>
+        <main className="flex-1 overflow-auto pb-28 md:pb-0">{children}</main>
       </div>
 
       {/* Mobile Bottom Nav + FAB */}
@@ -167,8 +167,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           {/* Center FAB — Add Task */}
           <div className="flex-1 flex justify-center">
             <button onClick={() => router.push("/tasks/new")}
-              className="w-12 h-12 -mt-6 rounded-full bg-primary hover:bg-primary-hover text-white shadow-lg flex items-center justify-center transition-all active:scale-95 hover:shadow-xl">
-              <Plus className="w-6 h-6" />
+              className="w-11 h-11 -mt-6 rounded-full bg-primary hover:bg-primary-hover text-white shadow-lg flex items-center justify-center transition-all active:scale-95 hover:shadow-xl">
+              <Plus className="w-5 h-5" />
             </button>
           </div>
 
