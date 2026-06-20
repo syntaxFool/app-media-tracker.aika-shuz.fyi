@@ -165,7 +165,7 @@ export default function ImagePreview({ src, alt = "", children }: ImagePreviewPr
         <div
           className="fixed inset-0 z-[9999] flex items-center justify-center animate-fade-in"
           style={{ backgroundColor: "rgba(0, 0, 0, 0.85)" }}
-          onClick={() => { setLightbox(false); }}
+          onClick={(e) => { e.stopPropagation(); setLightbox(false); }}
         >
           {/* Close button — 48x48 */}
           <button
