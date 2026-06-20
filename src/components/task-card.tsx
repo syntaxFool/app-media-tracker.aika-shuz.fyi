@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { Calendar, Star, ChevronRight, Users } from "lucide-react";
 import StatusBadge from "./status-badge";
+import ImagePreview from "./image-preview";
 
 interface Task {
   id: string; customerName: string; shootDate: string; dueDate: string | null;
@@ -75,9 +76,11 @@ export default function TaskCard({ task, selectMode, selected, onToggleSelect }:
             <div className="flex items-center gap-2">
               <span className="text-micro font-mono font-[510] text-fg-tertiary dark:text-gray-400">{task.id}</span>
               {task.photoPath && (
-                <div className="w-6 h-6 rounded-sm overflow-hidden border border-border dark:border-gray-700 flex-shrink-0">
-                  <img src={task.photoPath} alt="" className="w-full h-full object-cover" />
-                </div>
+                <ImagePreview src={task.photoPath} alt={task.customerName}>
+                  <div className="w-6 h-6 rounded-sm overflow-hidden border border-border dark:border-gray-700 flex-shrink-0">
+                    <img src={task.photoPath} alt="" className="w-full h-full object-cover" />
+                  </div>
+                </ImagePreview>
               )}
             </div>
             <StatusBadge status={task.status} />

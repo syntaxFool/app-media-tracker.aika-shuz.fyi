@@ -5,6 +5,7 @@ import AppLayout from "@/components/layout";
 import PullToRefresh from "@/components/pull-to-refresh";
 import { useRouter } from "next/navigation";
 import { Loader2, Star, Clock, Users } from "lucide-react";
+import ImagePreview from "@/components/image-preview";
 import { STATUS_FLOW, ALL_STATUSES } from "@/lib/tasks";
 
 const COLUMN_COLORS: Record<string, string> = {
@@ -137,9 +138,11 @@ export default function KanbanPage() {
                         {/* Meta row */}
                         <div className="flex flex-wrap items-center gap-x-2 gap-y-1 mb-2">
                           {task.photoPath && (
-                            <div className="w-5 h-5 rounded-sm overflow-hidden border border-border dark:border-gray-700 flex-shrink-0">
-                              <img src={task.photoPath} alt="" className="w-full h-full object-cover" />
-                            </div>
+                            <ImagePreview src={task.photoPath} alt={task.customerName}>
+                              <div className="w-5 h-5 rounded-sm overflow-hidden border border-border dark:border-gray-700 flex-shrink-0">
+                                <img src={task.photoPath} alt="" className="w-full h-full object-cover" />
+                              </div>
+                            </ImagePreview>
                           )}
                           <span className="text-tiny text-fg-quaternary dark:text-gray-500 font-mono">{task.id}</span>
                           <span className="text-tiny text-fg-quaternary dark:text-gray-500">{task.service}</span>
