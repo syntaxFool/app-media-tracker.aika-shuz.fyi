@@ -2,7 +2,7 @@
 
 **Database:** PostgreSQL 15  
 **ORM:** Prisma 6.x  
-**Tables:** 6
+**Tables:** 8
 
 ---
 
@@ -48,6 +48,41 @@ Main task table. One row per video production task.
 - `su` — Superuser, locked from frontend, full access
 - `admin` — Full CRUD, user management
 - `staff` — Create tasks, forward-only status updates
+
+---
+
+## activity_logs
+
+Immutable audit trail of all task changes. Created on every PUT, POST (url), or status update.
+
+| Column | Type | Required | Notes |
+|--------|------|:--------:|-------|
+| `id` | SERIAL | ✅ | Auto-increment, Primary key |
+| `task_id` | VARCHAR | ✅ | FK → tasks.id (CASCADE) |
+| `actor` | VARCHAR | ✅ | Username who performed the action |
+| `action` | VARCHAR | ✅ | `status_change`, `field_update`, `created`, `photo_added`, `photo_removed` |
+| `detail` | VARCHAR | ✅ | Human-readable description (e.g. "Status: New → Video Shot") |
+| `metadata` | JSONB | - | Arbitrary structured data (old/new values, list of changed fields) |
+| `created_at` | TIMESTAMP | ✅ | Auto-generated |
+
+**Index:** `(task_id, created_at)` — covers the primary query pattern (fetch all activities for a task, newest first).
+
+---
+
+## task_urls
+
+Platform URLs attached to completed tasks. Populated during Uploaded → Task Completed via the URL collector modal.
+
+| Column | Type | Required | Notes |
+|--------|------|:--------:|-------|
+| `id` | SERIAL | ✅ | Auto-increment, Primary key |
+| `task_id` | VARCHAR | ✅ | FK → tasks.id (CASCADE) |
+| `platform` | VARCHAR | ✅ | `Instagram`, `YouTube Shorts`, `YouTube`, `Snapchat`, `Facebook`, `Google Business Profile`, `Custom` |
+| `url` | VARCHAR | ✅ | The actual URL |
+| `label` | VARCHAR | - | Custom label when platform = `Custom` |
+| `created_at` | TIMESTAMP | ✅ | Auto-generated |
+
+**Index:** `(task_id)` — fast lookup when fetching URLs for a task.
 
 ---
 
@@ -107,6 +142,8 @@ Main task table. One row per video production task.
 
 ```mermaid
 erDiagram
+    tasks ||--o{ activity_logs : "has"
+    tasks ||--o{ task_urls : "has"
     tasks ||--o{ notifications : "has"
     tasks ||--o{ comments : "has"
     tasks ||--o{ shot_items : "has"
@@ -137,6 +174,27 @@ erDiagram
         string display_name
         boolean is_superuser
         timestamp created_at
+    }
+
+    activity_logs {
+        int id PK
+        string task_id FK
+        string actor
+        string action
+        string detail
+        json metadata
+        timestamp created_at
+        index taskId_createdAt
+    }
+
+    task_urls {
+        int id PK
+        string task_id FK
+        string platform
+        string url
+        string label
+        timestamp created_at
+        index taskId
     }
 
     notifications {
@@ -176,4 +234,4 @@ erDiagram
     }
 ```
 
-All child tables use `ON DELETE CASCADE` — deleting a task removes all related notifications, comments, and shot items.
+All child tables use `ON DELETE CASCADE` — deleting a task removes all related records (activity_logs, task_urls, notifications, comments, and shot items).

@@ -61,6 +61,7 @@ Get single task.
 
 ### PUT /api/tasks/:id
 Update task. **Staff:** status only (forward). **Admin/su:** full update + bidirectional status.
+Also creates an `ActivityLog` entry recording the change (status transition or field-level edits).
 ```json
 // Staff: update status
 { "status": "Video Shot" }
@@ -112,6 +113,51 @@ Delete shot item.
 ```json
 // Request
 { "itemId": 1 }
+```
+
+### GET /api/tasks/:id/activity
+List activity log entries for a task (newest first). Each entry records who did what, with a human-readable detail string and optional JSON metadata.
+```json
+// Response 200
+{
+  "activities": [{
+    "id": 1,
+    "taskId": "SHANUZZ-0001",
+    "actor": "staff",
+    "action": "status_change",
+    "detail": "Status: New → Video Shot",
+    "metadata": { "oldStatus": "New", "newStatus": "Video Shot" },
+    "createdAt": "2026-06-20T..."
+  }]
+}
+```
+
+### GET /api/tasks/:id/urls
+List platform URLs attached to a task.
+```json
+// Response 200
+{ "urls": [{ "id": 1, "platform": "Instagram", "url": "https://...", "label": null }] }
+```
+
+### POST /api/tasks/:id/urls
+Add a platform URL to a task. Creates an ActivityLog entry.
+```json
+// Request
+{ "platform": "Instagram", "url": "https://instagram.com/p/...", "label": null }
+// Response 200
+{ "url": { "id": 1, "platform": "Instagram", "url": "https://...", "label": null } }
+```
+**Platform enum:** `Instagram`, `YouTube Shorts`, `YouTube`, `Snapchat`, `Facebook`, `Google Business Profile`, `Custom`
+
+**Custom label:** When platform is `Custom`, a `label` field is required instead of the platform name.
+
+### DELETE /api/tasks/:id/urls
+Remove a platform URL.
+```json
+// Request
+{ "urlId": 1 }
+// Response 200
+{ "success": true }
 ```
 
 ---
@@ -201,7 +247,7 @@ Return aggregate stats.
 ## Upload
 
 ### POST /api/upload
-Upload photo (multipart). Max 5MB.
+Upload photo (multipart). Max 5MB. Auto-compressed client-side to ~1MB JPEG.
 ```
 // FormData
 { "file": <File> }
@@ -226,3 +272,5 @@ Serve uploaded file.
 | POST /api/tasks/:id/ping-admin | ✅ | ✅ | ✅ |
 | GET/POST/PUT/DELETE /api/users | ✅ | ✅ | ❌ |
 | GET /api/analytics | ✅ | ✅ | ❌ |
+| GET /api/tasks/:id/activity | ✅ | ✅ | ✅ |
+| GET/POST/DELETE /api/tasks/:id/urls | ✅ | ✅ | ✅ |
