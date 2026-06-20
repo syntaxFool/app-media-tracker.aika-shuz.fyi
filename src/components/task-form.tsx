@@ -21,7 +21,7 @@ export default function TaskForm({ initialData, mode, taskId }: TaskFormProps) {
     service: initialData?.service || "",
     gender: initialData?.gender || "",
     isInfluencer: initialData?.isInfluencer || false,
-    dueDate: initialData?.dueDate || null as string | null,
+    dueDate: initialData?.dueDate ? new Date(initialData.dueDate).toISOString().split("T")[0] : null as string | null,
     note: initialData?.note || "",
     photoPath: initialData?.photoPath || null as string | null,
     assignedTo: initialData?.assignedTo || [] as string[],
@@ -34,7 +34,7 @@ export default function TaskForm({ initialData, mode, taskId }: TaskFormProps) {
   useEffect(() => {
     fetch("/api/auth/me").then(r => { if (r.ok) r.json().then(d => {
       if (d.user.role === "admin" || d.user.role === "su") {
-        fetch("/api/users").then(r => { if (r.ok) r.json().then(d2 => setStaffList(d2.users || [])); });
+        fetch("/api/users").then(r => { if (r.ok) r.json().then(d2 => setStaffList((d2.users || []).filter((u: any) => u.role !== "su"))); });
       }
     }); });
   }, []);

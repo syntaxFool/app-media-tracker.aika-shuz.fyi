@@ -78,13 +78,13 @@ export default function KanbanPage() {
           </div>
         </div>
 
-        {/* Horizontal scroll on mobile, grid on desktop */}
+        {/* Horizontal scroll with snap on mobile, flex on desktop */}
         <div className="flex-1 overflow-x-auto overflow-y-hidden">
-          <div className="flex gap-3 h-full min-h-[60vh] pb-2">
+          <div className="flex gap-3 h-full min-h-[60vh] pb-2 snap-x snap-mandatory md:snap-none">
             {columns.map((col) => (
               <div
                 key={col.status}
-                className={`flex-shrink-0 w-72 flex flex-col rounded-lg border border-border dark:border-gray-800 ${COLUMN_COLORS[col.status] || ""}`}
+                className={`flex-shrink-0 w-72 snap-center flex flex-col rounded-lg border border-border dark:border-gray-800 ${COLUMN_COLORS[col.status] || ""}`}
               >
                 {/* Column Header */}
                 <div className={`px-3 py-2.5 border-b border-border dark:border-gray-800 border-l-4 ${COLUMN_COLORS[col.status]?.split(" ")[0] || "border-l-ocean"}`}>

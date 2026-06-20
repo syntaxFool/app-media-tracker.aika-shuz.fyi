@@ -28,8 +28,13 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
 
     const updateData: any = { updatedBy: session.username, updatedAt: new Date() };
 
-    // Staff: ONLY status (forward only)
+    // Staff: ONLY status (forward only) — must be assigned
     if (session.role === "staff") {
+      const assigned = Array.isArray(task.assignedTo) ? task.assignedTo as string[] : [];
+      if (!assigned.includes(session.username)) {
+        return NextResponse.json({ error: "You are not assigned to this task" }, { status: 403 });
+      }
+
       if (!status) return NextResponse.json({ error: "Status required" }, { status: 400 });
       if (!isValidTransition(task.status, status))
         return NextResponse.json({ error: `Cannot move from "${task.status}" to "${status}"` }, { status: 400 });

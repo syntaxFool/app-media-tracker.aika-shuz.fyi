@@ -34,7 +34,7 @@ export default function TaskCard({ task, selectMode, selected, onToggleSelect }:
   return (
     <div
       onClick={() => (selectMode ? onToggleSelect?.() : router.push(`/tasks/${task.id}`))}
-      className={`bg-white dark:bg-gray-900 border rounded-md p-4 shadow-sm transition-colors cursor-pointer animate-fade-in ${
+      className={`bg-white dark:bg-gray-900 border rounded-md p-4 shadow-sm transition-all duration-200 cursor-pointer animate-fade-in hover:shadow-md hover:-translate-y-0.5 ${
         isOverdue ? "border-danger/30 dark:border-danger/30" :
         selected ? "border-accent bg-accent/5 dark:bg-accent/10" :
         "border-border dark:border-gray-800 active:bg-surface dark:active:bg-gray-800"

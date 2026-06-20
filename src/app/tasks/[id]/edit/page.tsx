@@ -76,6 +76,7 @@ export default function EditTaskPage() {
           initialData={{
             customerName: task.customerName,
             shootDate: task.shootDate,
+            service: task.service,
             dueDate: task.dueDate,
             assignedTo: task.assignedTo,
             gender: task.gender,

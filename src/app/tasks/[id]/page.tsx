@@ -15,6 +15,7 @@ export default function TaskDetailPage() {
   const params = useParams(); const router = useRouter(); const taskId = params.id as string;
   const [task, setTask] = useState<any>(null); const [loading, setLoading] = useState(true);
   const [userRole, setUserRole] = useState("staff"); const [deleteConfirm, setDeleteConfirm] = useState(false);
+  const [currentUsername, setCurrentUsername] = useState("");
   const [comments, setComments] = useState<any[]>([]);
   const [commentText, setCommentText] = useState("");
   const [commentSubmitting, setCommentSubmitting] = useState(false);
@@ -39,8 +40,11 @@ export default function TaskDetailPage() {
 
   useEffect(() => {
     fetchTask(); fetchComments(); fetchShotItems();
-    fetch("/api/auth/me").then(r => { if(r.ok) r.json().then(d => setUserRole(d.user.role)); });
+    fetch("/api/auth/me").then(r => { if(r.ok) r.json().then(d => { setUserRole(d.user.role); setCurrentUsername(d.user.username); }); });
   }, [fetchTask, fetchComments, fetchShotItems]);
+
+  const isAssigned = Array.isArray(task?.assignedTo) ? (task.assignedTo as string[]).includes(currentUsername) : false;
+  const canEdit = userRole === "admin" || userRole === "su" || isAssigned;
 
   async function handleStatusUpdate(newStatus: string) {
     await fetch(`/api/tasks/${taskId}`, { method: "PUT", headers: {"Content-Type":"application/json"}, body: JSON.stringify({status:newStatus}) });
@@ -194,8 +198,12 @@ export default function TaskDetailPage() {
                 </select>
               </div>
             </>
-          ) : (
+          ) : isAssigned ? (
             <StatusButtons currentStatus={task.status} nextStatuses={nextStatuses} onUpdate={handleStatusUpdate} />
+          ) : (
+            <div className="text-caption text-fg-quaternary bg-surface dark:bg-gray-800 rounded-sm px-3 py-3 text-center border border-border dark:border-gray-700">
+              🔒 You are not assigned to this task
+            </div>
           )}
           {userRole==="staff"&&task.status!=="Task Completed"&&<div className="pt-3 border-t border-border dark:border-gray-800"><PingAdminButton taskId={task.id}/></div>}
         </div>
