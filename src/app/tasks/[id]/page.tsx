@@ -21,6 +21,7 @@ export default function TaskDetailPage() {
   const [commentSubmitting, setCommentSubmitting] = useState(false);
   const [shotItems, setShotItems] = useState<any[]>([]);
   const [newShotDesc, setNewShotDesc] = useState("");
+  const [activities, setActivities] = useState<any[]>([]);
 
   const fetchTask = useCallback(async () => {
     const res = await fetch(`/api/tasks/${taskId}`);
@@ -38,10 +39,15 @@ export default function TaskDetailPage() {
     if (res.ok) setShotItems((await res.json()).items);
   }, [taskId]);
 
+  const fetchActivity = useCallback(async () => {
+    const res = await fetch(`/api/tasks/${taskId}/activity`);
+    if (res.ok) setActivities((await res.json()).activities);
+  }, [taskId]);
+
   useEffect(() => {
-    fetchTask(); fetchComments(); fetchShotItems();
+    fetchTask(); fetchComments(); fetchShotItems(); fetchActivity();
     fetch("/api/auth/me").then(r => { if(r.ok) r.json().then(d => { setUserRole(d.user.role); setCurrentUsername(d.user.username); }); });
-  }, [fetchTask, fetchComments, fetchShotItems]);
+  }, [fetchTask, fetchComments, fetchShotItems, fetchActivity]);
 
   const isAssigned = Array.isArray(task?.assignedTo) ? (task.assignedTo as string[]).includes(currentUsername) : false;
   const canEdit = userRole === "admin" || userRole === "su" || isAssigned;
@@ -173,10 +179,22 @@ export default function TaskDetailPage() {
         </div>
 
         {/* Activity */}
-        <div className="bg-white dark:bg-gray-900 border border-border dark:border-gray-800 rounded-md p-4 space-y-2 shadow-sm">
+        <div className="bg-white dark:bg-gray-900 border border-border dark:border-gray-800 rounded-md p-4 space-y-3 shadow-sm">
           <p className="text-label text-fg-tertiary">Activity</p>
-          <p className="text-caption text-fg-secondary dark:text-gray-300">Created by <span className="text-fg-primary dark:text-gray-100">{task.createdBy}</span> on {new Date(task.createdAt).toLocaleString("en-IN")}</p>
-          {task.updatedBy&&task.updatedAt&&<p className="text-caption text-fg-secondary dark:text-gray-300">Updated by <span className="text-fg-primary dark:text-gray-100">{task.updatedBy}</span> on {new Date(task.updatedAt).toLocaleString("en-IN")}</p>}
+          {activities.length === 0 && (
+            <p className="text-caption text-fg-quaternary">No activity recorded yet.</p>
+          )}
+          {activities.map((a: any) => (
+            <div key={a.id} className="flex gap-3 text-caption">
+              <span className="text-fg-quaternary dark:text-gray-500 flex-shrink-0 w-[120px]">
+                {new Date(a.createdAt).toLocaleString("en-IN")}
+              </span>
+              <span className="text-fg-secondary dark:text-gray-300">
+                <span className="text-fg-primary dark:text-gray-100 font-[510]">{a.actor}</span>
+                {" "}{a.detail}
+              </span>
+            </div>
+          ))}
         </div>
 
         {/* Status Update */}
