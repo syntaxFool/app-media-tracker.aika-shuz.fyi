@@ -288,6 +288,9 @@ export default function TaskDetailPage() {
                   {Object.keys(STATUS_FLOW).map((s) => (
                     <option key={s} value={s}>{s}</option>
                   ))}
+                  {task.status === "Reviewed" && (
+                    <option value="Data Copied">Rejected</option>
+                  )}
                 </select>
               </div>
 
