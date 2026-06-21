@@ -80,7 +80,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     // Admin: full CRUD, bidirectional status
 
     // Validate rejection note before any side effects
-    const isRejection = status !== undefined && status !== task.status && task.status === "Reviewed" && status === "Data Copied";
+    const isRejection = status !== undefined && status !== task.status && task.status === "Reviewed" && (status === "Data Copied" || status === "Dropped");
     if (isRejection) {
       if (!body.rejectionNote || !body.rejectionNote.trim()) {
         return NextResponse.json(
@@ -104,7 +104,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     if (statusChanged) {
       updateData.status = status;
       // If rejection: save rejection fields
-      if (task.status === "Reviewed" && status === "Data Copied") {
+      if (task.status === "Reviewed" && (status === "Data Copied" || status === "Dropped")) {
         updateData.rejectionNote = body.rejectionNote;
         updateData.rejectedBy = session.username;
         updateData.rejectedAt = new Date();

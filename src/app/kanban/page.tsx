@@ -16,6 +16,7 @@ const COLUMN_COLORS: Record<string, string> = {
   Reviewed: "border-l-orange-500 bg-orange-500/[0.03]",
   Uploaded: "border-l-emerald-500 bg-emerald-500/[0.03]",
   "Task Completed": "border-l-green-500 bg-green-500/[0.03]",
+  Dropped: "border-l-gray-400 bg-gray-400/[0.03]",
 };
 
 const COLUMN_DOT: Record<string, string> = {
@@ -26,6 +27,7 @@ const COLUMN_DOT: Record<string, string> = {
   Reviewed: "bg-orange-500",
   Uploaded: "bg-emerald-500",
   "Task Completed": "bg-green-500",
+  Dropped: "bg-gray-400",
 };
 
 export default function KanbanPage() {
@@ -38,7 +40,8 @@ export default function KanbanPage() {
     const res = await fetch("/api/tasks");
     if (res.ok) {
       const data = await res.json();
-      setTasks(data.tasks.filter((t: any) => t.status !== "Task Completed" ||
+      setTasks(data.tasks.filter((t: any) =>
+        (t.status !== "Task Completed" && t.status !== "Dropped") ||
         (t.updatedAt && new Date(t.updatedAt).getTime() > Date.now() - 24*60*60*1000)));
     }
     setLoading(false);
@@ -129,7 +132,7 @@ export default function KanbanPage() {
                     </div>
                   )}
                   {col.tasks.map((task) => {
-                    const isOverdue = task.status !== "Task Completed" && task.dueDate && new Date(task.dueDate) < new Date();
+                    const isOverdue = task.status !== "Task Completed" && task.status !== "Dropped" && task.dueDate && new Date(task.dueDate) < new Date();
                     const assigned = Array.isArray(task.assignedTo) ? task.assignedTo : [];
                     const isRejectedTask = isRejected(task);
 

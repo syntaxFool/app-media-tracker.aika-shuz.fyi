@@ -19,7 +19,7 @@ export async function GET(req: NextRequest) {
     const where: any = {};
 
     // Active tasks: not terminal OR completed within last 24h
-    const TERMINAL_STATUSES = ["Task Completed"];
+    const TERMINAL_STATUSES = ["Task Completed", "Dropped"];
     if (!status) {
       where.OR = [
         { status: { notIn: TERMINAL_STATUSES } },

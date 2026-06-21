@@ -26,6 +26,7 @@ export default function TaskDetailPage() {
   const [showUrlCollector, setShowUrlCollector] = useState(false);
   const [confirmAdminStatus, setConfirmAdminStatus] = useState<string | null>(null);
   const [showRejectionModal, setShowRejectionModal] = useState(false);
+  const [rejectionTarget, setRejectionTarget] = useState("Data Copied");
   const [rejectionNote, setRejectionNote] = useState("");
   const [rejectionSubmitting, setRejectionSubmitting] = useState(false);
   const [staffList, setStaffList] = useState<any[]>([]);
@@ -273,7 +274,9 @@ export default function TaskDetailPage() {
                     const newStatus = e.target.value;
                     if (newStatus !== task.status) {
                       // If moving from Reviewed to Data Copied, show rejection modal
-                      if (task.status === "Reviewed" && newStatus === "Data Copied") {
+                      if (task.status === "Reviewed" && (newStatus === "Data Copied" || newStatus === "Dropped")) {
+                        // Track which rejection path was selected
+                        setRejectionTarget(newStatus);
                         // Fetch staff list for reassignment & pre-fill current assignees
                         fetch("/api/users").then(r => { if (r.ok) r.json().then(d => setStaffList((d.users || []).filter((u: any) => u.role !== "su"))); }).catch(() => {});
                         setSelectedReassignees(task.assignedTo || []);
@@ -290,6 +293,9 @@ export default function TaskDetailPage() {
                   ))}
                   {task.status === "Reviewed" && (
                     <option value="Data Copied">Rejected</option>
+                  )}
+                  {task.status === "Reviewed" && (
+                    <option value="Dropped">Dropped</option>
                   )}
                 </select>
               </div>
@@ -314,9 +320,10 @@ export default function TaskDetailPage() {
                   onClick={() => { if (!rejectionSubmitting) { setShowRejectionModal(false); setRejectionNote(""); }}}>
                   <div className="bg-white dark:bg-gray-900 rounded-t-xl sm:rounded-xl w-full sm:max-w-sm p-6 shadow-elev-dialog animate-slide-up"
                     onClick={e => e.stopPropagation()}>
-                    <h3 className="text-heading-3 text-fg-primary mb-2">Reject Task</h3>
+                    <h3 className="text-heading-3 text-fg-primary mb-2">{rejectionTarget === "Dropped" ? "Discard Task" : "Reject Task"}</h3>
                     <p className="text-small text-fg-secondary mb-4">
-                      Move <span className="font-mono text-fg-primary">{task.id}</span> from <strong>Reviewed</strong> back to <strong>Data Copied</strong>.
+                      Move <span className="font-mono text-fg-primary">{task.id}</span> from <strong>Reviewed</strong>
+                      {rejectionTarget === "Dropped" ? <> to <strong>Dropped</strong></> : <> back to <strong>Data Copied</strong></>}.
                     </p>
                     <textarea
                       value={rejectionNote}
@@ -352,34 +359,35 @@ export default function TaskDetailPage() {
                       </div>
                     )}
 
-                    <div className="flex gap-2">
+                    <div className="flex gap-3">
                       <button
                         onClick={() => { setShowRejectionModal(false); setRejectionNote(""); }}
                         className="btn-ghost flex-1"
                         disabled={rejectionSubmitting}
                       >Cancel</button>
-                      <button
-                        onClick={async () => {
-                          if (!rejectionNote.trim()) return;
-                          setRejectionSubmitting(true);
-                          const body: any = { status: "Dropped", rejectionNote: rejectionNote.trim() };
-                          await fetch(`/api/tasks/${taskId}`, {
-                            method: "PUT",
-                            headers: {"Content-Type":"application/json"},
-                            body: JSON.stringify(body),
-                          });
-                          setRejectionSubmitting(false);
-                          setShowRejectionModal(false);
-                          setRejectionNote("");
-                          await fetchTask();
-                          await fetchActivity();
-                        }}
-                        className="btn-ghost flex-1 text-fg-quaternary border border-border"
-                        disabled={rejectionSubmitting || !rejectionNote.trim()}
-                      >
-                        {rejectionSubmitting ? "..." : "Discard"}
-                      </button>
-                      <button
+                      {rejectionTarget === "Dropped" ? (
+                        <button
+                          onClick={async () => {
+                            if (!rejectionNote.trim()) return;
+                            setRejectionSubmitting(true);
+                            await fetch(`/api/tasks/${taskId}`, {
+                              method: "PUT",
+                              headers: {"Content-Type":"application/json"},
+                              body: JSON.stringify({ status: "Dropped", rejectionNote: rejectionNote.trim() }),
+                            });
+                            setRejectionSubmitting(false);
+                            setShowRejectionModal(false);
+                            setRejectionNote("");
+                            await fetchTask();
+                            await fetchActivity();
+                          }}
+                          className="btn-ghost flex-1 text-fg-quaternary border border-border"
+                          disabled={rejectionSubmitting || !rejectionNote.trim()}
+                        >
+                          {rejectionSubmitting ? "..." : "Discard"}
+                        </button>
+                      ) : (
+                        <button
                         onClick={async () => {
                           if (!rejectionNote.trim()) return;
                           setRejectionSubmitting(true);
@@ -403,6 +411,7 @@ export default function TaskDetailPage() {
                       >
                         {rejectionSubmitting ? "Rejecting..." : "Reject & Send Back"}
                       </button>
+                    )}
                     </div>
                   </div>
                 </div>

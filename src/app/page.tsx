@@ -15,7 +15,7 @@ interface Task {
 const STATUS_DOT_COLORS: Record<string, string> = {
   New: "#72cdf4", "Video Shot": "#ffd200", "Data Copied": "#005581",
   "Video Edited": "#6366f1", Reviewed: "#f59e0b", Uploaded: "#10b981",
-  "Task Completed": "#27a644",
+  "Task Completed": "#27a644", Dropped: "#9ca3af",
 };
 
 export default function DashboardPage() {
@@ -47,7 +47,7 @@ export default function DashboardPage() {
 
   const displayTasks = useMemo(() => {
     let result = [...tasks];
-    if (myTasksOnly) result = result.filter(t => t.status !== "Task Completed");
+    if (myTasksOnly) result = result.filter(t => t.status !== "Task Completed" && t.status !== "Dropped");
     switch (sortBy) {
       case "newest": result.sort((a,b) => new Date(b.shootDate||0).getTime()-new Date(a.shootDate||0).getTime()); break;
       case "oldest": result.sort((a,b) => new Date(a.shootDate||0).getTime()-new Date(b.shootDate||0).getTime()); break;
