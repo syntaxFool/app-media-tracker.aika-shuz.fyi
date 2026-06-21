@@ -28,6 +28,8 @@ export default function TaskDetailPage() {
   const [showRejectionModal, setShowRejectionModal] = useState(false);
   const [rejectionNote, setRejectionNote] = useState("");
   const [rejectionSubmitting, setRejectionSubmitting] = useState(false);
+  const [staffList, setStaffList] = useState<any[]>([]);
+  const [selectedReassignees, setSelectedReassignees] = useState<string[]>([]);
   const [taskUrls, setTaskUrls] = useState<any[]>([]);
 
   const fetchTask = useCallback(async () => {
@@ -269,6 +271,9 @@ export default function TaskDetailPage() {
                     if (newStatus !== task.status) {
                       // If moving from Reviewed to Data Copied, show rejection modal
                       if (task.status === "Reviewed" && newStatus === "Data Copied") {
+                        // Fetch staff list for reassignment & pre-fill current assignees
+                        fetch("/api/users").then(r => { if (r.ok) r.json().then(d => setStaffList((d.users || []).filter((u: any) => u.role !== "su"))); }).catch(() => {});
+                        setSelectedReassignees(task.assignedTo || []);
                         setShowRejectionModal(true);
                       } else {
                         setConfirmAdminStatus(newStatus);
@@ -314,6 +319,33 @@ export default function TaskDetailPage() {
                       placeholder="Describe what needs to be fixed..."
                       autoFocus
                     />
+
+                    {staffList.length > 0 && (
+                      <div className="mb-4">
+                        <label className="block text-label text-fg-tertiary mb-1.5">Reassign to</label>
+                        <div className="flex flex-wrap gap-1.5">
+                          {staffList.map((s: any) => {
+                            const isSelected = selectedReassignees.includes(s.username);
+                            return (
+                              <button key={s.id} type="button"
+                                onClick={() => {
+                                  const next = isSelected
+                                    ? selectedReassignees.filter((u: string) => u !== s.username)
+                                    : [...selectedReassignees, s.username];
+                                  setSelectedReassignees(next);
+                                }}
+                                className={`text-label px-2.5 py-1 rounded-sm border transition-colors ${
+                                  isSelected
+                                    ? "bg-primary text-white border-primary"
+                                    : "bg-white dark:bg-gray-800 text-fg-tertiary border-border dark:border-gray-700 hover:border-primary/30"
+                                }`}
+                              >{s.username}</button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+
                     <div className="flex gap-3">
                       <button
                         onClick={() => { setShowRejectionModal(false); setRejectionNote(""); }}
@@ -324,10 +356,14 @@ export default function TaskDetailPage() {
                         onClick={async () => {
                           if (!rejectionNote.trim()) return;
                           setRejectionSubmitting(true);
+                          const body: any = { status: "Data Copied", rejectionNote: rejectionNote.trim() };
+                          if (selectedReassignees.length > 0) {
+                            body.assignedTo = selectedReassignees;
+                          }
                           await fetch(`/api/tasks/${taskId}`, {
                             method: "PUT",
                             headers: {"Content-Type":"application/json"},
-                            body: JSON.stringify({ status: "Data Copied", rejectionNote: rejectionNote.trim() }),
+                            body: JSON.stringify(body),
                           });
                           setRejectionSubmitting(false);
                           setShowRejectionModal(false);
