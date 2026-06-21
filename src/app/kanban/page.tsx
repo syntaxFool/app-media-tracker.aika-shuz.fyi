@@ -6,7 +6,7 @@ import PullToRefresh from "@/components/pull-to-refresh";
 import { useRouter } from "next/navigation";
 import { Loader2, Star, Clock, Users } from "lucide-react";
 import ImagePreview from "@/components/image-preview";
-import { STATUS_FLOW, ALL_STATUSES } from "@/lib/tasks";
+import { STATUS_FLOW, ALL_STATUSES, isRejected, getAllowedNextStatuses } from "@/lib/tasks";
 
 const COLUMN_COLORS: Record<string, string> = {
   New: "border-l-ocean bg-ocean/[0.03]",
@@ -32,6 +32,7 @@ export default function KanbanPage() {
   const router = useRouter();
   const [tasks, setTasks] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [userRole, setUserRole] = useState("staff");
 
   const fetchTasks = useCallback(async () => {
     const res = await fetch("/api/tasks");
@@ -44,6 +45,10 @@ export default function KanbanPage() {
   }, []);
 
   useEffect(() => { fetchTasks(); }, [fetchTasks]);
+
+  useEffect(() => {
+    fetch("/api/auth/me").then(r => { if(r.ok) r.json().then(d => setUserRole(d.user.role)); }).catch(() => {});
+  }, []);
 
   async function moveTask(taskId: string, newStatus: string) {
     const task = tasks.find((t) => t.id === taskId);
@@ -60,7 +65,15 @@ export default function KanbanPage() {
   }
 
   const columns = ALL_STATUSES.map((status) => {
-    const colTasks = tasks.filter((t) => t.status === status);
+    const colTasks = tasks.filter((t) => t.status === status)
+      .sort((a, b) => {
+        if (status === "Data Copied") {
+          const aRej = isRejected(a) ? 0 : 1;
+          const bRej = isRejected(b) ? 0 : 1;
+          return aRej - bRej;
+        }
+        return 0;
+      });
     const overdueCount = colTasks.filter((t) => t.dueDate && new Date(t.dueDate) < new Date()).length;
     return { status, tasks: colTasks, count: colTasks.length, overdueCount };
   });
@@ -118,12 +131,15 @@ export default function KanbanPage() {
                   {col.tasks.map((task) => {
                     const isOverdue = task.status !== "Task Completed" && task.dueDate && new Date(task.dueDate) < new Date();
                     const assigned = Array.isArray(task.assignedTo) ? task.assignedTo : [];
+                    const isRejectedTask = isRejected(task);
 
                     return (
                       <div
                         key={task.id}
                         onClick={() => router.push(`/tasks/${task.id}`)}
-                        className="bg-white dark:bg-gray-800 border border-border dark:border-gray-700 rounded-md p-3 shadow-sm cursor-pointer hover:shadow-elev-raised hover:border-primary/20 transition-all group"
+                        className={`bg-white dark:bg-gray-800 border rounded-md p-3 shadow-sm cursor-pointer hover:shadow-elev-raised hover:border-primary/20 transition-all group ${
+                          isRejectedTask ? "border-danger/50 ring-1 ring-danger/20" : "border-border dark:border-gray-700"
+                        }`}
                       >
                         {/* Top row: name + influencer */}
                         <div className="flex items-start gap-2 mb-1.5">
@@ -134,6 +150,27 @@ export default function KanbanPage() {
                             <Star className="w-3 h-3 text-accent flex-shrink-0 mt-0.5" fill="currentColor"/>
                           )}
                         </div>
+
+                        {/* Fix Required pill */}
+                        {isRejectedTask && (
+                          <div className="flex items-center gap-1.5 mb-1.5">
+                            <span className="text-micro font-[590] text-white bg-danger px-2 py-0.5 rounded-pill">
+                              Fix Required
+                            </span>
+                            {task.rejectedBy && (
+                              <span className="text-tiny text-danger font-mono">
+                                by {task.rejectedBy}
+                              </span>
+                            )}
+                          </div>
+                        )}
+
+                        {/* Rejection note snippet */}
+                        {isRejectedTask && task.rejectionNote && (
+                          <div className="mb-2 text-tiny text-fg-quaternary dark:text-gray-400 bg-danger/5 border border-danger/10 rounded-sm px-2 py-1.5 italic line-clamp-2">
+                            "{task.rejectionNote}"
+                          </div>
+                        )}
 
                         {/* Meta row */}
                         <div className="flex flex-wrap items-center gap-x-2 gap-y-1 mb-2">
@@ -169,7 +206,7 @@ export default function KanbanPage() {
 
                         {/* Quick move buttons */}
                         {(() => {
-                          const allowed = (STATUS_FLOW[task.status] || []).slice(0, 3);
+                          const allowed = getAllowedNextStatuses(task, userRole).slice(0, 3);
                           if (allowed.length === 0) return null;
                           return (
                             <div className="flex gap-1 pt-2 border-t border-border dark:border-gray-700 opacity-0 group-hover:opacity-100 transition-opacity">
