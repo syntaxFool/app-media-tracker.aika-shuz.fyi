@@ -6,8 +6,7 @@ export const STATUS_FLOW: Record<string, string[]> = {
   "Video Shot": ["Data Copied"],
   "Data Copied": ["Video Edited"],
   "Video Edited": ["Reviewed"],
-  Reviewed: ["Uploaded", "Rejected", "Dropped"],
-  Rejected: ["Data Copied", "Reviewed"],
+  Reviewed: ["Uploaded", "Data Copied", "Dropped"],
   Uploaded: ["Task Completed"],
   "Task Completed": [],
   Dropped: [],
@@ -32,7 +31,6 @@ export function getResponsibleForStatus(status: string): string {
     Reviewed: "Uploader",
     Uploaded: "Admin",
     "Task Completed": "—",
-    Rejected: "Editor",
     Dropped: "—",
   };
   return map[status] || "Admin";
@@ -68,6 +66,11 @@ export function getAllowedNextStatuses(
   if (role === "admin" || role === "su") {
     // Admin gets the full STATUS_FLOW
     return base;
+  }
+
+  // Staff: forward-only, but allow Data Copied → Reviewed if rejected
+  if (isRejected(task) && task.status === "Data Copied") {
+    return [...base, "Reviewed"];
   }
 
   return base;

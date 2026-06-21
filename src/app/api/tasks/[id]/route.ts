@@ -48,8 +48,8 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
 
       updateData.status = status;
 
-      // If moving from Rejected → Reviewed (direct jump), clear rejection fields
-      if (status === "Reviewed" && task.status === "Rejected") {
+      // If moving from Data Copied → Reviewed on a rejected task, clear rejection fields
+      if (status === "Reviewed" && task.status === "Data Copied" && task.rejectionNote) {
         updateData.rejectionNote = null;
         updateData.rejectedBy = null;
         updateData.rejectedAt = null;
@@ -80,7 +80,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     // Admin: full CRUD, bidirectional status
 
     // Validate rejection note before any side effects
-    const isRejection = status !== undefined && status !== task.status && task.status === "Reviewed" && (status === "Rejected" || status === "Dropped");
+    const isRejection = status !== undefined && status !== task.status && task.status === "Reviewed" && (status === "Data Copied" || status === "Dropped");
     if (isRejection) {
       if (!body.rejectionNote || !body.rejectionNote.trim()) {
         return NextResponse.json(
@@ -104,7 +104,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     if (statusChanged) {
       updateData.status = status;
       // If rejection: save rejection fields
-      if (task.status === "Reviewed" && (status === "Rejected" || status === "Dropped")) {
+      if (task.status === "Reviewed" && (status === "Data Copied" || status === "Dropped")) {
         updateData.rejectionNote = body.rejectionNote;
         updateData.rejectedBy = session.username;
         updateData.rejectedAt = new Date();

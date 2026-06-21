@@ -6,7 +6,7 @@ import PullToRefresh from "@/components/pull-to-refresh";
 import { useRouter } from "next/navigation";
 import { Loader2, Star, Clock, Users } from "lucide-react";
 import ImagePreview from "@/components/image-preview";
-import { ALL_STATUSES, getAllowedNextStatuses } from "@/lib/tasks";
+import { ALL_STATUSES, isRejected, getAllowedNextStatuses } from "@/lib/tasks";
 
 const COLUMN_COLORS: Record<string, string> = {
   New: "border-l-ocean bg-ocean/[0.03]",
@@ -16,7 +16,6 @@ const COLUMN_COLORS: Record<string, string> = {
   Reviewed: "border-l-orange-500 bg-orange-500/[0.03]",
   Uploaded: "border-l-emerald-500 bg-emerald-500/[0.03]",
   "Task Completed": "border-l-green-500 bg-green-500/[0.03]",
-  Rejected: "border-l-danger bg-danger/[0.03]",
   Dropped: "border-l-gray-400 bg-gray-400/[0.03]",
 };
 
@@ -28,7 +27,6 @@ const COLUMN_DOT: Record<string, string> = {
   Reviewed: "bg-orange-500",
   Uploaded: "bg-emerald-500",
   "Task Completed": "bg-green-500",
-  Rejected: "bg-danger",
   Dropped: "bg-gray-400",
 };
 
@@ -71,7 +69,15 @@ export default function KanbanPage() {
   }
 
   const columns = ALL_STATUSES.map((status) => {
-    const colTasks = tasks.filter((t) => t.status === status);
+    const colTasks = tasks.filter((t) => t.status === status)
+      .sort((a, b) => {
+        if (status === "Data Copied") {
+          const aRej = isRejected(a) ? 0 : 1;
+          const bRej = isRejected(b) ? 0 : 1;
+          return aRej - bRej;
+        }
+        return 0;
+      });
     const overdueCount = colTasks.filter((t) => t.dueDate && new Date(t.dueDate) < new Date()).length;
     return { status, tasks: colTasks, count: colTasks.length, overdueCount };
   });
@@ -127,9 +133,9 @@ export default function KanbanPage() {
                     </div>
                   )}
                   {col.tasks.map((task) => {
-                    const isOverdue = task.status !== "Task Completed" && task.status !== "Dropped" && task.status !== "Rejected" && task.dueDate && new Date(task.dueDate) < new Date();
+                    const isOverdue = task.status !== "Task Completed" && task.status !== "Dropped" && task.dueDate && new Date(task.dueDate) < new Date();
                     const assigned = Array.isArray(task.assignedTo) ? task.assignedTo : [];
-                    const isRejectedTask = task.status === "Rejected";
+                    const isRejectedTask = isRejected(task);
 
                     return (
                       <div
