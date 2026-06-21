@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { Calendar, Star, ChevronRight, Users } from "lucide-react";
+import { isRejected } from "@/lib/tasks";
 import StatusBadge from "./status-badge";
 import ImagePreview from "./image-preview";
 
@@ -9,6 +10,7 @@ interface Task {
   id: string; customerName: string; shootDate: string; dueDate: string | null;
   service: string; gender: string; isInfluencer: boolean; status: string;
   createdBy: string; assignedTo?: string[]; photoPath?: string | null;
+  rejectionNote?: string | null;
 }
 
 interface TaskCardProps {
@@ -23,10 +25,12 @@ export default function TaskCard({ task, selectMode, selected, onToggleSelect }:
   const isOverdue = !isCompleted && task.dueDate && new Date(task.dueDate) < new Date();
   const isDueSoon = !isCompleted && task.dueDate && !isOverdue && (new Date(task.dueDate).getTime() - Date.now() < 24*60*60*1000);
   const assigned = Array.isArray(task.assignedTo) ? task.assignedTo : [];
+  const rejected = isRejected(task);
 
   return (
     <div onClick={() => (selectMode ? onToggleSelect?.() : router.push(`/tasks/${task.id}`))}
       className={`bg-white dark:bg-gray-900 border rounded-md px-4 py-3.5 shadow-sm transition-all duration-200 cursor-pointer animate-fade-in hover:shadow-md hover:-translate-y-0.5 ${
+        rejected ? "border-danger/50 ring-1 ring-danger/20" :
         isOverdue ? "border-danger/30 dark:border-danger/30" :
         selected ? "border-accent bg-accent/5 dark:bg-accent/10" :
         "border-border dark:border-gray-800 active:bg-surface dark:active:bg-gray-800"
@@ -71,7 +75,13 @@ export default function TaskCard({ task, selectMode, selected, onToggleSelect }:
             </div>
           )}
 
-          {/* Row 4: ID + thumbnail + Status pill */}
+          {rejected && task.rejectionNote && (
+            <div className="mb-1.5 text-tiny text-fg-quaternary dark:text-gray-400 bg-danger/5 border border-danger/10 rounded-sm px-2 py-1 italic line-clamp-1">
+              "{task.rejectionNote}"
+            </div>
+          )}
+
+          {/* Row 4: ID + thumbnail + Status pill + Fix Required */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <span className="text-micro font-mono font-[510] text-fg-tertiary dark:text-gray-400">{task.id}</span>
@@ -83,7 +93,14 @@ export default function TaskCard({ task, selectMode, selected, onToggleSelect }:
                 </ImagePreview>
               )}
             </div>
-            <StatusBadge status={task.status} />
+            <div className="flex items-center gap-1.5">
+              {rejected && (
+                <span className="text-micro bg-danger text-white px-1.5 py-0.5 rounded-pill font-[590]">
+                  Fix Required
+                </span>
+              )}
+              <StatusBadge status={task.status} />
+            </div>
           </div>
         </div>
         {!selectMode && <ChevronRight className="w-4 h-4 text-fg-quaternary dark:text-gray-500 flex-shrink-0 mt-1" />}
