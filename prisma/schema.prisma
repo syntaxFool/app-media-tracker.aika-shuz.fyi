@@ -18,6 +18,9 @@ model Task {
   note         String?
   dueDate      DateTime? @map("due_date")
   assignedTo   Json      @default("[]") @map("assigned_to") // ["username1", "username2"]
+  rejectionNote String?  @map("rejection_note")
+  rejectedBy    String?  @map("rejected_by")
+  rejectedAt    DateTime? @map("rejected_at")
   status       String    @default("New") @map("current_status")
   createdBy    String    @map("created_by")
   createdAt    DateTime  @default(now()) @map("created_at")
