@@ -166,7 +166,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                       Logout
                     </button>
                     <div className="border-t border-border dark:border-gray-700" />
-                    <div className="px-4 py-2 text-tiny text-fg-quaternary dark:text-gray-500 font-mono">v1.0.1</div>
+                    <div className="px-4 py-2 text-tiny text-fg-quaternary dark:text-gray-500 font-mono">v1.1.0</div>
                   </div>
                 </>
               )}

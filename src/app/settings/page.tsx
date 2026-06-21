@@ -57,7 +57,7 @@ export default function SettingsPage() {
             <Package className="w-5 h-5 text-fg-tertiary" />
             <div>
               <p className="text-sm font-[510] text-fg-primary">Shanuzz Media Tracker</p>
-              <p className="text-tiny text-fg-quaternary font-mono">v1.0.1</p>
+              <p className="text-tiny text-fg-quaternary font-mono">v1.1.0</p>
             </div>
           </div>
         </div>
