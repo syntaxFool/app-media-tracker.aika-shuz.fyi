@@ -6,7 +6,7 @@ import PullToRefresh from "@/components/pull-to-refresh";
 import { useRouter } from "next/navigation";
 import { Loader2, Star, Clock, Users } from "lucide-react";
 import ImagePreview from "@/components/image-preview";
-import { STATUS_FLOW, ALL_STATUSES, isRejected, getAllowedNextStatuses } from "@/lib/tasks";
+import { ALL_STATUSES, isRejected, getAllowedNextStatuses } from "@/lib/tasks";
 
 const COLUMN_COLORS: Record<string, string> = {
   New: "border-l-ocean bg-ocean/[0.03]",
