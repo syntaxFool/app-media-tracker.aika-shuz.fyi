@@ -8,7 +8,7 @@ import StatusButtons from "@/components/status-buttons";
 import PingAdminButton from "@/components/ping-admin-button";
 import UrlCollector from "@/components/url-collector";
 import { ArrowLeft, Edit, Trash2, Calendar, Star, MessageSquare, CheckSquare, Plus, Clock, ExternalLink } from "lucide-react";
-import { STATUS_FLOW } from "@/lib/tasks";
+import { STATUS_FLOW, getAllowedNextStatuses } from "@/lib/tasks";
 
 const NEXT_STATUS = STATUS_FLOW;
 
@@ -25,6 +25,9 @@ export default function TaskDetailPage() {
   const [activities, setActivities] = useState<any[]>([]);
   const [showUrlCollector, setShowUrlCollector] = useState(false);
   const [confirmAdminStatus, setConfirmAdminStatus] = useState<string | null>(null);
+const [showRejectionModal, setShowRejectionModal] = useState(false);
+const [rejectionNote, setRejectionNote] = useState("");
+const [rejectionSubmitting, setRejectionSubmitting] = useState(false);
   const [taskUrls, setTaskUrls] = useState<any[]>([]);
 
   const fetchTask = useCallback(async () => {
@@ -117,7 +120,7 @@ export default function TaskDetailPage() {
   if (loading) return <AppLayout><div className="flex justify-center py-20"><div className="w-6 h-6 border-2 border-black/10 border-t-primary rounded-full animate-spin" /></div></AppLayout>;
   if (!task) return <AppLayout><div className="text-center py-20"><p className="text-body text-fg-secondary">Task not found</p></div></AppLayout>;
 
-  const nextStatuses = NEXT_STATUS[task.status] || [];
+  const nextStatuses = getAllowedNextStatuses(task, userRole);
   const date = new Date(task.shootDate).toLocaleDateString("en-IN", { weekday:"long", day:"numeric", month:"long", year:"numeric" });
 
   return (
@@ -157,6 +160,23 @@ export default function TaskDetailPage() {
             <DetailRow label="Assigned" value={task.assignedTo.join(", ")} />
           )}
         </div>
+
+        {task.rejectionNote && (
+          <div className="bg-danger/5 border border-danger/20 rounded-md p-4">
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-micro font-[590] text-white bg-danger px-2 py-0.5 rounded-pill">
+                Fix Required
+              </span>
+              {task.rejectedBy && (
+                <span className="text-tiny text-fg-quaternary">
+                  Rejected by {task.rejectedBy}
+                  {task.rejectedAt && <> on {new Date(task.rejectedAt).toLocaleDateString("en-IN")}</>}
+                </span>
+              )}
+            </div>
+            <p className="text-sm text-fg-secondary dark:text-gray-300 italic">"{task.rejectionNote}"</p>
+          </div>
+        )}
 
         {task.photoPath&&<div className="bg-white dark:bg-gray-900 border border-border dark:border-gray-800 rounded-md overflow-hidden shadow-sm"><img src={task.photoPath} alt={task.customerName} className="w-full h-64 object-cover"/></div>}
         {task.note&&<div className="bg-white dark:bg-gray-900 border border-border dark:border-gray-800 rounded-md p-4 shadow-sm"><p className="text-label text-fg-tertiary mb-1">Note</p><p className="text-sm text-fg-secondary dark:text-gray-300 whitespace-pre-wrap">{task.note}</p></div>}
@@ -245,7 +265,15 @@ export default function TaskDetailPage() {
                 <select
                   defaultValue={task.status}
                   onChange={(e) => {
-                    if (e.target.value !== task.status) setConfirmAdminStatus(e.target.value);
+                    const newStatus = e.target.value;
+                    if (newStatus !== task.status) {
+                      // If moving from Reviewed to Data Copied, show rejection modal
+                      if (task.status === "Reviewed" && newStatus === "Data Copied") {
+                        setShowRejectionModal(true);
+                      } else {
+                        setConfirmAdminStatus(newStatus);
+                      }
+                    }
                   }}
                   className="select-linear flex-1"
                 >
@@ -265,6 +293,53 @@ export default function TaskDetailPage() {
                     <div className="flex gap-3">
                       <button onClick={() => setConfirmAdminStatus(null)} className="btn-ghost flex-1">Cancel</button>
                       <button onClick={async () => { const s = confirmAdminStatus; setConfirmAdminStatus(null); await handleStatusUpdate(s!); }} className="btn-primary flex-1">Save</button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {showRejectionModal && (
+                <div className="fixed inset-0 z-50 bg-black/40 flex items-end sm:items-center justify-center animate-fade-in"
+                  onClick={() => { if (!rejectionSubmitting) { setShowRejectionModal(false); setRejectionNote(""); }}}>
+                  <div className="bg-white dark:bg-gray-900 rounded-t-xl sm:rounded-xl w-full sm:max-w-sm p-6 shadow-elev-dialog animate-slide-up"
+                    onClick={e => e.stopPropagation()}>
+                    <h3 className="text-heading-3 text-fg-primary mb-2">Reject Task</h3>
+                    <p className="text-small text-fg-secondary mb-4">
+                      Move <span className="font-mono text-fg-primary">{task.id}</span> from <strong>Reviewed</strong> back to <strong>Data Copied</strong>.
+                    </p>
+                    <textarea
+                      value={rejectionNote}
+                      onChange={(e) => setRejectionNote(e.target.value)}
+                      className="input-linear w-full text-sm p-3 min-h-[100px] mb-4"
+                      placeholder="Describe what needs to be fixed..."
+                      autoFocus
+                    />
+                    <div className="flex gap-3">
+                      <button
+                        onClick={() => { setShowRejectionModal(false); setRejectionNote(""); }}
+                        className="btn-ghost flex-1"
+                        disabled={rejectionSubmitting}
+                      >Cancel</button>
+                      <button
+                        onClick={async () => {
+                          if (!rejectionNote.trim()) return;
+                          setRejectionSubmitting(true);
+                          await fetch(`/api/tasks/${taskId}`, {
+                            method: "PUT",
+                            headers: {"Content-Type":"application/json"},
+                            body: JSON.stringify({ status: "Data Copied", rejectionNote: rejectionNote.trim() }),
+                          });
+                          setRejectionSubmitting(false);
+                          setShowRejectionModal(false);
+                          setRejectionNote("");
+                          await fetchTask();
+                          await fetchActivity();
+                        }}
+                        className="btn-danger flex-1"
+                        disabled={rejectionSubmitting || !rejectionNote.trim()}
+                      >
+                        {rejectionSubmitting ? "Rejecting..." : "Reject & Send Back"}
+                      </button>
                     </div>
                   </div>
                 </div>
