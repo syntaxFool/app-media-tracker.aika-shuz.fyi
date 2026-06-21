@@ -2,7 +2,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/db";
 import { requireAuth, requireAdmin } from "@/lib/auth";
-import { isValidTransition, getResponsibleForStatus } from "@/lib/tasks";
+import { getResponsibleForStatus, getAllowedNextStatuses } from "@/lib/tasks";
 import { enqueueWhatsAppMessage } from "@/lib/whatsapp";
 import { sendPushNotifications } from "@/lib/push";
 
@@ -42,10 +42,18 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
       }
 
       if (!status) return NextResponse.json({ error: "Status required" }, { status: 400 });
-      if (!isValidTransition(task.status, status))
+      const allowedStatuses = getAllowedNextStatuses(task, session.role);
+      if (!allowedStatuses.includes(status))
         return NextResponse.json({ error: `Cannot move from "${task.status}" to "${status}"` }, { status: 400 });
 
       updateData.status = status;
+
+      // If moving from Data Copied → Reviewed on a rejected task, clear rejection fields
+      if (status === "Reviewed" && task.status === "Data Copied" && task.rejectionNote) {
+        updateData.rejectionNote = null;
+        updateData.rejectedBy = null;
+        updateData.rejectedAt = null;
+      }
 
       // Transaction: task update + activity log are atomic
       const [updated] = await prisma.$transaction([
@@ -93,6 +101,19 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
           message: `${session.username} moved ${params.id} from "${task.status}" to "${status}"` },
       });
       sendPushNotifications(params.id, `${session.username} moved ${params.id} from "${task.status}" to "${status}"`);
+    }
+
+    // Handle rejection: when admin moves from Reviewed to Data Copied with a rejection note
+    if (statusChanged && status === "Data Copied" && task.status === "Reviewed") {
+      if (!body.rejectionNote || !body.rejectionNote.trim()) {
+        return NextResponse.json(
+          { error: "Rejection note is required when moving from Reviewed to Data Copied" },
+          { status: 400 }
+        );
+      }
+      updateData.rejectionNote = body.rejectionNote;
+      updateData.rejectedBy = session.username;
+      updateData.rejectedAt = new Date();
     }
 
     // Always detect field-level changes (regardless of status change)
