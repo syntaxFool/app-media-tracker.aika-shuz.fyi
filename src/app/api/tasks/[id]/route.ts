@@ -78,6 +78,17 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     }
 
     // Admin: full CRUD, bidirectional status
+
+    // Validate rejection note before any side effects
+    if (status !== undefined && status !== task.status && status === "Data Copied" && task.status === "Reviewed") {
+      if (!body.rejectionNote || !body.rejectionNote.trim()) {
+        return NextResponse.json(
+          { error: "Rejection note is required when moving from Reviewed to Data Copied" },
+          { status: 400 }
+        );
+      }
+    }
+
     if (customerName !== undefined) updateData.customerName = customerName;
     if (shootDate !== undefined) updateData.shootDate = new Date(shootDate);
     if (dueDate !== undefined) updateData.dueDate = dueDate ? new Date(dueDate) : null;
@@ -91,6 +102,12 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     const statusChanged = status !== undefined && status !== task.status;
     if (statusChanged) {
       updateData.status = status;
+      // If rejection: save rejection fields
+      if (status === "Data Copied" && task.status === "Reviewed") {
+        updateData.rejectionNote = body.rejectionNote;
+        updateData.rejectedBy = session.username;
+        updateData.rejectedAt = new Date();
+      }
       await enqueueWhatsAppMessage({
         taskId: params.id, customerName: task.customerName,
         oldStatus: task.status, newStatus: status, updatedBy: session.username,
@@ -101,19 +118,6 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
           message: `${session.username} moved ${params.id} from "${task.status}" to "${status}"` },
       });
       sendPushNotifications(params.id, `${session.username} moved ${params.id} from "${task.status}" to "${status}"`);
-    }
-
-    // Handle rejection: when admin moves from Reviewed to Data Copied with a rejection note
-    if (statusChanged && status === "Data Copied" && task.status === "Reviewed") {
-      if (!body.rejectionNote || !body.rejectionNote.trim()) {
-        return NextResponse.json(
-          { error: "Rejection note is required when moving from Reviewed to Data Copied" },
-          { status: 400 }
-        );
-      }
-      updateData.rejectionNote = body.rejectionNote;
-      updateData.rejectedBy = session.username;
-      updateData.rejectedAt = new Date();
     }
 
     // Always detect field-level changes (regardless of status change)
