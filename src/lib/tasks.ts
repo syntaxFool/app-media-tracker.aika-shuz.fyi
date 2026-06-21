@@ -6,7 +6,7 @@ export const STATUS_FLOW: Record<string, string[]> = {
   "Video Shot": ["Data Copied"],
   "Data Copied": ["Video Edited"],
   "Video Edited": ["Reviewed"],
-  Reviewed: ["Uploaded", "Data Copied", "Dropped"],
+  Reviewed: ["Uploaded"],
   Uploaded: ["Task Completed"],
   "Task Completed": [],
   Dropped: [],

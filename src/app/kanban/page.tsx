@@ -134,7 +134,7 @@ export default function KanbanPage() {
                   {col.tasks.map((task) => {
                     const isOverdue = task.status !== "Task Completed" && task.status !== "Dropped" && task.dueDate && new Date(task.dueDate) < new Date();
                     const assigned = Array.isArray(task.assignedTo) ? task.assignedTo : [];
-                    const isRejectedTask = isRejected(task);
+                    const isRejectedTask = !!(task.rejectionNote && task.status !== "Dropped");
 
                     return (
                       <div

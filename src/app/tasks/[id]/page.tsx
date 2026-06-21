@@ -288,12 +288,9 @@ export default function TaskDetailPage() {
                   }}
                   className="select-linear flex-1"
                 >
-                  {Object.keys(STATUS_FLOW).map((s) => (
-                    <option key={s} value={s}>{s}</option>
+                  {Object.keys(STATUS_FLOW).filter(s => task.status !== "Reviewed" || s !== "Dropped").map((s) => (
+                    <option key={s} value={s}>{s === "Data Copied" && task.status === "Reviewed" ? "Rejected" : s}</option>
                   ))}
-                  {task.status === "Reviewed" && (
-                    <option value="Data Copied">Rejected</option>
-                  )}
                   {task.status === "Reviewed" && (
                     <option value="Dropped">Dropped</option>
                   )}
