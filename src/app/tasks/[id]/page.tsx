@@ -25,9 +25,9 @@ export default function TaskDetailPage() {
   const [activities, setActivities] = useState<any[]>([]);
   const [showUrlCollector, setShowUrlCollector] = useState(false);
   const [confirmAdminStatus, setConfirmAdminStatus] = useState<string | null>(null);
-const [showRejectionModal, setShowRejectionModal] = useState(false);
-const [rejectionNote, setRejectionNote] = useState("");
-const [rejectionSubmitting, setRejectionSubmitting] = useState(false);
+  const [showRejectionModal, setShowRejectionModal] = useState(false);
+  const [rejectionNote, setRejectionNote] = useState("");
+  const [rejectionSubmitting, setRejectionSubmitting] = useState(false);
   const [taskUrls, setTaskUrls] = useState<any[]>([]);
 
   const fetchTask = useCallback(async () => {
