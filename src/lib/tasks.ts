@@ -6,7 +6,7 @@ export const STATUS_FLOW: Record<string, string[]> = {
   "Video Shot": ["Data Copied"],
   "Data Copied": ["Video Edited"],
   "Video Edited": ["Reviewed"],
-  Reviewed: ["Uploaded"],
+  Reviewed: ["Uploaded", "Data Copied"],
   Uploaded: ["Task Completed"],
   "Task Completed": [],
 };
@@ -47,4 +47,29 @@ export async function generateTaskId(): Promise<string> {
   if (isNaN(num)) return "SHANUZZ-0001";
 
   return `SHANUZZ-${String(num + 1).padStart(4, "0")}`;
+}
+
+/** Check if a task has been rejected */
+export function isRejected(task: { rejectionNote?: string | null }): boolean {
+  return !!task.rejectionNote;
+}
+
+/** Get allowed next statuses for a task based on role and rejection state */
+export function getAllowedNextStatuses(
+  task: { status: string; rejectionNote?: string | null },
+  role: string,
+): string[] {
+  const base = STATUS_FLOW[task.status] || [];
+
+  if (role === "admin" || role === "su") {
+    // Admin gets the full STATUS_FLOW
+    return base;
+  }
+
+  // Staff: forward-only, but allow Data Copied → Reviewed if rejected
+  if (isRejected(task) && task.status === "Data Copied") {
+    return [...base, "Reviewed"];
+  }
+
+  return base;
 }
