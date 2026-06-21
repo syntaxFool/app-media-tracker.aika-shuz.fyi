@@ -80,10 +80,11 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     // Admin: full CRUD, bidirectional status
 
     // Validate rejection note before any side effects
-    if (status !== undefined && status !== task.status && status === "Data Copied" && task.status === "Reviewed") {
+    const isRejection = status !== undefined && status !== task.status && task.status === "Reviewed" && (status === "Data Copied" || status === "Dropped");
+    if (isRejection) {
       if (!body.rejectionNote || !body.rejectionNote.trim()) {
         return NextResponse.json(
-          { error: "Rejection note is required when moving from Reviewed to Data Copied" },
+          { error: "Rejection note is required when moving from Reviewed" },
           { status: 400 }
         );
       }
@@ -103,7 +104,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     if (statusChanged) {
       updateData.status = status;
       // If rejection: save rejection fields
-      if (status === "Data Copied" && task.status === "Reviewed") {
+      if (task.status === "Reviewed" && (status === "Data Copied" || status === "Dropped")) {
         updateData.rejectionNote = body.rejectionNote;
         updateData.rejectedBy = session.username;
         updateData.rejectedAt = new Date();

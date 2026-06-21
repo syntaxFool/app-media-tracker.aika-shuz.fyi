@@ -163,22 +163,25 @@ export default function TaskDetailPage() {
           )}
         </div>
 
-        {task.rejectionNote && (
-          <div className="bg-danger/5 border border-danger/20 rounded-md p-4">
-            <div className="flex items-center gap-2 mb-2">
-              <span className="text-micro font-[590] text-white bg-danger px-2 py-0.5 rounded-pill">
-                Fix Required
-              </span>
-              {task.rejectedBy && (
-                <span className="text-tiny text-fg-quaternary">
-                  Rejected by {task.rejectedBy}
-                  {task.rejectedAt && <> on {new Date(task.rejectedAt).toLocaleDateString("en-IN")}</>}
+        {task.rejectionNote && (() => {
+          const isDropped = task.status === "Dropped";
+          return (
+            <div className={`${isDropped ? "bg-gray-500/5 border-gray-400/20" : "bg-danger/5 border-danger/20"} border rounded-md p-4`}>
+              <div className="flex items-center gap-2 mb-2">
+                <span className={`text-micro font-[590] text-white px-2 py-0.5 rounded-pill ${isDropped ? "bg-gray-400" : "bg-danger"}`}>
+                  {isDropped ? "Discarded" : "Fix Required"}
                 </span>
-              )}
+                {task.rejectedBy && (
+                  <span className="text-tiny text-fg-quaternary">
+                    Rejected by {task.rejectedBy}
+                    {task.rejectedAt && <> on {new Date(task.rejectedAt).toLocaleDateString("en-IN")}</>}
+                  </span>
+                )}
+              </div>
+              <p className="text-sm text-fg-secondary dark:text-gray-300 italic">"{task.rejectionNote}"</p>
             </div>
-            <p className="text-sm text-fg-secondary dark:text-gray-300 italic">"{task.rejectionNote}"</p>
-          </div>
-        )}
+          );
+        })()}
 
         {task.photoPath&&<div className="bg-white dark:bg-gray-900 border border-border dark:border-gray-800 rounded-md overflow-hidden shadow-sm"><img src={task.photoPath} alt={task.customerName} className="w-full h-64 object-cover"/></div>}
         {task.note&&<div className="bg-white dark:bg-gray-900 border border-border dark:border-gray-800 rounded-md p-4 shadow-sm"><p className="text-label text-fg-tertiary mb-1">Note</p><p className="text-sm text-fg-secondary dark:text-gray-300 whitespace-pre-wrap">{task.note}</p></div>}
@@ -354,8 +357,9 @@ export default function TaskDetailPage() {
                       >Cancel</button>
                       <button
                         onClick={async () => {
+                          if (!rejectionNote.trim()) return;
                           setRejectionSubmitting(true);
-                          const body: any = { status: "Dropped" };
+                          const body: any = { status: "Dropped", rejectionNote: rejectionNote.trim() };
                           await fetch(`/api/tasks/${taskId}`, {
                             method: "PUT",
                             headers: {"Content-Type":"application/json"},
@@ -368,7 +372,7 @@ export default function TaskDetailPage() {
                           await fetchActivity();
                         }}
                         className="btn-ghost flex-1 text-fg-quaternary border border-border"
-                        disabled={rejectionSubmitting}
+                        disabled={rejectionSubmitting || !rejectionNote.trim()}
                       >
                         {rejectionSubmitting ? "..." : "Discard"}
                       </button>
