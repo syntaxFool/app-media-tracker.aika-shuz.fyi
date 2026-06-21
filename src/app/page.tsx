@@ -15,7 +15,7 @@ interface Task {
 const STATUS_DOT_COLORS: Record<string, string> = {
   New: "#72cdf4", "Video Shot": "#ffd200", "Data Copied": "#005581",
   "Video Edited": "#6366f1", Reviewed: "#f59e0b", Uploaded: "#10b981",
-  "Task Completed": "#27a644", Dropped: "#9ca3af",
+  "Task Completed": "#27a644", Rejected: "#ef4444", Dropped: "#9ca3af",
 };
 
 export default function DashboardPage() {

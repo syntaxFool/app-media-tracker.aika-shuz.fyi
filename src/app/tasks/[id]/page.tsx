@@ -273,7 +273,7 @@ export default function TaskDetailPage() {
                     const newStatus = e.target.value;
                     if (newStatus !== task.status) {
                       // If moving from Reviewed to Data Copied, show rejection modal
-                      if (task.status === "Reviewed" && newStatus === "Data Copied") {
+                      if (task.status === "Reviewed" && (newStatus === "Rejected" || newStatus === "Dropped")) {
                         // Fetch staff list for reassignment & pre-fill current assignees
                         fetch("/api/users").then(r => { if (r.ok) r.json().then(d => setStaffList((d.users || []).filter((u: any) => u.role !== "su"))); }).catch(() => {});
                         setSelectedReassignees(task.assignedTo || []);
@@ -380,7 +380,7 @@ export default function TaskDetailPage() {
                         onClick={async () => {
                           if (!rejectionNote.trim()) return;
                           setRejectionSubmitting(true);
-                          const body: any = { status: "Data Copied", rejectionNote: rejectionNote.trim() };
+                          const body: any = { status: "Rejected", rejectionNote: rejectionNote.trim() };
                           if (selectedReassignees.length > 0) {
                             body.assignedTo = selectedReassignees;
                           }

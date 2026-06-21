@@ -6,6 +6,7 @@ const STATUS_COLORS: Record<string, string> = {
   Reviewed: "bg-orange-500/10 text-orange-600 border-orange-500/25",
   Uploaded: "bg-emerald-500/10 text-emerald-600 border-emerald-500/25",
   "Task Completed": "bg-green-500/10 text-green-600 border-green-500/25",
+  Rejected: "bg-danger/10 text-danger border-danger/25",
   Dropped: "bg-black/10 text-fg-quaternary border-black/15",
 };
 
