@@ -346,12 +346,32 @@ export default function TaskDetailPage() {
                       </div>
                     )}
 
-                    <div className="flex gap-3">
+                    <div className="flex gap-2">
                       <button
                         onClick={() => { setShowRejectionModal(false); setRejectionNote(""); }}
                         className="btn-ghost flex-1"
                         disabled={rejectionSubmitting}
                       >Cancel</button>
+                      <button
+                        onClick={async () => {
+                          setRejectionSubmitting(true);
+                          const body: any = { status: "Dropped" };
+                          await fetch(`/api/tasks/${taskId}`, {
+                            method: "PUT",
+                            headers: {"Content-Type":"application/json"},
+                            body: JSON.stringify(body),
+                          });
+                          setRejectionSubmitting(false);
+                          setShowRejectionModal(false);
+                          setRejectionNote("");
+                          await fetchTask();
+                          await fetchActivity();
+                        }}
+                        className="btn-ghost flex-1 text-fg-quaternary border border-border"
+                        disabled={rejectionSubmitting}
+                      >
+                        {rejectionSubmitting ? "..." : "Discard"}
+                      </button>
                       <button
                         onClick={async () => {
                           if (!rejectionNote.trim()) return;
@@ -388,7 +408,7 @@ export default function TaskDetailPage() {
               🔒 You are not assigned to this task
             </div>
           )}
-          {userRole==="staff"&&task.status!=="Task Completed"&&<div className="pt-3 border-t border-border dark:border-gray-800"><PingAdminButton taskId={task.id}/></div>}
+          {userRole==="staff"&&task.status!=="Task Completed"&&task.status!=="Dropped"&&<div className="pt-3 border-t border-border dark:border-gray-800"><PingAdminButton taskId={task.id}/></div>}
         </div>
 
         {deleteConfirm&&<div className="dialog-overlay" onClick={()=>setDeleteConfirm(false)}><div className="dialog-content p-6" onClick={e=>e.stopPropagation()}><h3 className="text-heading-3 text-fg-primary mb-2">Delete?</h3><p className="text-small text-fg-secondary mb-6">Permanently delete <span className="text-fg-primary font-mono">{task.id}</span>?</p><div className="flex gap-3"><button onClick={()=>setDeleteConfirm(false)} className="btn-ghost flex-1">Cancel</button><button onClick={handleDelete} className="btn-danger flex-1">Delete</button></div></div></div>}

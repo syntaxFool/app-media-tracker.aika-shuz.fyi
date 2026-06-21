@@ -6,7 +6,8 @@ import { Loader2, BarChart3, TrendingUp, PieChart } from "lucide-react";
 
 const STATUS_COLORS: Record<string, string> = {
   New: "#72cdf4", "Video Shot": "#ffd200", "Data Copied": "#005581",
-  "Video Edited": "#6366f1", Reviewed: "#f59e0b", Uploaded: "#10b981", "Task Completed": "#27a644",
+  "Video Edited": "#6366f1", Reviewed: "#f59e0b", Uploaded: "#10b981",
+  "Task Completed": "#27a644", Dropped: "#9ca3af",
 };
 
 export default function AnalyticsPage() {
@@ -42,6 +43,7 @@ export default function AnalyticsPage() {
           </div>
           <div className="bg-white dark:bg-gray-900 border border-border dark:border-gray-800 rounded-md p-4 shadow-sm text-center">
             <p className="text-heading-2 text-success">{data.statusBreakdown.find((s:any)=>s.status==="Task Completed")?.count||0}</p>
+            <p className="text-caption text-fg-quaternary">Dropped: {data.statusBreakdown.find((s:any)=>s.status==="Dropped")?.count||0}</p>
             <p className="text-micro text-fg-tertiary">Completed</p>
           </div>
         </div>

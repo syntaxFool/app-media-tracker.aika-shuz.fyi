@@ -18,13 +18,14 @@ export async function GET(req: NextRequest) {
 
     const where: any = {};
 
-    // Active tasks: not "Task Completed" OR completed within last 24h
+    // Active tasks: not terminal OR completed within last 24h
+    const TERMINAL_STATUSES = ["Task Completed", "Dropped"];
     if (!status) {
       where.OR = [
-        { status: { not: "Task Completed" } },
+        { status: { notIn: TERMINAL_STATUSES } },
         {
           AND: [
-            { status: "Task Completed" },
+            { status: { in: TERMINAL_STATUSES } },
             { updatedAt: { gte: new Date(Date.now() - 24 * 60 * 60 * 1000) } },
           ],
         },
