@@ -2,7 +2,6 @@
 
 import { useRouter } from "next/navigation";
 import { Calendar, Star, ChevronRight, Users } from "lucide-react";
-import { isRejected } from "@/lib/tasks";
 import StatusBadge from "./status-badge";
 import ImagePreview from "./image-preview";
 
@@ -21,11 +20,11 @@ export default function TaskCard({ task, selectMode, selected, onToggleSelect }:
   const router = useRouter();
   const shootDateStr = new Date(task.shootDate).toLocaleDateString("en-IN", { day:"numeric", month:"short", year:"numeric" });
   const dueDateStr = task.dueDate ? new Date(task.dueDate).toLocaleDateString("en-IN", { day:"numeric", month:"short", year:"numeric" }) : null;
-  const isCompleted = task.status === "Task Completed" || task.status === "Dropped";
+  const isCompleted = task.status === "Task Completed";
   const isOverdue = !isCompleted && task.dueDate && new Date(task.dueDate) < new Date();
   const isDueSoon = !isCompleted && task.dueDate && !isOverdue && (new Date(task.dueDate).getTime() - Date.now() < 24*60*60*1000);
   const assigned = Array.isArray(task.assignedTo) ? task.assignedTo : [];
-  const rejected = isRejected(task);
+  const rejected = !!task.rejectionNote;
 
   return (
     <div onClick={() => (selectMode ? onToggleSelect?.() : router.push(`/tasks/${task.id}`))}

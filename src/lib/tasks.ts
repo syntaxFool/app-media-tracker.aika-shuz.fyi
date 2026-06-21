@@ -6,10 +6,9 @@ export const STATUS_FLOW: Record<string, string[]> = {
   "Video Shot": ["Data Copied"],
   "Data Copied": ["Video Edited"],
   "Video Edited": ["Reviewed"],
-  Reviewed: ["Uploaded", "Data Copied", "Dropped"],
+  Reviewed: ["Uploaded", "Data Copied"],
   Uploaded: ["Task Completed"],
   "Task Completed": [],
-  Dropped: [],
 };
 
 export const ALL_STATUSES = Object.keys(STATUS_FLOW);
@@ -31,7 +30,6 @@ export function getResponsibleForStatus(status: string): string {
     Reviewed: "Uploader",
     Uploaded: "Admin",
     "Task Completed": "—",
-    Dropped: "—",
   };
   return map[status] || "Admin";
 }
