@@ -7,7 +7,7 @@ import StatusBadge from "@/components/status-badge";
 import StatusButtons from "@/components/status-buttons";
 import PingAdminButton from "@/components/ping-admin-button";
 import UrlCollector from "@/components/url-collector";
-import { ArrowLeft, Edit, Trash2, Calendar, Star, MessageSquare, CheckSquare, Plus, Clock, ExternalLink } from "lucide-react";
+import { ArrowLeft, Edit, Trash2, Calendar, Star, MessageSquare, CheckSquare, Plus, Clock, ExternalLink, MoreVertical } from "lucide-react";
 import { STATUS_FLOW, getAllowedNextStatuses } from "@/lib/tasks";
 
 const NEXT_STATUS = STATUS_FLOW;
@@ -31,6 +31,7 @@ export default function TaskDetailPage() {
   const [rejectionSubmitting, setRejectionSubmitting] = useState(false);
   const [staffList, setStaffList] = useState<any[]>([]);
   const [selectedReassignees, setSelectedReassignees] = useState<string[]>([]);
+  const [headerMenuOpen, setHeaderMenuOpen] = useState(false);
   const [taskUrls, setTaskUrls] = useState<any[]>([]);
 
   const fetchTask = useCallback(async () => {
@@ -133,10 +134,26 @@ export default function TaskDetailPage() {
         <div className="flex items-center gap-3">
           <button onClick={()=>router.back()} className="btn-icon p-1.5"><ArrowLeft className="w-5 h-5" /></button>
           <div className="flex-1"><div className="flex items-center gap-2"><span className="text-micro text-fg-quaternary font-mono">{task.id}</span><StatusBadge status={task.status} />{task.isInfluencer&&<Star className="w-3.5 h-3.5 text-accent" fill="currentColor"/>}</div></div>
-          {(userRole === "admin" || userRole === "su") && <div className="flex gap-1"><button onClick={()=>router.push(`/tasks/${task.id}/edit`)} className="btn-subtle p-2"><Edit className="w-4 h-4"/></button><button onClick={()=>setDeleteConfirm(true)} className="btn-subtle p-2 hover:text-danger"><Trash2 className="w-4 h-4"/></button></div>}
+          {(userRole === "admin" || userRole === "su") && (
+            <div className="flex gap-1 relative">
+              <button onClick={()=>router.push(`/tasks/${task.id}/edit`)} className="btn-subtle p-2"><Edit className="w-4 h-4"/></button>
+              <button onClick={() => setHeaderMenuOpen(!headerMenuOpen)} className="btn-subtle p-2"><MoreVertical className="w-4 h-4"/></button>
+              {headerMenuOpen && (
+                <>
+                  <div className="fixed inset-0 z-50" onClick={() => setHeaderMenuOpen(false)} />
+                  <div className="absolute right-0 top-full mt-1 w-44 bg-white dark:bg-gray-900 border border-border dark:border-gray-700 rounded-lg shadow-elev-dialog z-50 overflow-hidden animate-scale-in origin-top-right">
+                    <button onClick={() => { setHeaderMenuOpen(false); setDeleteConfirm(true); }} className="w-full text-left px-4 py-2.5 text-sm text-danger hover:bg-surface dark:hover:bg-gray-800 flex items-center gap-2.5 transition-colors">
+                      <Trash2 className="w-4 h-4" />
+                      Delete Task
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
+          )}
         </div>
 
-        <h1 className="text-heading-2 text-fg-primary">{task.customerName}</h1>
+        <h1 className="text-heading-2 text-fg-primary dark:text-white font-semibold">{task.customerName}</h1>
 
         {/* Due Date */}
         {dueDate && (
@@ -147,7 +164,7 @@ export default function TaskDetailPage() {
           }`}>
             <Clock className="w-4 h-4 flex-shrink-0" />
             <span className="text-sm">
-              {isOverdue ? "⚠️ Overdue — " : isDueSoon ? "⏰ Due soon — " : "Due: "}
+              {isOverdue ? "Overdue — " : isDueSoon ? "Due soon — " : "Due: "}
               {dueDate.toLocaleDateString("en-IN", { weekday:"short", day:"numeric", month:"short" })}
             </span>
           </div>
@@ -158,7 +175,7 @@ export default function TaskDetailPage() {
           <DetailRow icon={<Calendar className="w-4 h-4"/>} label="Shoot Date" value={date} />
           <DetailRow label="Service" value={task.service} />
           <DetailRow label="Gender" value={task.gender} />
-          <DetailRow icon={<Star className="w-4 h-4"/>} label="Influencer" value={task.isInfluencer?"Yes ⭐":"No"} />
+          <DetailRow icon={task.isInfluencer ? <Star className="w-4 h-4 text-accent" /> : undefined} label="Influencer" value={task.isInfluencer ? "Yes" : "No"} />
           {Array.isArray(task.assignedTo) && task.assignedTo.length > 0 && (
             <DetailRow label="Assigned" value={task.assignedTo.join(", ")} />
           )}
@@ -219,7 +236,7 @@ export default function TaskDetailPage() {
             </div>
           ))}
           <div className="flex gap-2">
-            <input type="text" value={newShotDesc} onChange={e=>setNewShotDesc(e.target.value)} onKeyDown={e=>e.key==="Enter"&&addShotItem()} className="input-linear flex-1 text-sm py-1.5" placeholder="Add shot item..." />
+            <input type="text" value={newShotDesc} onChange={e=>setNewShotDesc(e.target.value)} onKeyDown={e=>e.key==="Enter"&&addShotItem()} className="input-linear flex-1 text-sm" placeholder="Add shot item..." />
             <button onClick={addShotItem} className="btn-primary text-label px-3 py-1.5"><Plus className="w-3.5 h-3.5"/></button>
           </div>
         </div>
@@ -232,14 +249,22 @@ export default function TaskDetailPage() {
             <div key={c.id} className="border-b border-border dark:border-gray-800 pb-2 last:border-0">
               <div className="flex items-center gap-2 mb-1">
                 <span className="text-micro font-[510] text-primary">{c.author}</span>
-                <span className="text-tiny text-fg-quaternary">{new Date(c.createdAt).toLocaleString("en-IN")}</span>
+                <span className="text-tiny text-fg-quaternary">{formatActivityTime(c.createdAt)}</span>
               </div>
               <p className="text-sm text-fg-secondary dark:text-gray-300">{c.text}</p>
             </div>
           ))}
           <div className="flex gap-2">
-            <input type="text" value={commentText} onChange={e=>setCommentText(e.target.value)} onKeyDown={e=>e.key==="Enter"&&addComment()} className="input-linear flex-1 text-sm py-1.5" placeholder="Add a comment..." />
-            <button onClick={addComment} disabled={commentSubmitting} className="btn-primary text-label px-3 py-1.5">Send</button>
+            <textarea
+              value={commentText}
+              onChange={e => setCommentText(e.target.value)}
+              onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); addComment(); } }}
+              className="input-linear flex-1 text-sm resize-none min-h-[36px] leading-5 py-2"
+              placeholder="Add a comment..."
+              rows={1}
+              onInput={(e) => { const el = e.currentTarget; el.style.height = "auto"; el.style.height = el.scrollHeight + "px"; }}
+            />
+            <button onClick={addComment} disabled={commentSubmitting} className="btn-primary text-label px-3 rounded-sm self-start">Send</button>
           </div>
         </div>
 
@@ -252,7 +277,7 @@ export default function TaskDetailPage() {
           {activities.map((a: any) => (
             <div key={a.id} className="flex gap-3 text-caption">
               <span className="text-fg-quaternary dark:text-gray-500 flex-shrink-0 w-[120px]">
-                {new Date(a.createdAt).toLocaleString("en-IN")}
+                {formatActivityTime(a.createdAt)}
               </span>
               <span className="text-fg-secondary dark:text-gray-300">
                 <span className="text-fg-primary dark:text-gray-100 font-[510]">{a.actor}</span>
@@ -288,11 +313,17 @@ export default function TaskDetailPage() {
                   }}
                   className="select-linear flex-1"
                 >
-                  {Object.keys(STATUS_FLOW).filter(s => task.status !== "Reviewed" || s !== "Dropped").map((s) => (
-                    <option key={s} value={s}>{s === "Data Copied" && task.status === "Reviewed" ? "Rejected" : s}</option>
+                  {Object.keys(STATUS_FLOW).filter(s => {
+                    if (task.status === "Reviewed") return s !== "Dropped" && s !== "Data Copied";
+                    return true;
+                  }).map((s) => (
+                    <option key={s} value={s}>{s}</option>
                   ))}
                   {task.status === "Reviewed" && (
-                    <option value="Dropped">Dropped</option>
+                    <>
+                      <option value="Data Copied" className="text-red-600 dark:text-red-400 font-semibold" style={{ backgroundColor: "rgba(239, 68, 68, 0.1)" }}>⛔ Rejected</option>
+                      <option value="Dropped">Dropped</option>
+                    </>
                   )}
                 </select>
               </div>
@@ -435,6 +466,22 @@ export default function TaskDetailPage() {
       )}
     </AppLayout>
   );
+}
+
+function formatActivityTime(dateStr: string): string {
+  const d = new Date(dateStr);
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const yesterday = new Date(today);
+  yesterday.setDate(yesterday.getDate() - 1);
+  const dateOnly = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+
+  const time = d.toLocaleTimeString("en-IN", { hour: "numeric", minute: "2-digit", hour12: true });
+
+  if (dateOnly.getTime() === today.getTime()) return `Today, ${time}`;
+  if (dateOnly.getTime() === yesterday.getTime()) return `Yesterday, ${time}`;
+
+  return d.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" }) + `, ${time}`;
 }
 
 function DetailRow({ icon, label, value }: { icon?: React.ReactNode; label: string; value: string }) {
