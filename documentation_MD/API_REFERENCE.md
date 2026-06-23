@@ -32,7 +32,7 @@ Clear JWT cookie.
 ## Tasks
 
 ### GET /api/tasks
-List tasks. Query params: `status`, `search`, `influencer`, `service`, `gender`.
+List tasks. Query params: `status`, `search`, `influencer`, `service`, `gender`, `createdAfter`, `createdBefore` (ISO date strings).
 ```json
 // Response 200
 { "tasks": [{ "id": "SHANUZZ-0001", "customerName": "...", ... }] }
@@ -230,7 +230,7 @@ Remove subscription.
 ## Analytics `[admin/su]`
 
 ### GET /api/analytics
-Return aggregate stats.
+Return aggregate stats. Query param: `?type=all|influencer|regular` to filter by influencer status.
 ```json
 // Response 200
 {
@@ -238,7 +238,12 @@ Return aggregate stats.
   "influencerRatio": 40,
   "statusBreakdown": [{ "status": "New", "count": 5 }, ...],
   "monthlyTrend": [{ "month": "2025-07", "total": 10, "completed": 3 }],
-  "serviceBreakdown": [{ "service": "Wedding", "count": 8 }]
+  "serviceBreakdown": [{ "service": "Wedding", "count": 8 }],
+  "rejectionRate": 12,
+  "rejectionsByStage": { "Reviewed": 3 },
+  "avgTatDays": 2.5,
+  "assigneeBreakdown": [{ "username": "Zubair", "total": 5, "pending": 2, "completed": 3, "rejected": 1 }],
+  "qualityScores": [{ "username": "Zubair", "reworkCount": 1, "totalAssigned": 5, "reworkRate": 20 }]
 }
 ```
 

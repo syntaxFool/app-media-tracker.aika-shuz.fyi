@@ -3,8 +3,8 @@
 Mobile-first task tracking application for the Shanuzz digital media pipeline — from video shoot to final upload.
 
 **URL:** https://app-media-tracker.aika-shuz.fyi  
-**Version:** v1.0.1  
-**Stack:** Next.js 14 · Prisma · PostgreSQL · Redis · Tailwind CSS · Baileys (WhatsApp) · web-push
+**Version:** v1.1.0  
+**Stack:** Next.js 14 · Prisma · PostgreSQL · Redis · Tailwind CSS · Baileys (WhatsApp) · web-push · html2canvas
 
 ## Quick Start
 
@@ -37,9 +37,11 @@ npm run dev
 - **PWA** — Installable, offline cache, app icon badge via Navigator API, push notifications outside the app
 - **Dark/Light Mode** — Theme toggle with localStorage persistence
 - **Settings** — Dedicated `/settings` page with notification toggle and app info
-- **Analytics** — Status distribution, service breakdown, monthly trends (admin only)
+
 - **WhatsApp Integration** — Status updates trigger team group + direct messages via Redis queue
 - **Role-Based Access** — 3 tiers (su → admin → staff). Staff can only move assigned tasks. Admin/su bidirectional status. FAB "+" button with cutout design
+- **Analytics** — Full dashboard with key metrics, status distribution, rejection analysis, monthly trends (dual Created/Completed bars), assignee productivity, quality scores, and service breakdown (admin only)
+- **Analytics Export** — Share PNG report on WhatsApp or download CSV with timeframe filtering (admin only)
 - **Status Confirmation** — "Save changes?" dialog appears before every status change (both staff buttons and admin dropdown)
 
 ## Documentation Index
@@ -55,10 +57,11 @@ npm run dev
 ## Status Workflow
 
 ```
-New → Video Shot → Data Copied → Video Edited → Reviewed → Uploaded → Task Completed
+New → Video Shot → Data Copied → Video Edited → Reviewed → Approved → Uploaded → Task Completed
 ```
 
 - **Staff:** Forward-only status updates with confirmation dialog
 - **Admin/su:** Bidirectional status (forward + backward) with confirmation dialog
+- **Rejection:** At Reviewed stage, admin can send back to Data Copied (with rejection note) or drop the task
 - **Ping Admin:** Staff can request admin correction via WhatsApp
-- **URL Collection:** Moving to Task Completed requires ≥1 platform URL
+- **URL Collection:** Moving to Uploaded → Task Completed requires ≥1 platform URL

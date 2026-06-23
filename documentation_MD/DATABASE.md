@@ -28,7 +28,7 @@ Main task table. One row per video production task.
 | `updated_by` | VARCHAR | - | Username of last updater |
 | `updated_at` | TIMESTAMP | - | Last update timestamp |
 
-**Status values:** New, Video Shot, Data Copied, Video Edited, Reviewed, Uploaded, Task Completed
+**Status values:** New, Video Shot, Data Copied, Video Edited, Reviewed, Approved, Uploaded, Task Completed, Dropped
 
 ---
 

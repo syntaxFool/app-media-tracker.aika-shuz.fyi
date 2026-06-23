@@ -89,12 +89,23 @@ docker compose logs -f wa-bot
 ## Updating
 
 ```bash
-# Pull latest code
-cd /home/nas/media-tracker
-git pull
+# From local machine (replace with your SSH config or IP):
+rsync -avz --delete -e "ssh -p 2222" \
+  --exclude 'node_modules' \
+  --exclude '.next' \
+  --exclude '.git' \
+  --exclude 'uploads/*' \
+  --exclude 'wa-bot/auth/*' \
+  --exclude 'wa-bot/store.json' \
+  ./ nas@154.84.215.26:/home/nas/media-tracker/
 
-# Rebuild + restart
+# SSH in and rebuild
+ssh -p 2222 nas@154.84.215.26
+cd /home/nas/media-tracker
 docker compose up -d --build web
+
+# Or use deploy script:
+./deploy.sh
 
 # If schema changed:
 docker exec media-tracker-web npx prisma db push

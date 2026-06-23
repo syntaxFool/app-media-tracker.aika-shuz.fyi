@@ -122,11 +122,28 @@ If you accidentally update to the wrong status:
 
 ### Analytics (Admin only)
 
-1. Click **Analytics** in navigation
-2. View total tasks, influencer ratio, completed count
-3. Status distribution bar chart
-4. Service breakdown
-5. Monthly trends
+Access the full analytics dashboard via **Analytics** in the sidebar/navigation.
+
+**Key Metrics** — Top row shows Total Tasks, Influencer %, Completed count, Rejection Rate (color-coded), and Avg Turnaround Time (Video Shot → Uploaded in days).
+
+**Status Distribution** — Horizontal bar chart of all pipeline stages (New → Task Completed) with a derived "⛔ Rejected" row. Each bar is color-coded by stage.
+
+**Rejection Analysis** — Shows which stage triggers the most rejections (e.g., "75% at Reviewed") with proportional bars.
+
+**Monthly Trend** — Dual-bar chart per month showing Created vs Completed tasks, with a legend.
+
+**Assignee Productivity** — Bar chart per team member showing total tasks assigned, completed/pending breakdown, and rejected count.
+
+**Quality Scores** — Rework rate % per team member, color-coded: green (<15%), yellow (15-30%), red (>30%).
+
+**By Service** — Service volume ranked highest to lowest with distinct colors per service.
+
+**Influencer Toggle** — Toggle between All / ⭐ Influencer / Regular to filter the entire dashboard by content type.
+
+**Export** — Tap the **Export** button next to the Analytics title to open the export bottom-sheet:
+- **Share Report** — Generates a PNG screenshot of the dashboard. Uses native Share API (WhatsApp) or downloads the image + copies a text summary.
+- **Download Data** — Downloads a CSV with Task ID, Creation Date, Service, Influencer Status, Stage, Assignee, and Completion Date.
+- **Timeframe** — Pick "Last 7 Days", "This Month", or "All Time" before exporting.
 
 ### User Management (Admin only)
 

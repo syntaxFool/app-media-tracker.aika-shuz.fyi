@@ -31,7 +31,7 @@
 
 | Layer | Technology |
 |-------|-----------|
-| Frontend | Next.js 14 App Router, React 18, Tailwind CSS 3.4 |
+| Frontend | Next.js 14 App Router, React 18, Tailwind CSS 3.4, html2canvas |
 | Backend | Next.js API Routes (Route Handlers) |
 | Database | PostgreSQL 15 (Prisma ORM 6.x) |
 | Cache/Queue | Redis 7 (ioredis) |
@@ -62,7 +62,7 @@ src/
 │   ├── kanban/page.tsx        # Kanban board (pull-to-refresh, photo thumbnails)
 │   ├── settings/page.tsx      # Settings (notification toggle, version info)
 │   ├── history/page.tsx       # Archived tasks (>24h)
-│   ├── analytics/page.tsx     # Admin analytics dashboard
+│   ├── analytics/page.tsx     # Admin analytics dashboard (metrics, status, rejection, TAT, assignee, export)
 │   ├── notifications/page.tsx # Notification list with read/unread
 │   ├── admin/users/page.tsx   # User management
 │   ├── tasks/
@@ -95,7 +95,7 @@ src/
 
 Roles:
 - **su** — Superuser, locked from frontend editing, full access
-- **admin** — Full CRUD, user management, bidirectional status
+- **admin** — Full CRUD, user management, bidirectional status, analytics
 - **staff** — Create tasks, forward-only status, ping admin
 
 ## Data Flow (Status Update)
@@ -162,9 +162,27 @@ The thumbnail is 24×24px on dashboard cards and 20×20px on kanban cards, posit
 - **Auto-assign:** Creator auto-added to `assignedTo` on task creation
 - **su exception:** su is never auto-assigned. Must manually select staff. su filtered from staff picker
 
+## Analytics Dashboard
+
+The `/analytics` page (admin/su only) provides:
+- **Key Metrics:** Total tasks, influencer ratio, completed count, rejection rate, average turnaround time
+- **Status Distribution:** Horizontal bar chart for all pipeline stages including a derived Rejected row
+- **Rejection Analysis:** Stage-by-stage breakdown showing which stage triggers the most rejections
+- **Monthly Trend:** Dual-bar chart (Created vs Completed) per month with legend
+- **Assignee Productivity:** Bar chart per team member with pending/completed/rejected breakdown
+- **Quality Scores:** Rework rate % per assignee with color-coded thresholds
+- **By Service:** Service volume sorted by count with distinct color per service
+- **Influencer Toggle:** Toggle between All / Influencer / Regular to filter all dashboard data
+
+### Export Feature
+
+- **Share Report** — Captures a PNG screenshot of the full dashboard via html2canvas, shares via Web Share API (WhatsApp) or downloads the image with a text summary copied to clipboard
+- **Download CSV** — Generates a CSV with Task ID, Creation Date, Service, Influencer Status, Stage, Assignee, and Completion Date
+- **Timeframe Filter** — "Last 7 Days", "This Month", or "All Time" constrains both export types
+
 ## Settings Page
 
 The `/settings` page provides:
 - **Notification toggle:** Enable (default permission), Disabled (granted), Blocked (denied)
-- **App info:** Version number (v1.0.1)
+- **App info:** Version number (v1.1.0)
 - Accessed via the ⋮ dropdown menu in the header
