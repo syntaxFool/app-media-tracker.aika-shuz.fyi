@@ -1,7 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   output: "standalone",
-  serverExternalPackages: ["web-push"],
   experimental: {
     serverComponentsExternalPackages: ["web-push"],
   },
