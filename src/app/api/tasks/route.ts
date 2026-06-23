@@ -15,6 +15,8 @@ export async function GET(req: NextRequest) {
     const influencer = searchParams.get("influencer");
     const service = searchParams.get("service");
     const gender = searchParams.get("gender");
+    const createdAfter = searchParams.get("createdAfter");
+    const createdBefore = searchParams.get("createdBefore");
 
     const where: any = {};
 
@@ -45,6 +47,8 @@ export async function GET(req: NextRequest) {
     if (influencer === "false") where.isInfluencer = false;
     if (service) where.service = service;
     if (gender) where.gender = gender;
+    if (createdAfter) where.createdAt = { ...(where.createdAt || {}), gte: new Date(createdAfter) };
+    if (createdBefore) where.createdAt = { ...(where.createdAt || {}), lte: new Date(createdBefore) };
 
     const tasks = await prisma.task.findMany({
       orderBy: { createdAt: "desc" },
