@@ -51,6 +51,24 @@ async function main() {
   });
   console.log("  ✅ Staff user: staff / staff123");
 
+  // ── Seed default app config ──
+  const defaultConfigs = [
+    { key: "services", value: ["Treatment","Haircut","Perming","Patch","Dread lock","Braid","Brand promo","Other"] },
+    { key: "genders", value: ["Male","Female","Other"] },
+    { key: "platforms", value: ["Instagram","YouTube Shorts","YouTube","Snapchat","Facebook","Google Business Profile","Custom"] },
+    { key: "branding", value: { appName: "Shanuzz Tracker", appFullName: "Shanuzz Media Tracker", taskIdPrefix: "SHANUZZ", version: "1.1.0" } },
+    { key: "status_responsible", value: { "New": "Admin", "Video Shot": "Videographer", "Data Copied": "Editor", "Video Edited": "Reviewer", "Reviewed": "Uploader", "Approved": "Admin", "Uploaded": "Admin", "Task Completed": "—", "Dropped": "—" } },
+  ];
+
+  for (const cfg of defaultConfigs) {
+    await prisma.appConfig.upsert({
+      where: { key: cfg.key },
+      update: {},
+      create: { key: cfg.key, value: cfg.value, updatedBy: "su" },
+    });
+  }
+  console.log("  ✅ Default app configs seeded");
+
   // Create sample tasks
   const tasks = [
     {

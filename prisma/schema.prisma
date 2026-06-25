@@ -131,3 +131,12 @@ model PushSubscription {
 
   @@map("push_subscriptions")
 }
+
+model AppConfig {
+  key       String   @id // e.g. "services", "genders", "platforms", "branding", "status_responsible"
+  value     Json     // the config data as JSON
+  updatedBy String   @map("updated_by")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("app_config")
+}
