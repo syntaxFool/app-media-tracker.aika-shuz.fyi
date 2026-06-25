@@ -115,13 +115,13 @@ export async function POST(req: NextRequest) {
     const { customerName, shootDate, dueDate, service, gender, isInfluencer, note, photoPath, assignedTo, seriesId, partNumber } = body;
 
     // Series field validation
-    if (partNumber !== undefined && !seriesId) {
+    if (partNumber != null && !seriesId) {
       return NextResponse.json(
         { error: "partNumber requires seriesId" },
         { status: 400 }
       );
     }
-    if (partNumber !== undefined && (typeof partNumber !== "number" || partNumber < 1)) {
+    if (partNumber != null && (typeof partNumber !== "number" || partNumber < 1)) {
       return NextResponse.json(
         { error: "partNumber must be a positive integer" },
         { status: 400 }
@@ -129,7 +129,7 @@ export async function POST(req: NextRequest) {
     }
     // Auto-compute next part number if seriesId given but no partNumber
     let resolvedPartNumber = partNumber;
-    if (seriesId && partNumber === undefined) {
+    if (seriesId && (partNumber === undefined || partNumber === null)) {
       const count = await prisma.task.count({ where: { seriesId } });
       resolvedPartNumber = count + 1;
     }
