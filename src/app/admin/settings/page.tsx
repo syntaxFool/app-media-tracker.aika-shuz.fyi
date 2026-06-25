@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import AppLayout from "@/components/layout";
 import { Loader2, Save, RotateCcw, CheckCircle2, AlertTriangle, Shield } from "lucide-react";
 
@@ -32,10 +32,19 @@ export default function SuSettingsPage() {
   const [editValue, setEditValue] = useState<any>(null);
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
+  const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const showToast = useCallback((message: string, type: "success" | "error" = "success") => {
     setToast({ message, type });
-    setTimeout(() => setToast(null), 3000);
+    if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+    toastTimerRef.current = setTimeout(() => setToast(null), 3000);
+  }, []);
+
+  // Cleanup toast timer on unmount
+  useEffect(() => {
+    return () => {
+      if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+    };
   }, []);
 
   const fetchConfigs = useCallback(async () => {
@@ -45,9 +54,12 @@ export default function SuSettingsPage() {
       if (res.ok) {
         const data = await res.json();
         setConfigs(data.configs || []);
+      } else {
+        showToast("Failed to load config — unauthorized or server error", "error");
       }
     } catch (err) {
       console.error("Failed to fetch configs", err);
+      showToast("Network error loading config", "error");
     } finally {
       setLoading(false);
     }
@@ -57,7 +69,8 @@ export default function SuSettingsPage() {
 
   function startEditing(key: string, currentValue: any) {
     setEditingKey(key);
-    setEditValue(JSON.parse(JSON.stringify(currentValue)));
+    // Deep clone — guard against undefined (unsaved/partial seed)
+    setEditValue(currentValue ? JSON.parse(JSON.stringify(currentValue)) : {});
   }
 
   function cancelEditing() {
@@ -203,7 +216,7 @@ export default function SuSettingsPage() {
   return (
     <AppLayout>
       {toast && (
-        <div className="fixed top-4 right-4 z-[9999] animate-fade-in">
+        <div role="status" aria-live="polite" className="fixed top-4 right-4 z-[9999] animate-fade-in">
           <div className={`flex items-center gap-2 px-4 py-3 rounded-md shadow-elev-dialog text-sm font-[510] ${
             toast.type === "success"
               ? "bg-success/10 text-success border border-success/20"
@@ -299,7 +312,7 @@ export default function SuSettingsPage() {
 
               {isEditing && (
                 <div className="bg-surface dark:bg-gray-800 rounded-sm p-3 border border-accent/30 dark:border-accent/30">
-                  {renderEditArea(key, value)}
+                  {renderEditArea(key, editValue)}
                 </div>
               )}
             </div>
