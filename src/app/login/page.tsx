@@ -3,9 +3,11 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { LogIn } from "lucide-react";
+import { useAppConfig } from "@/hooks/use-app-config";
 
 export default function LoginPage() {
   const router = useRouter();
+  const { config } = useAppConfig();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -45,7 +47,7 @@ export default function LoginPage() {
           <div className="w-16 h-16 rounded-xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
             <span className="text-2xl font-[590] text-primary">S</span>
           </div>
-          <h1 className="text-heading-3 text-fg-primary">Shanuzz Media Tracker</h1>
+          <h1 className="text-heading-3 text-fg-primary">{config.branding.appFullName}</h1>
           <p className="text-small text-fg-tertiary mt-1">Sign in to continue</p>
         </div>
 

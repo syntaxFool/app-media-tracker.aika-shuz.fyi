@@ -6,6 +6,7 @@ import {
   LayoutDashboard, Columns, History, LogOut, Plus, Sun, Moon, BarChart3, Bell, MoreVertical, Users, Settings, Shield,
 } from "lucide-react";
 import { useTheme } from "@/lib/theme";
+import { useAppConfig } from "@/hooks/use-app-config";
 
 interface User {
   id: number; username: string; displayName: string; role: "su" | "admin" | "staff";
@@ -13,6 +14,7 @@ interface User {
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter(); const pathname = usePathname();
+  const { config: appConfig } = useAppConfig();
   const [user, setUser] = useState<User | null>(null);
   const { theme, toggle } = useTheme();
   const [notifCount, setNotifCount] = useState(0);
@@ -108,7 +110,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         <div className="flex items-center justify-between px-4 h-14">
           {/* Brand */}
           <div className="flex items-center gap-2.5">
-            <span className="text-body-sb tracking-tight select-none">Shanuzz Tracker</span>
+            <span className="text-body-sb tracking-tight select-none">{appConfig.branding.appName}</span>
           </div>
 
           {/* Right: actions + user */}
@@ -174,7 +176,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                       Logout
                     </button>
                     <div className="border-t border-border dark:border-gray-700" />
-                    <div className="px-4 py-2 text-tiny text-fg-quaternary dark:text-gray-500 font-mono">v1.1.0</div>
+                    <div className="px-4 py-2 text-tiny text-fg-quaternary dark:text-gray-500 font-mono">v{appConfig.branding.version}</div>
                   </div>
                 </>
               )}
