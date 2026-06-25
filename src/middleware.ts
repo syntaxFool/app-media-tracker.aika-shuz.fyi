@@ -6,7 +6,7 @@ import { verifyToken, COOKIE_NAME } from "@/lib/jwt-edge";
 const PUBLIC_PATHS = ["/login", "/api/auth/login", "/api/auth/me"];
 
 // Paths that require admin role
-const ADMIN_API_PREFIXES = ["/api/users", "/api/analytics"];
+const ADMIN_API_PREFIXES = ["/api/users", "/api/analytics", "/api/admin"];
 const ADMIN_PAGE_PREFIXES = ["/admin"];
 
 export async function middleware(req: NextRequest) {
