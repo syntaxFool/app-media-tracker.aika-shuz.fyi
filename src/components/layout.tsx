@@ -89,6 +89,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   }
 
   const isActive = (path: string) => pathname === path;
+  const isSettingsPage = pathname === "/admin/settings";
   const navItems = [
     { path: "/", label: "Dashboard", icon: LayoutDashboard },
     { path: "/kanban", label: "Kanban", icon: Columns },
@@ -211,13 +212,15 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
       {/* Mobile Bottom Nav with FAB cutout */}
       <nav className="fixed bottom-0 left-0 right-0 z-40 md:hidden bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl border-t border-border dark:border-gray-800">
-        {/* FAB - positioned above the nav with a cutout effect */}
-        <div className="absolute left-1/2 -translate-x-1/2 -top-6 z-50 bg-white dark:bg-gray-950 rounded-full px-0.5">
-          <button onClick={() => router.push("/tasks/new")}
-            className="w-12 h-12 rounded-full bg-primary hover:bg-primary-hover text-white shadow-lg flex items-center justify-center transition-all active:scale-95 hover:shadow-xl ring-4 ring-white dark:ring-gray-950">
-            <Plus className="w-5 h-5" />
-          </button>
-        </div>
+        {/* FAB - hidden on admin/settings to avoid accidental navigation */}
+        {!isSettingsPage && (
+          <div className="absolute left-1/2 -translate-x-1/2 -top-6 z-50 bg-white dark:bg-gray-950 rounded-full px-0.5">
+            <button onClick={() => router.push("/tasks/new")}
+              className="w-12 h-12 rounded-full bg-primary hover:bg-primary-hover text-white shadow-lg flex items-center justify-center transition-all active:scale-95 hover:shadow-xl ring-4 ring-white dark:ring-gray-950">
+              <Plus className="w-5 h-5" />
+            </button>
+          </div>
+        )}
 
         {/* Nav items - Dashboard left, Kanban + History right of FAB */}
         <div className="flex items-center h-16 px-1">

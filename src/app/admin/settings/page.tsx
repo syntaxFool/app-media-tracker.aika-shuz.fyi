@@ -154,7 +154,7 @@ export default function SuSettingsPage() {
       <div className="space-y-2">
         {entries.map(([k, v]) => (
           <div key={k} className="flex items-center gap-2">
-            <span className="text-sm font-mono text-fg-tertiary w-36 flex-shrink-0 truncate">{k}</span>
+            <span className="text-sm font-mono text-fg-tertiary dark:text-gray-400 w-36 flex-shrink-0 truncate">{k}</span>
             <input
               type="text"
               value={v as string}
@@ -174,7 +174,7 @@ export default function SuSettingsPage() {
     return (
       <div className="space-y-3">
         <div>
-          <label className="block text-label text-fg-tertiary mb-1">Short App Name (header)</label>
+          <label className="block text-label text-fg-tertiary dark:text-gray-400 mb-1">Short App Name (header)</label>
           <input
             type="text"
             value={value?.appName || ""}
@@ -183,7 +183,7 @@ export default function SuSettingsPage() {
           />
         </div>
         <div>
-          <label className="block text-label text-fg-tertiary mb-1">Full App Name (login page, push)</label>
+          <label className="block text-label text-fg-tertiary dark:text-gray-400 mb-1">Full App Name (login page, push)</label>
           <input
             type="text"
             value={value?.appFullName || ""}
@@ -192,7 +192,7 @@ export default function SuSettingsPage() {
           />
         </div>
         <div>
-          <label className="block text-label text-fg-tertiary mb-1">Task ID Prefix</label>
+          <label className="block text-label text-fg-tertiary dark:text-gray-400 mb-1">Task ID Prefix</label>
           <input
             type="text"
             value={value?.taskIdPrefix || ""}
@@ -202,7 +202,7 @@ export default function SuSettingsPage() {
           />
         </div>
         <div>
-          <label className="block text-label text-fg-tertiary mb-1">Version</label>
+          <label className="block text-label text-fg-tertiary dark:text-gray-400 mb-1">Version</label>
           <input
             type="text"
             value={value?.version || ""}
@@ -262,7 +262,7 @@ export default function SuSettingsPage() {
         </div>
       )}
 
-      <div className="p-4 max-w-3xl mx-auto space-y-5 animate-fade-in pb-24">
+      <div className="p-4 max-w-3xl mx-auto space-y-5 animate-fade-in pb-32">
         <div>
           <div className="flex items-center gap-3 mb-1">
             <Shield className="w-6 h-6 text-amber-500" />
@@ -323,30 +323,30 @@ export default function SuSettingsPage() {
                 <div className="bg-surface dark:bg-gray-800 rounded-sm p-3 border border-border/50 dark:border-gray-700">
                   {key === "branding" && value ? (
                     <div className="flex flex-wrap gap-x-6 gap-y-1 text-sm">
-                      <span><span className="text-fg-quaternary">Name:</span> <span className="font-[510] text-fg-primary">{value.appName}</span></span>
-                      <span><span className="text-fg-quaternary">Full:</span> <span className="font-[510] text-fg-primary">{value.appFullName}</span></span>
-                      <span><span className="text-fg-quaternary">Prefix:</span> <code className="text-fg-primary">{value.taskIdPrefix}</code></span>
-                      <span><span className="text-fg-quaternary">Version:</span> <span className="font-[510] text-fg-primary">v{value.version}</span></span>
+                      <span><span className="text-fg-quaternary dark:text-gray-500">Name:</span> <span className="font-[510] text-fg-primary dark:text-gray-100">{value.appName}</span></span>
+                      <span><span className="text-fg-quaternary dark:text-gray-500">Full:</span> <span className="font-[510] text-fg-primary dark:text-gray-100">{value.appFullName}</span></span>
+                      <span><span className="text-fg-quaternary dark:text-gray-500">Prefix:</span> <code className="text-fg-primary dark:text-gray-100">{value.taskIdPrefix}</code></span>
+                      <span><span className="text-fg-quaternary dark:text-gray-500">Version:</span> <span className="font-[510] text-fg-primary dark:text-gray-100">v{value.version}</span></span>
                     </div>
                   ) : key === "status_responsible" && value ? (
                     <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm">
                       {Object.entries(value as Record<string, string>).map(([status, person]) => (
                         <span key={status}>
-                          <span className="text-fg-quaternary">{status}:</span>{" "}
-                          <span className="font-[510] text-fg-primary">{person as string}</span>
+                          <span className="text-fg-quaternary dark:text-gray-500">{status}:</span>{" "}
+                          <span className="font-[510] text-fg-primary dark:text-gray-100">{person as string}</span>
                         </span>
                       ))}
                     </div>
                   ) : Array.isArray(value) ? (
                     <div className="flex flex-wrap gap-1.5">
                       {value.map((item: string) => (
-                        <span key={item} className="text-sm bg-white dark:bg-gray-900 px-2 py-0.5 rounded-sm border border-border dark:border-gray-700 text-fg-primary">
+                        <span key={item} className="text-sm bg-white dark:bg-gray-900 px-2 py-0.5 rounded-sm border border-border dark:border-gray-700 text-fg-primary dark:text-gray-100">
                           {item}
                         </span>
                       ))}
                     </div>
                   ) : (
-                    <pre className="text-sm text-fg-secondary font-mono whitespace-pre-wrap">{JSON.stringify(value, null, 2)}</pre>
+                    <pre className="text-sm text-fg-secondary dark:text-gray-300 font-mono whitespace-pre-wrap">{JSON.stringify(value, null, 2)}</pre>
                   )}
                 </div>
               )}
