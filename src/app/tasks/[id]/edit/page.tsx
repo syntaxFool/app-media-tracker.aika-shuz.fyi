@@ -68,7 +68,7 @@ export default function EditTaskPage() {
             <ArrowLeft className="w-5 h-5" />
           </button>
           <div>
-            <h1 className="text-heading-3 text-fg-primary">Edit Task</h1>
+            <h1 className="text-heading-3 text-fg-primary dark:text-gray-100">Edit Task</h1>
             <p className="text-micro text-fg-quaternary font-mono">{task.id}</p>
           </div>
         </div>

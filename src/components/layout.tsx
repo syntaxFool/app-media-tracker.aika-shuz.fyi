@@ -187,6 +187,16 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
               </button>
             ))}
           </nav>
+          {/* Desktop add task button */}
+          <div className="px-2 pt-2 border-t border-border dark:border-gray-800">
+            <button
+              onClick={() => router.push("/tasks/new")}
+              className="w-full flex items-center gap-2 px-3 py-2.5 rounded-sm bg-primary text-white text-sm font-[510] hover:bg-primary-hover transition-all active:scale-[0.98]"
+            >
+              <Plus className="w-4 h-4" />
+              New Task
+            </button>
+          </div>
         </aside>
 
         <main className="flex-1 overflow-auto pb-28 md:pb-0">{children}</main>
