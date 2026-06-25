@@ -1,5 +1,5 @@
 // PWA Service Worker — Offline cache + Push notifications
-const CACHE_NAME = "shanuzz-tracker-v2";
+const CACHE_NAME = "shanuzz-tracker-v3";
 
 self.addEventListener("install", (event) => {
   (event as any).waitUntil(self.skipWaiting());
