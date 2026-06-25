@@ -47,6 +47,9 @@ export async function PUT(req: NextRequest) {
     // Superuser check
     await requireNotSuperuser(username);
 
+    const existing = await prisma.user.findUnique({ where: { username }, select: { username: true } });
+    if (!existing) return NextResponse.json({ error: "User not found" }, { status: 404 });
+
     await prisma.user.update({
       where: { username },
       data: { password: await hashPassword(password) },
@@ -67,6 +70,9 @@ export async function DELETE(req: NextRequest) {
     if (!username) return NextResponse.json({ error: "Username required" }, { status: 400 });
 
     await requireNotSuperuser(username);
+
+    const existing = await prisma.user.findUnique({ where: { username }, select: { username: true } });
+    if (!existing) return NextResponse.json({ error: "User not found" }, { status: 404 });
 
     await prisma.user.delete({ where: { username } });
     return NextResponse.json({ success: true });

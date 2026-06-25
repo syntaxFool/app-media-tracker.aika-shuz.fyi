@@ -11,8 +11,11 @@ export async function PUT(
     await requireAuth();
     const { read } = await req.json();
 
+    const id = parseInt(params.id);
+    if (isNaN(id)) return NextResponse.json({ error: "Invalid notification ID" }, { status: 400 });
+
     const notification = await prisma.notification.update({
-      where: { id: parseInt(params.id) },
+      where: { id },
       data: { read },
     });
 

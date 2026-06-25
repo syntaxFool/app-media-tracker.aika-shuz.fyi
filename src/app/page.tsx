@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import AppLayout from "@/components/layout";
 import TaskCard from "@/components/task-card";
 import { Loader2, CheckSquare, Download, SlidersHorizontal, ListFilter } from "lucide-react";
@@ -35,13 +35,22 @@ export default function DashboardPage() {
     fetch("/api/auth/me").then(r => { if(r.ok) r.json().then(d => setUserRole(d.user.role)); }).catch(() => {});
   }, []);
 
+  const abortRef = useRef<AbortController | null>(null);
+
   const fetchTasks = useCallback(async () => {
+    if (abortRef.current) abortRef.current.abort();
+    const controller = new AbortController();
+    abortRef.current = controller;
     const params = new URLSearchParams();
     if (influencerFilter) params.set("influencer", influencerFilter);
     if (serviceFilter) params.set("service", serviceFilter);
     if (genderFilter) params.set("gender", genderFilter);
-    const res = await fetch(`/api/tasks?${params}`);
-    if (res.ok) setTasks((await res.json()).tasks);
+    try {
+      const res = await fetch(`/api/tasks?${params}`, { signal: controller.signal });
+      if (res.ok) setTasks((await res.json()).tasks);
+    } catch (e: any) {
+      if (e.name !== "AbortError") console.error("fetchTasks failed:", e);
+    }
     setLoading(false);
   }, [influencerFilter, serviceFilter, genderFilter]);
 
@@ -80,8 +89,9 @@ export default function DashboardPage() {
 
   function handleExportCSV() {
     const headers = ["ID","Customer","Shoot Date","Due Date","Service","Gender","Influencer","Status","Assigned"];
+    const escape = (v: string) => `"${(v || "").replace(/"/g, '""')}"`;
     const rows = displayTasks.map(t => [t.id,t.customerName,t.shootDate?.split("T")[0]||"",t.dueDate?new Date(t.dueDate).toISOString().split("T")[0]:"",t.service,t.gender,t.isInfluencer?"Yes":"No",t.status,Array.isArray(t.assignedTo)?t.assignedTo.join(" / "):""]);
-    const csv = [headers.join(","),...rows.map(r => r.map(c => `"${c}"`).join(","))].join("\n");
+    const csv = [headers.join(","),...rows.map(r => r.map(escape).join(","))].join("\n");
     const blob = new Blob([csv],{type:"text/csv"}); const url = URL.createObjectURL(blob);
     const a = document.createElement("a"); a.href=url; a.download="tasks-export.csv"; a.click(); URL.revokeObjectURL(url);
   }

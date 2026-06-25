@@ -133,14 +133,24 @@ export default function KanbanPage() {
     const task = tasks.find((t) => t.id === taskId);
     if (!task) return;
 
+    // Save previous state for rollback
+    const prevStatus = task.status;
+
     // Optimistic update
     setTasks((prev) => prev.map((t) => (t.id === taskId ? { ...t, status: newStatus } : t)));
 
-    await fetch(`/api/tasks/${taskId}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ status: newStatus }),
-    });
+    try {
+      const res = await fetch(`/api/tasks/${taskId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: newStatus }),
+      });
+      if (!res.ok) throw new Error((await res.json()).error || "Failed");
+    } catch (err) {
+      // Rollback on failure
+      setTasks((prev) => prev.map((t) => (t.id === taskId ? { ...t, status: prevStatus } : t)));
+      console.error("moveTask failed:", err);
+    }
   }
 
   // Compute series groups from tasks

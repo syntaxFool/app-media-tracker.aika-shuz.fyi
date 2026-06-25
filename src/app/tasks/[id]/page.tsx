@@ -89,47 +89,83 @@ export default function TaskDetailPage() {
       setShowUrlCollector(true);
       return;
     }
-    await fetch(`/api/tasks/${taskId}`, { method: "PUT", headers: {"Content-Type":"application/json"}, body: JSON.stringify({status:newStatus}) });
-    await fetchTask();
-    await fetchActivity();
+    try {
+      const res = await fetch(`/api/tasks/${taskId}`, { method: "PUT", headers: {"Content-Type":"application/json"}, body: JSON.stringify({status:newStatus}) });
+      if (!res.ok) throw new Error((await res.json()).error || "Status update failed");
+      await fetchTask();
+      await fetchActivity();
+    } catch (e: any) {
+      alert(e.message);
+    }
   }
 
   async function handleUrlCollectionComplete() {
     setShowUrlCollector(false);
-    await fetch(`/api/tasks/${taskId}`, { method: "PUT", headers: {"Content-Type":"application/json"}, body: JSON.stringify({status:"Task Completed"}) });
-    await fetchTask();
-    await fetchActivity();
+    try {
+      const res = await fetch(`/api/tasks/${taskId}`, { method: "PUT", headers: {"Content-Type":"application/json"}, body: JSON.stringify({status:"Task Completed"}) });
+      if (!res.ok) throw new Error((await res.json()).error || "Completion failed");
+      await fetchTask();
+      await fetchActivity();
+    } catch (e: any) {
+      alert(e.message);
+    }
   }
 
   async function handleDelete() {
-    await fetch(`/api/tasks/${taskId}`, { method: "DELETE" });
-    router.push("/"); router.refresh();
+    try {
+      const res = await fetch(`/api/tasks/${taskId}`, { method: "DELETE" });
+      if (!res.ok) throw new Error((await res.json()).error || "Delete failed");
+      router.push("/"); router.refresh();
+    } catch (e: any) {
+      alert(e.message);
+    }
   }
 
   async function addComment() {
     if (!commentText.trim()) return;
     setCommentSubmitting(true);
-    await fetch(`/api/tasks/${taskId}/comments`, { method: "POST", headers: {"Content-Type":"application/json"}, body: JSON.stringify({text:commentText}) });
-    setCommentText("");
-    setCommentSubmitting(false);
-    fetchComments();
+    try {
+      const res = await fetch(`/api/tasks/${taskId}/comments`, { method: "POST", headers: {"Content-Type":"application/json"}, body: JSON.stringify({text:commentText}) });
+      if (!res.ok) throw new Error((await res.json()).error || "Failed to add comment");
+      setCommentText("");
+      fetchComments();
+    } catch (e: any) {
+      alert(e.message);
+    } finally {
+      setCommentSubmitting(false);
+    }
   }
 
   async function addShotItem() {
     if (!newShotDesc.trim()) return;
-    await fetch(`/api/tasks/${taskId}/shot-items`, { method: "POST", headers: {"Content-Type":"application/json"}, body: JSON.stringify({description:newShotDesc}) });
-    setNewShotDesc("");
-    fetchShotItems();
+    try {
+      const res = await fetch(`/api/tasks/${taskId}/shot-items`, { method: "POST", headers: {"Content-Type":"application/json"}, body: JSON.stringify({description:newShotDesc}) });
+      if (!res.ok) throw new Error((await res.json()).error || "Failed to add shot item");
+      setNewShotDesc("");
+      fetchShotItems();
+    } catch (e: any) {
+      alert(e.message);
+    }
   }
 
   async function toggleShotItem(itemId: number, completed: boolean) {
-    await fetch(`/api/tasks/${taskId}/shot-items`, { method: "PUT", headers: {"Content-Type":"application/json"}, body: JSON.stringify({itemId, completed:!completed}) });
-    fetchShotItems();
+    try {
+      const res = await fetch(`/api/tasks/${taskId}/shot-items`, { method: "PUT", headers: {"Content-Type":"application/json"}, body: JSON.stringify({itemId, completed:!completed}) });
+      if (!res.ok) throw new Error((await res.json()).error || "Failed to update shot item");
+      fetchShotItems();
+    } catch (e: any) {
+      alert(e.message);
+    }
   }
 
   async function deleteShotItem(itemId: number) {
-    await fetch(`/api/tasks/${taskId}/shot-items`, { method: "DELETE", headers: {"Content-Type":"application/json"}, body: JSON.stringify({itemId}) });
-    fetchShotItems();
+    try {
+      const res = await fetch(`/api/tasks/${taskId}/shot-items`, { method: "DELETE", headers: {"Content-Type":"application/json"}, body: JSON.stringify({itemId}) });
+      if (!res.ok) throw new Error((await res.json()).error || "Failed to delete shot item");
+      fetchShotItems();
+    } catch (e: any) {
+      alert(e.message);
+    }
   }
 
   // Due date check

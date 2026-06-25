@@ -24,6 +24,10 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
     const { text } = await req.json();
     if (!text) return NextResponse.json({ error: "Text required" }, { status: 400 });
 
+    // Verify task exists
+    const taskExists = await prisma.task.findUnique({ where: { id: params.id }, select: { id: true } });
+    if (!taskExists) return NextResponse.json({ error: "Task not found" }, { status: 404 });
+
     const comment = await prisma.comment.create({
       data: { taskId: params.id, author: session.username, text },
     });

@@ -90,9 +90,19 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
       }
     }
 
+    // Validate dates before using them
+    const parsedShootDate = shootDate !== undefined ? new Date(shootDate) : undefined;
+    if (shootDate !== undefined && isNaN(parsedShootDate!.getTime())) {
+      return NextResponse.json({ error: "Invalid shootDate" }, { status: 400 });
+    }
+    const parsedDueDate = dueDate !== undefined ? (dueDate ? new Date(dueDate) : null) : undefined;
+    if (dueDate !== undefined && dueDate !== null && isNaN(new Date(dueDate).getTime())) {
+      return NextResponse.json({ error: "Invalid dueDate" }, { status: 400 });
+    }
+
     if (customerName !== undefined) updateData.customerName = customerName;
-    if (shootDate !== undefined) updateData.shootDate = new Date(shootDate);
-    if (dueDate !== undefined) updateData.dueDate = dueDate ? new Date(dueDate) : null;
+    if (parsedShootDate !== undefined) updateData.shootDate = parsedShootDate;
+    if (parsedDueDate !== undefined) updateData.dueDate = parsedDueDate;
     if (service !== undefined) updateData.service = service;
     if (gender !== undefined) updateData.gender = gender;
     if (isInfluencer !== undefined) updateData.isInfluencer = isInfluencer;
@@ -111,16 +121,6 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
         updateData.rejectedBy = session.username;
         updateData.rejectedAt = new Date();
       }
-      await enqueueWhatsAppMessage({
-        taskId: params.id, customerName: task.customerName,
-        oldStatus: task.status, newStatus: status, updatedBy: session.username,
-        nextResponsible: getResponsibleForStatus(status), type: "status_update",
-      });
-      await prisma.notification.create({
-        data: { taskId: params.id, type: "status_update",
-          message: `${session.username} moved ${params.id} from "${task.status}" to "${status}"` },
-      });
-      sendPushNotifications(params.id, `${session.username} moved ${params.id} from "${task.status}" to "${status}"`);
     }
 
     // Always detect field-level changes (regardless of status change)
@@ -178,7 +178,30 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
         { fields: changedFields }));
     }
 
+    // Push notification inside transaction so it's atomic with the status change
+    const notificationMsg = statusChanged
+      ? `${session.username} moved ${params.id} from "${task.status}" to "${status}"`
+      : null;
+    if (notificationMsg) {
+      transactionOps.push(
+        prisma.notification.create({
+          data: { taskId: params.id, type: "status_update", message: notificationMsg },
+        })
+      );
+    }
+
     const [updated] = await prisma.$transaction(transactionOps);
+
+    // Non-DB side effects after successful transaction
+    if (statusChanged) {
+      await enqueueWhatsAppMessage({
+        taskId: params.id, customerName: task.customerName,
+        oldStatus: task.status, newStatus: status, updatedBy: session.username,
+        nextResponsible: getResponsibleForStatus(status), type: "status_update",
+      });
+      sendPushNotifications(params.id, notificationMsg!);
+    }
+
     return NextResponse.json({ task: updated });
   } catch (err: any) {
     if (err.message === "Unauthorized") return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -189,9 +212,12 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
 export async function DELETE(_req: NextRequest, { params }: { params: { id: string } }) {
   try {
     await requireAdmin();
+    const existing = await prisma.task.findUnique({ where: { id: params.id }, select: { id: true } });
+    if (!existing) return NextResponse.json({ error: "Task not found" }, { status: 404 });
     await prisma.task.delete({ where: { id: params.id } });
     return NextResponse.json({ success: true });
   } catch (err: any) {
+    if (err.message === "Unauthorized") return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }

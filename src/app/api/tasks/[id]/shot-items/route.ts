@@ -24,6 +24,10 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
     const { description } = await req.json();
     if (!description) return NextResponse.json({ error: "Description required" }, { status: 400 });
 
+    // Verify task exists
+    const taskExists = await prisma.task.findUnique({ where: { id: params.id }, select: { id: true } });
+    if (!taskExists) return NextResponse.json({ error: "Task not found" }, { status: 404 });
+
     const maxOrder = await prisma.shotItem.findFirst({
       where: { taskId: params.id },
       orderBy: { sortOrder: "desc" },
@@ -43,6 +47,16 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     const session = await requireAuth();
     const { itemId, completed } = await req.json();
 
+    // Verify shot item belongs to this task
+    const existing = await prisma.shotItem.findUnique({
+      where: { id: itemId },
+      select: { id: true, taskId: true },
+    });
+    if (!existing) return NextResponse.json({ error: "Shot item not found" }, { status: 404 });
+    if (existing.taskId !== params.id) {
+      return NextResponse.json({ error: "Shot item does not belong to this task" }, { status: 403 });
+    }
+
     const item = await prisma.shotItem.update({
       where: { id: itemId },
       data: {
@@ -61,6 +75,16 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
   try {
     await requireAuth();
     const { itemId } = await req.json();
+    // Verify shot item belongs to this task
+    const existing = await prisma.shotItem.findUnique({
+      where: { id: itemId },
+      select: { id: true, taskId: true },
+    });
+    if (!existing) return NextResponse.json({ error: "Shot item not found" }, { status: 404 });
+    if (existing.taskId !== params.id) {
+      return NextResponse.json({ error: "Shot item does not belong to this task" }, { status: 403 });
+    }
+
     await prisma.shotItem.delete({ where: { id: itemId } });
     return NextResponse.json({ success: true });
   } catch (err: any) {

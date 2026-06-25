@@ -5,6 +5,12 @@ import prisma from "@/lib/db";
 import { requireAuth, requireAdmin } from "@/lib/auth";
 import { generateTaskId } from "@/lib/tasks";
 
+function toDateOrNull(value: unknown): Date | null {
+  if (!value) return null;
+  const d = new Date(value as string);
+  return isNaN(d.getTime()) ? null : d;
+}
+
 export async function GET(req: NextRequest) {
   try {
     const session = await requireAuth();
@@ -37,18 +43,29 @@ export async function GET(req: NextRequest) {
     }
 
     if (search) {
-      where.OR = [
-        { id: { contains: search, mode: "insensitive" } },
-        { customerName: { contains: search, mode: "insensitive" } },
-      ];
+      const searchFilter = {
+        OR: [
+          { id: { contains: search, mode: "insensitive" } },
+          { customerName: { contains: search, mode: "insensitive" } },
+        ],
+      };
+      // Merge with existing active-task filter instead of overwriting
+      if (where.OR) {
+        where.AND = [{ OR: where.OR }, searchFilter];
+        delete where.OR;
+      } else {
+        where.OR = searchFilter.OR;
+      }
     }
 
     if (influencer === "true") where.isInfluencer = true;
     if (influencer === "false") where.isInfluencer = false;
     if (service) where.service = service;
     if (gender) where.gender = gender;
-    if (createdAfter) where.createdAt = { ...(where.createdAt || {}), gte: new Date(createdAfter) };
-    if (createdBefore) where.createdAt = { ...(where.createdAt || {}), lte: new Date(createdBefore) };
+    const afterDate = toDateOrNull(createdAfter);
+    const beforeDate = toDateOrNull(createdBefore);
+    if (afterDate) where.createdAt = { ...(where.createdAt || {}), gte: afterDate };
+    if (beforeDate) where.createdAt = { ...(where.createdAt || {}), lte: beforeDate };
 
     const tasks = await prisma.task.findMany({
       orderBy: { createdAt: "desc" },
@@ -132,11 +149,14 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const id = await generateTaskId();
-
-    const task = await prisma.task.create({
-      data: {
-        id,
+    // Retry loop: handle concurrent ID generation race
+    let task;
+    for (let attempt = 0; attempt < 5; attempt++) {
+      const id = await generateTaskId();
+      try {
+        task = await prisma.task.create({
+          data: {
+            id,
         customerName,
         shootDate: new Date(shootDate),
         service,
@@ -153,6 +173,13 @@ export async function POST(req: NextRequest) {
         createdBy: session.username,
       },
     });
+        break; // success
+      } catch (createErr: any) {
+        // P2002 = unique constraint violation — retry with next ID
+        if (createErr.code === "P2002" && attempt < 4) continue;
+        throw createErr; // other error or exhausted retries
+      }
+    }
 
     return NextResponse.json({ task }, { status: 201 });
   } catch (err: any) {

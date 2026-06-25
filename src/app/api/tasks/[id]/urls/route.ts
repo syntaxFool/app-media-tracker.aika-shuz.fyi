@@ -55,6 +55,10 @@ export async function POST(
       );
     }
 
+    // Verify task exists
+    const taskExists = await prisma.task.findUnique({ where: { id: params.id }, select: { id: true } });
+    if (!taskExists) return NextResponse.json({ error: "Task not found" }, { status: 404 });
+
     const created = await prisma.taskUrl.create({
       data: {
         taskId: params.id,
@@ -95,6 +99,16 @@ export async function DELETE(
         { error: "urlId is required" },
         { status: 400 }
       );
+    }
+
+    // Verify URL belongs to this task
+    const existing = await prisma.taskUrl.findUnique({
+      where: { id: urlId },
+      select: { id: true, taskId: true },
+    });
+    if (!existing) return NextResponse.json({ error: "URL not found" }, { status: 404 });
+    if (existing.taskId !== params.id) {
+      return NextResponse.json({ error: "URL does not belong to this task" }, { status: 403 });
     }
 
     await prisma.taskUrl.delete({ where: { id: urlId } });
