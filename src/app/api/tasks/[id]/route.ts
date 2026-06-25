@@ -66,7 +66,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
       await enqueueWhatsAppMessage({
         taskId: params.id, customerName: task.customerName,
         oldStatus: task.status, newStatus: status, updatedBy: session.username,
-        nextResponsible: getResponsibleForStatus(status), type: "status_update",
+        nextResponsible: await getResponsibleForStatus(status), type: "status_update",
       });
       await prisma.notification.create({
         data: { taskId: params.id, type: "status_update",
@@ -197,7 +197,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
       await enqueueWhatsAppMessage({
         taskId: params.id, customerName: task.customerName,
         oldStatus: task.status, newStatus: status, updatedBy: session.username,
-        nextResponsible: getResponsibleForStatus(status), type: "status_update",
+        nextResponsible: await getResponsibleForStatus(status), type: "status_update",
       });
       sendPushNotifications(params.id, notificationMsg!);
     }

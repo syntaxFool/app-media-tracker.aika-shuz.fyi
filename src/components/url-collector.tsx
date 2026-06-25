@@ -2,11 +2,7 @@
 
 import { useState } from "react";
 import { Plus, X, ExternalLink } from "lucide-react";
-
-const PLATFORMS = [
-  "Instagram", "YouTube Shorts", "YouTube", "Snapchat",
-  "Facebook", "Google Business Profile", "Custom",
-];
+import { useAppConfig } from "@/hooks/use-app-config";
 
 interface UrlEntry {
   platform: string;
@@ -21,6 +17,7 @@ interface UrlCollectorProps {
 }
 
 export default function UrlCollector({ taskId, onComplete, onCancel }: UrlCollectorProps) {
+  const { config } = useAppConfig();
   const [entries, setEntries] = useState<UrlEntry[]>([{ platform: "Instagram", url: "" }]);
   const [submitting, setSubmitting] = useState(false);
 
@@ -75,7 +72,7 @@ export default function UrlCollector({ taskId, onComplete, onCancel }: UrlCollec
                 onChange={e => updateEntry(i, "platform", e.target.value)}
                 className="select-linear text-label py-1.5 w-[160px] flex-shrink-0 bg-white dark:bg-gray-800"
               >
-                {PLATFORMS.map(p => <option key={p} value={p}>{p}</option>)}
+                {config.platforms.map(p => <option key={p} value={p}>{p}</option>)}
               </select>
               <div className="flex-1 space-y-1">
                 {entry.platform === "Custom" ? (

@@ -1,5 +1,6 @@
 // ── Task Business Logic ────────────────────────────────
 import prisma from "./db";
+import { getConfig } from "./config";
 
 export const STATUS_FLOW: Record<string, string[]> = {
   New: ["Video Shot"],
@@ -23,34 +24,34 @@ export function isValidTransition(from: string, to: string): boolean {
 }
 
 /** Get the staff member responsible for a given status */
-export function getResponsibleForStatus(status: string): string {
-  const map: Record<string, string> = {
-    New: "Admin",
-    "Video Shot": "Videographer",
-    "Data Copied": "Editor",
-    "Video Edited": "Reviewer",
-    Reviewed: "Uploader",
-    Approved: "Admin",
-    Uploaded: "Admin",
-    "Task Completed": "—",
-    Dropped: "—",
-  };
-  return map[status] || "Admin";
+export async function getResponsibleForStatus(status: string): Promise<string> {
+  try {
+    const map = await getConfig("status_responsible");
+    return (map as Record<string, string>)[status] || "Admin";
+  } catch {
+    return "Admin";
+  }
 }
 
 /** Generate next sequential task ID */
 export async function generateTaskId(): Promise<string> {
+  let prefix = "SHANUZZ";
+  try {
+    const branding = await getConfig("branding");
+    prefix = (branding as any).taskIdPrefix || prefix;
+  } catch { /* use default */ }
+
   const last = await prisma.task.findFirst({
     orderBy: { id: "desc" },
     select: { id: true },
   });
 
-  if (!last) return "SHANUZZ-0001";
+  if (!last) return `${prefix}-0001`;
 
-  const num = parseInt(last.id.replace("SHANUZZ-", ""), 10);
-  if (isNaN(num)) return "SHANUZZ-0001";
+  const num = parseInt(last.id.replace(`${prefix}-`, ""), 10);
+  if (isNaN(num)) return `${prefix}-0001`;
 
-  return `SHANUZZ-${String(num + 1).padStart(4, "0")}`;
+  return `${prefix}-${String(num + 1).padStart(4, "0")}`;
 }
 
 /** Check if a task has been rejected */

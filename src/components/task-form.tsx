@@ -3,9 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import ImageUploader from "./image-uploader";
-
-const SERVICES = ["Treatment","Haircut","Perming","Patch","Dread lock","Braid","Brand promo","Other"];
-const GENDERS = ["Male","Female","Other"];
+import { useAppConfig } from "@/hooks/use-app-config";
 
 interface TaskFormProps {
   initialData?: { customerName?: string; shootDate?: string; dueDate?: string | null; service?: string; gender?: string; isInfluencer?: boolean; note?: string; photoPath?: string | null; assignedTo?: string[]; seriesId?: string | null; partNumber?: number | null };
@@ -14,6 +12,7 @@ interface TaskFormProps {
 }
 
 export default function TaskForm({ initialData, mode, taskId }: TaskFormProps) {
+  const { config } = useAppConfig();
   const router = useRouter();
   const [form, setForm] = useState({
     customerName: initialData?.customerName || "",
@@ -127,8 +126,8 @@ export default function TaskForm({ initialData, mode, taskId }: TaskFormProps) {
       <div><label className="block text-label text-fg-tertiary dark:text-gray-400 mb-1.5">Shoot Date <span className="text-danger">*</span></label><input type="date" value={form.shootDate} onChange={e => updateField("shootDate", e.target.value)} className="input-linear w-full" required id="field-shootDate" /></div>
       <div><label className="block text-label text-fg-tertiary dark:text-gray-400 mb-1.5">Due Date <span className="text-danger">*</span></label><input type="date" value={form.dueDate||""} onChange={e => updateField("dueDate", e.target.value||null)} className="input-linear w-full" required id="field-dueDate" /></div>
       <div className="grid grid-cols-2 gap-3">
-        <div><label className="block text-label text-fg-tertiary dark:text-gray-400 mb-1.5">Service <span className="text-danger">*</span></label><select value={form.service} onChange={e => updateField("service", e.target.value)} className="select-linear w-full" required id="field-service"><option value="">Select...</option>{SERVICES.map(s => <option key={s} value={s}>{s}</option>)}</select></div>
-        <div><label className="block text-label text-fg-tertiary dark:text-gray-400 mb-1.5">Gender <span className="text-danger">*</span></label><select value={form.gender} onChange={e => updateField("gender", e.target.value)} className="select-linear w-full" required id="field-gender"><option value="">Select...</option>{GENDERS.map(g => <option key={g} value={g}>{g}</option>)}</select></div>
+        <div><label className="block text-label text-fg-tertiary dark:text-gray-400 mb-1.5">Service <span className="text-danger">*</span></label><select value={form.service} onChange={e => updateField("service", e.target.value)} className="select-linear w-full" required id="field-service"><option value="">Select...</option>{config.services.map(s => <option key={s} value={s}>{s}</option>)}</select></div>
+        <div><label className="block text-label text-fg-tertiary dark:text-gray-400 mb-1.5">Gender <span className="text-danger">*</span></label><select value={form.gender} onChange={e => updateField("gender", e.target.value)} className="select-linear w-full" required id="field-gender"><option value="">Select...</option>{config.genders.map(g => <option key={g} value={g}>{g}</option>)}</select></div>
       </div>
 
       <div>

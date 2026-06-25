@@ -1,5 +1,7 @@
 "use client";
 
+import { useAppConfig } from "@/hooks/use-app-config";
+
 interface FilterBarProps {
   influencerFilter: string;
   serviceFilter: string;
@@ -19,6 +21,7 @@ export default function FilterBar({
   onServiceChange,
   onGenderChange,
 }: FilterBarProps) {
+  const { config } = useAppConfig();
   return (
     <div className="flex gap-2 overflow-x-auto pb-2">
       <div className="flex items-center gap-1 bg-white border border-border rounded-sm px-2 py-1.5 flex-shrink-0 shadow-sm">
@@ -43,9 +46,7 @@ export default function FilterBar({
         className="select-linear text-label py-1.5 flex-shrink-0 min-w-[90px]"
       >
         <option value="">All Genders</option>
-        <option value="Male">Male</option>
-        <option value="Female">Female</option>
-        <option value="Other">Other</option>
+        {config.genders.map(g => <option key={g} value={g}>{g}</option>)}
       </select>
     </div>
   );

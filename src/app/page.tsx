@@ -5,6 +5,7 @@ import AppLayout from "@/components/layout";
 import TaskCard from "@/components/task-card";
 import { Loader2, CheckSquare, Download, SlidersHorizontal, ListFilter } from "lucide-react";
 import { STATUS_FLOW, ALL_STATUSES } from "@/lib/tasks";
+import { useAppConfig } from "@/hooks/use-app-config";
 
 interface Task {
   id: string; customerName: string; shootDate: string; service: string; gender: string;
@@ -20,6 +21,7 @@ const STATUS_DOT_COLORS: Record<string, string> = {
 };
 
 export default function DashboardPage() {
+  const { config } = useAppConfig();
   const [tasks, setTasks] = useState<Task[]>([]); const [loading, setLoading] = useState(true);
   const [serviceFilter, setServiceFilter] = useState(""); const [genderFilter, setGenderFilter] = useState("");
   const [sortBy, setSortBy] = useState("newest"); const [myTasksOnly, setMyTasksOnly] = useState(false);
@@ -162,7 +164,7 @@ export default function DashboardPage() {
             <select value={genderFilter} onChange={e => setGenderFilter(e.target.value)}
               className="select-linear text-label py-1.5 flex-shrink-0 bg-white dark:bg-gray-800">
               <option value="">All Genders</option>
-              <option value="Male">Male</option><option value="Female">Female</option><option value="Other">Other</option>
+              {config.genders.map(g => <option key={g} value={g}>{g}</option>)}
             </select>
             <button onClick={handleExportCSV}
               className="flex items-center gap-1.5 text-label px-2.5 py-1.5 rounded-md border border-border dark:border-gray-700 bg-white dark:bg-gray-800 text-fg-tertiary hover:bg-surface transition-all flex-shrink-0">
