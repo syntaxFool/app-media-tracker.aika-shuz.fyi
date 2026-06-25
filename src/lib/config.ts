@@ -17,7 +17,7 @@ export interface AppConfigShape {
 
 // Fallback defaults — must match current hardcoded values
 // Used when DB is unavailable, during build, or as initial seed
-const DEFAULTS: AppConfigShape = {
+export const DEFAULTS: AppConfigShape = {
   services: ["Treatment","Haircut","Perming","Patch","Dread lock","Braid","Brand promo","Other"],
   genders: ["Male","Female","Other"],
   platforms: ["Instagram","YouTube Shorts","YouTube","Snapchat","Facebook","Google Business Profile","Custom"],
@@ -54,8 +54,8 @@ export async function getConfig<K extends keyof AppConfigShape>(key: K): Promise
       cache.set(key, value);
       return value;
     }
-  } catch {
-    /* DB unavailable — use fallback */
+  } catch (e) {
+    console.error("Config DB error, using fallback:", e);
   }
 
   return DEFAULTS[key];
@@ -66,13 +66,14 @@ export async function setConfig<K extends keyof AppConfigShape>(
   value: AppConfigShape[K],
   updatedBy: string,
 ): Promise<void> {
+  // Bust cache before write to avoid stale-read window
+  cache.delete(key);
+
   await prisma.appConfig.upsert({
     where: { key },
     update: { value: value as any, updatedBy },
     create: { key, value: value as any, updatedBy },
   });
-  // Bust cache
-  cache.delete(key);
 }
 
 /** Fetch all config at once (for the settings page) */
@@ -82,7 +83,8 @@ export async function getAllConfig(): Promise<{ key: string; value: any }[]> {
     // Also seed cache
     for (const row of rows) cache.set(row.key, row.value);
     return rows.map(r => ({ key: r.key, value: r.value }));
-  } catch {
+  } catch (e) {
+    console.error("Config DB error, using fallback:", e);
     return Object.entries(DEFAULTS).map(([key, value]) => ({ key, value }));
   }
 }
@@ -92,4 +94,3 @@ export function clearConfigCache(): void {
   cache.clear();
 }
 
-export { DEFAULTS };
