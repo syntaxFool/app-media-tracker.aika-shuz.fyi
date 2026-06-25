@@ -1,5 +1,5 @@
 // GET  /api/tasks — List tasks (with filters)
-// POST /api/tasks — Create task (admin only)
+// POST /api/tasks — Create task (any authenticated user)
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/db";
 import { requireAuth, requireAdmin } from "@/lib/auth";
