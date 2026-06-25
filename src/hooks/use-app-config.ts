@@ -20,10 +20,11 @@ type AppConfigClient = typeof CLIENT_FALLBACKS;
 
 export function useAppConfig() {
   const [config, setConfig] = useState<AppConfigClient>(CLIENT_FALLBACKS);
-  const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
-    fetch("/api/config")
+    const controller = new AbortController();
+
+    fetch("/api/config", { signal: controller.signal })
       .then(r => {
         if (!r.ok) throw new Error("Failed to fetch config");
         return r.json();
@@ -39,10 +40,11 @@ export function useAppConfig() {
         setConfig(merged);
       })
       .catch(() => {
-        // Fall through to fallbacks
-      })
-      .finally(() => setLoaded(true));
+        // Fall through to fallbacks on fetch failure or abort
+      });
+
+    return () => controller.abort();
   }, []);
 
-  return { config, loaded };
+  return { config };
 }
