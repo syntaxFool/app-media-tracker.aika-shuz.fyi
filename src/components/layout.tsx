@@ -3,7 +3,7 @@
 import { useRouter, usePathname } from "next/navigation";
 import { useState, useEffect, useCallback } from "react";
 import {
-  LayoutDashboard, Columns, History, LogOut, Plus, Sun, Moon, BarChart3, Bell, MoreVertical, Users, Settings,
+  LayoutDashboard, Columns, History, LogOut, Plus, Sun, Moon, BarChart3, Bell, MoreVertical, Users, Settings, Shield,
 } from "lucide-react";
 import { useTheme } from "@/lib/theme";
 
@@ -148,6 +148,13 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                       <button onClick={() => { router.push("/admin/users"); setMenuOpen(false); }} className="w-full text-left px-4 py-2.5 text-sm text-fg-primary dark:text-gray-200 hover:bg-surface dark:hover:bg-gray-800 flex items-center gap-2.5 transition-colors">
                         <Users className="w-4 h-4 text-fg-tertiary dark:text-gray-400" />
                         User Management
+                      </button>
+                    )}
+                    {(user?.role === "su") && (
+                      <button onClick={() => { router.push("/admin/settings"); setMenuOpen(false); }}
+                        className="w-full text-left px-4 py-2.5 text-sm text-amber-600 dark:text-amber-400 hover:bg-surface dark:hover:bg-gray-800 flex items-center gap-2.5 transition-colors">
+                        <Shield className="w-4 h-4" />
+                        SU Settings
                       </button>
                     )}
                     <button onClick={() => { router.push("/settings"); setMenuOpen(false); }} className="w-full text-left px-4 py-2.5 text-sm text-fg-primary dark:text-gray-200 hover:bg-surface dark:hover:bg-gray-800 flex items-center gap-2.5 transition-colors">
