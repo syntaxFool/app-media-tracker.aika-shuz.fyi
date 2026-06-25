@@ -105,8 +105,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="min-h-screen bg-surface dark:bg-gray-950 flex flex-col">
-      {/* Top Bar - gradient navy */}
-      <header className="sticky top-0 z-40 bg-gradient-to-r from-[#005581] via-[#005581] to-[#006696] text-white shadow-md">
+      {/* Top Bar - gradient poseidon blue */}
+      <header className="sticky top-0 z-40 bg-gradient-to-r from-[#006994] via-[#006994] to-[#0082b3] text-white shadow-md">
         <div className="flex items-center justify-between px-4 h-14">
           {/* Brand */}
           <div className="flex items-center gap-2.5">
@@ -122,7 +122,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             <button onClick={() => router.push("/notifications")} className="relative p-1.5 rounded-full hover:bg-white/15 transition-colors text-white/80 hover:text-white">
               <Bell className="w-4 h-4" />
               {notifCount > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 bg-accent text-[#005581] text-tiny font-[590] min-w-[16px] h-4 rounded-full flex items-center justify-center px-0.5">
+                <span className="absolute -top-0.5 -right-0.5 bg-accent text-[#006994] text-tiny font-[590] min-w-[16px] h-4 rounded-full flex items-center justify-center px-0.5">
                   {notifCount > 9 ? "9+" : notifCount}
                 </span>
               )}

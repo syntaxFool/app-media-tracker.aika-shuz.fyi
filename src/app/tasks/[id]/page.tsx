@@ -181,19 +181,23 @@ export default function TaskDetailPage() {
 
   return (
     <AppLayout>
-      <div className="p-4 max-w-3xl mx-auto space-y-5 animate-fade-in">
+      <div className="p-4 max-w-3xl mx-auto space-y-5 animate-fade-in pb-32">
         {/* Header */}
         <div className="flex items-center gap-3">
           <button onClick={()=>router.back()} className="btn-icon p-1.5"><ArrowLeft className="w-5 h-5" /></button>
           <div className="flex-1"><div className="flex items-center gap-2"><span className="text-micro text-fg-quaternary font-mono">{task.id}</span><StatusBadge status={task.status} />{task.isInfluencer&&<Star className="w-3.5 h-3.5 text-accent" fill="currentColor"/>}</div></div>
           {(userRole === "admin" || userRole === "su") && (
-            <div className="flex gap-1 relative">
-              <button onClick={()=>router.push(`/tasks/${task.id}/edit`)} className="btn-subtle p-2"><Edit className="w-4 h-4"/></button>
+            <div className="relative">
               <button onClick={() => setHeaderMenuOpen(!headerMenuOpen)} className="btn-subtle p-2"><MoreVertical className="w-4 h-4"/></button>
               {headerMenuOpen && (
                 <>
                   <div className="fixed inset-0 z-50" onClick={() => setHeaderMenuOpen(false)} />
                   <div className="absolute right-0 top-full mt-1 w-44 bg-white dark:bg-gray-900 border border-border dark:border-gray-700 rounded-lg shadow-elev-dialog z-50 overflow-hidden animate-scale-in origin-top-right">
+                    <button onClick={() => { setHeaderMenuOpen(false); router.push(`/tasks/${task.id}/edit`); }} className="w-full text-left px-4 py-2.5 text-sm text-fg-primary dark:text-gray-200 hover:bg-surface dark:hover:bg-gray-800 flex items-center gap-2.5 transition-colors">
+                      <Edit className="w-4 h-4 text-fg-tertiary dark:text-gray-400" />
+                      Edit Task
+                    </button>
+                    <div className="border-t border-border dark:border-gray-700" />
                     <button onClick={() => { setHeaderMenuOpen(false); setDeleteConfirm(true); }} className="w-full text-left px-4 py-2.5 text-sm text-danger hover:bg-surface dark:hover:bg-gray-800 flex items-center gap-2.5 transition-colors">
                       <Trash2 className="w-4 h-4" />
                       Delete Task
@@ -210,8 +214,8 @@ export default function TaskDetailPage() {
         {/* Due Date */}
         {dueDate && (
           <div className={`border rounded-md p-3 flex items-center gap-2 ${
-            isOverdue ? "bg-danger/5 border-danger/20 text-danger" :
-            isDueSoon ? "bg-warning/10 border-warning/20 text-warning" :
+            isOverdue ? "bg-danger/5 border-danger/20 text-danger dark:text-red-300" :
+            isDueSoon ? "bg-warning/10 border-warning/20 text-warning dark:text-amber-300" :
             "bg-white dark:bg-gray-900 border-border dark:border-gray-800"
           }`}>
             <Clock className="w-4 h-4 flex-shrink-0" />
@@ -227,7 +231,7 @@ export default function TaskDetailPage() {
           <DetailRow icon={<Calendar className="w-4 h-4"/>} label="Shoot Date" value={date} />
           <DetailRow label="Service" value={task.service} />
           <DetailRow label="Gender" value={task.gender} />
-          <DetailRow icon={task.isInfluencer ? <Star className="w-4 h-4 text-accent" /> : undefined} label="Influencer" value={task.isInfluencer ? "Yes" : "No"} />
+          {/* Influencer row removed — star in header is sufficient */}
           {Array.isArray(task.assignedTo) && task.assignedTo.length > 0 && (
             <DetailRow label="Assigned" value={task.assignedTo.join(", ")} />
           )}
@@ -338,7 +342,7 @@ export default function TaskDetailPage() {
           ))}
           <div className="flex gap-2">
             <input type="text" value={newShotDesc} onChange={e=>setNewShotDesc(e.target.value)} onKeyDown={e=>e.key==="Enter"&&addShotItem()} className="input-linear flex-1 text-sm" placeholder="Add shot item..." />
-            <button onClick={addShotItem} className="btn-primary text-label px-3 py-1.5"><Plus className="w-3.5 h-3.5"/></button>
+            <button onClick={addShotItem} className="btn-primary text-label px-3 py-1.5 rounded-sm"><Plus className="w-3.5 h-3.5"/></button>
           </div>
         </div>
 

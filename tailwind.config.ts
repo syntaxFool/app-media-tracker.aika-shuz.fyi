@@ -19,8 +19,8 @@ const config: Config = {
         "fg-tertiary": "#6b7d8e",
         "fg-quaternary": "#95a5b5",
 
-        // Brand — navy + gold
-        primary: { DEFAULT: "#005581", foreground: "#ffffff", hover: "#006b9e" },
+        // Brand — poseidon blue + gold
+        primary: { DEFAULT: "#006994", foreground: "#ffffff", hover: "#0082b3" },
         accent: { DEFAULT: "#ffd200", foreground: "#0a1628", hover: "#ffe552" },
 
         success: "#27a644",
@@ -37,7 +37,7 @@ const config: Config = {
         card: { DEFAULT: "#ffffff", foreground: "#0a1628" },
         brand: { DEFAULT: "#ffd200", foreground: "#0a1628", hover: "#ffe552" },
         ocean: { DEFAULT: "#72cdf4", foreground: "#0a1628", hover: "#8ed8f7" },
-        navy: { DEFAULT: "#005581", foreground: "#ffffff", hover: "#006b9e" },
+        navy: { DEFAULT: "#006994", foreground: "#ffffff", hover: "#0082b3" },
       },
       borderRadius: {
         sm: "6px",

@@ -30,7 +30,7 @@
   *:focus-visible {
     outline: none;
     box-shadow:
-      0 0 0 2px color-mix(in oklab, #005581, transparent 60%),
+      0 0 0 2px color-mix(in oklab, #006994, transparent 60%),
       0 2px 8px rgba(0,0,0,0.06);
   }
 }
@@ -72,7 +72,7 @@
   .input-linear {
     @apply bg-black/[0.02] text-fg-primary border border-black/[0.08] rounded-sm px-3 py-2.5 text-sm
       placeholder:text-fg-quaternary
-      focus:outline-none focus:border-[#005581]/30 focus:bg-white
+      focus:outline-none focus:border-[#006994]/30 focus:bg-white
       transition-all duration-150
       dark:bg-white/[0.04] dark:text-gray-100 dark:border-white/[0.08] dark:placeholder:text-gray-500 dark:focus:bg-white/[0.06];
   }
@@ -118,7 +118,7 @@
     @apply w-full text-left px-3 py-2 rounded-sm text-sm flex items-center gap-2.5 transition-all duration-150 font-[510];
   }
   .sidebar-nav-item-active {
-    @apply bg-[#00558114] text-primary border-l-2 border-accent pl-2.5;
+    @apply bg-[#00699414] text-primary border-l-2 border-accent pl-2.5;
   }
   .sidebar-nav-item-inactive {
     @apply text-fg-tertiary hover:bg-black/[0.04] hover:text-fg-secondary dark:text-gray-400 dark:hover:bg-white/[0.04] dark:hover:text-gray-200;

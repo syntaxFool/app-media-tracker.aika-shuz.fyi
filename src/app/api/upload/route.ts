@@ -1,8 +1,9 @@
-// POST /api/upload — Upload photo (multipart)
+// POST /api/upload — Upload photo (multipart), auto-rotates via EXIF
 import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth";
 import { writeFile, mkdir } from "fs/promises";
 import path from "path";
+import sharp from "sharp";
 
 const UPLOAD_DIR = path.join(process.cwd(), "uploads");
 
@@ -36,8 +37,14 @@ export async function POST(req: NextRequest) {
     const filename = `${Date.now()}-${Math.random().toString(36).substring(2, 8)}.${ext}`;
     const filepath = path.join(UPLOAD_DIR, filename);
 
+    // Read buffer, auto-rotate based on EXIF orientation, strip metadata
     const buffer = Buffer.from(await file.arrayBuffer());
-    await writeFile(filepath, buffer);
+    const processed = await sharp(buffer)
+      .rotate()      // auto-rotate via EXIF orientation tag
+      .jpeg({ quality: 85, mozjpeg: true })
+      .toBuffer();
+
+    await writeFile(filepath, processed);
 
     return NextResponse.json({
       success: true,
