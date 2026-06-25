@@ -33,6 +33,7 @@ export default function TaskDetailPage() {
   const [selectedReassignees, setSelectedReassignees] = useState<string[]>([]);
   const [headerMenuOpen, setHeaderMenuOpen] = useState(false);
   const [taskUrls, setTaskUrls] = useState<any[]>([]);
+  const [seriesParts, setSeriesParts] = useState<any[] | null>(null); // null = not fetched, [] = not in a series
 
   const fetchTask = useCallback(async () => {
     const res = await fetch(`/api/tasks/${taskId}`);
@@ -60,10 +61,25 @@ export default function TaskDetailPage() {
     if (res.ok) setTaskUrls((await res.json()).urls);
   }, [taskId]);
 
+  const fetchSeries = useCallback(async (seriesId: string) => {
+    const res = await fetch(`/api/series/${encodeURIComponent(seriesId)}`);
+    if (res.ok) setSeriesParts((await res.json()).parts);
+    else setSeriesParts([]);
+  }, []);
+
   useEffect(() => {
     fetchTask(); fetchComments(); fetchShotItems(); fetchActivity(); fetchUrls();
     fetch("/api/auth/me").then(r => { if(r.ok) r.json().then(d => { setUserRole(d.user.role); setCurrentUsername(d.user.username); }); });
   }, [fetchTask, fetchComments, fetchShotItems, fetchActivity, fetchUrls]);
+
+  // Fetch series siblings when task loads
+  useEffect(() => {
+    if (task?.seriesId) {
+      fetchSeries(task.seriesId);
+    } else if (task && !task.seriesId) {
+      setSeriesParts([]);
+    }
+  }, [task?.seriesId, fetchSeries]);
 
   const isAssigned = Array.isArray(task?.assignedTo) ? (task.assignedTo as string[]).includes(currentUsername) : false;
   const canEdit = userRole === "admin" || userRole === "su" || isAssigned;
@@ -180,6 +196,55 @@ export default function TaskDetailPage() {
             <DetailRow label="Assigned" value={task.assignedTo.join(", ")} />
           )}
         </div>
+
+        {/* Series context widget */}
+        {seriesParts && seriesParts.length > 1 && (
+          <div className="bg-white dark:bg-gray-900 border border-border dark:border-gray-800 rounded-md p-4 shadow-sm">
+            <div className="flex items-center gap-2 mb-3">
+              <span className="text-lg">📹</span>
+              <div>
+                <p className="text-label font-[510] text-fg-primary dark:text-gray-100">
+                  {seriesParts.find((p: any) => p.seriesId)?.seriesId?.replace(/-/g, " ").replace(/\b\w/g, (c: string) => c.toUpperCase()) || "Series"}
+                </p>
+                <p className="text-tiny text-fg-quaternary dark:text-gray-500">{seriesParts.length} parts</p>
+              </div>
+            </div>
+            <div className="space-y-1.5">
+              {seriesParts
+                .sort((a: any, b: any) => (a.partNumber || 0) - (b.partNumber || 0))
+                .map((part: any) => {
+                  const isCurrent = part.id === taskId;
+                  return (
+                    <div
+                      key={part.id}
+                      className={`flex items-center gap-2 px-2 py-1.5 rounded-sm transition-colors ${
+                        isCurrent
+                          ? "bg-primary/5 border border-primary/20"
+                          : "hover:bg-surface dark:hover:bg-gray-800 border border-transparent"
+                      }`}
+                    >
+                      <span className="text-tiny font-mono text-fg-quaternary dark:text-gray-500 w-8 flex-shrink-0">
+                        P{part.partNumber || "?"}
+                      </span>
+                      {isCurrent ? (
+                        <span className="text-sm font-[510] text-fg-primary dark:text-gray-100 flex-1">
+                          {part.customerName} <span className="text-tiny font-normal text-fg-quaternary">(current)</span>
+                        </span>
+                      ) : (
+                        <button
+                          onClick={() => router.push(`/tasks/${part.id}`)}
+                          className="text-sm text-fg-primary dark:text-gray-100 flex-1 text-left hover:text-primary transition-colors"
+                        >
+                          {part.customerName}
+                        </button>
+                      )}
+                      <StatusBadge status={part.status} />
+                    </div>
+                  );
+                })}
+            </div>
+          </div>
+        )}
 
         {task.rejectionNote && (() => {
           const isDropped = task.status === "Dropped";

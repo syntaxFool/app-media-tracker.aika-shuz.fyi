@@ -55,6 +55,34 @@ export async function GET(req: NextRequest) {
       where,
     });
 
+    // Attach series sibling info for tasks that belong to a series
+    const seriesIds = Array.from(new Set(tasks.filter(t => t.seriesId).map(t => t.seriesId!)));
+    if (seriesIds.length > 0) {
+      const siblings = await prisma.task.findMany({
+        where: { seriesId: { in: seriesIds } },
+        select: { id: true, seriesId: true, status: true },
+      });
+      const seriesMap = new Map<string, { total: number; statuses: { id: string; status: string }[] }>();
+      for (const sib of siblings) {
+        if (!sib.seriesId) continue;
+        if (!seriesMap.has(sib.seriesId)) {
+          seriesMap.set(sib.seriesId, { total: 0, statuses: [] });
+        }
+        const entry = seriesMap.get(sib.seriesId)!;
+        entry.total++;
+        entry.statuses.push({ id: sib.id, status: sib.status });
+      }
+      for (const task of tasks) {
+        if (task.seriesId) {
+          const info = seriesMap.get(task.seriesId);
+          if (info) {
+            (task as any).seriesTotal = info.total;
+            (task as any).seriesStatuses = info.statuses;
+          }
+        }
+      }
+    }
+
     return NextResponse.json({ tasks });
   } catch (err: any) {
     if (err.message === "Unauthorized") return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -67,7 +95,27 @@ export async function POST(req: NextRequest) {
     const session = await requireAuth();
     const body = await req.json();
 
-    const { customerName, shootDate, dueDate, service, gender, isInfluencer, note, photoPath, assignedTo } = body;
+    const { customerName, shootDate, dueDate, service, gender, isInfluencer, note, photoPath, assignedTo, seriesId, partNumber } = body;
+
+    // Series field validation
+    if (partNumber !== undefined && !seriesId) {
+      return NextResponse.json(
+        { error: "partNumber requires seriesId" },
+        { status: 400 }
+      );
+    }
+    if (partNumber !== undefined && (typeof partNumber !== "number" || partNumber < 1)) {
+      return NextResponse.json(
+        { error: "partNumber must be a positive integer" },
+        { status: 400 }
+      );
+    }
+    // Auto-compute next part number if seriesId given but no partNumber
+    let resolvedPartNumber = partNumber;
+    if (seriesId && partNumber === undefined) {
+      const count = await prisma.task.count({ where: { seriesId } });
+      resolvedPartNumber = count + 1;
+    }
 
     if (!customerName || !shootDate || !dueDate || !service || !gender) {
       return NextResponse.json(
@@ -97,6 +145,8 @@ export async function POST(req: NextRequest) {
         photoPath: photoPath || null,
         note: note || null,
         dueDate: new Date(dueDate),
+        seriesId: seriesId || null,
+        partNumber: resolvedPartNumber || null,
         assignedTo: (session.role === "su")
           ? (assignedTo || [])
           : ((assignedTo && assignedTo.length > 0) ? assignedTo : [session.username]),

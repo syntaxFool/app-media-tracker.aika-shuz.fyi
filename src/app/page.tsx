@@ -10,6 +10,7 @@ interface Task {
   id: string; customerName: string; shootDate: string; service: string; gender: string;
   isInfluencer: boolean; dueDate: string | null; assignedTo?: string[]; status: string;
   createdBy: string; updatedAt: string | null;
+  seriesId?: string | null;
 }
 
 const STATUS_DOT_COLORS: Record<string, string> = {
@@ -28,6 +29,7 @@ export default function DashboardPage() {
   const [bulkUpdating, setBulkUpdating] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
   const [influencerFilter, setInfluencerFilter] = useState("");
+  const [seriesOnlyFilter, setSeriesOnlyFilter] = useState(false);
 
   useEffect(() => {
     fetch("/api/auth/me").then(r => { if(r.ok) r.json().then(d => setUserRole(d.user.role)); }).catch(() => {});
@@ -48,6 +50,7 @@ export default function DashboardPage() {
   const displayTasks = useMemo(() => {
     let result = [...tasks];
     if (myTasksOnly) result = result.filter(t => t.status !== "Task Completed" && t.status !== "Dropped");
+    if (seriesOnlyFilter) result = result.filter(t => t.seriesId);
     switch (sortBy) {
       case "newest": result.sort((a,b) => new Date(b.shootDate||0).getTime()-new Date(a.shootDate||0).getTime()); break;
       case "oldest": result.sort((a,b) => new Date(a.shootDate||0).getTime()-new Date(b.shootDate||0).getTime()); break;
@@ -137,6 +140,10 @@ export default function DashboardPage() {
               className={`flex items-center gap-1.5 text-label px-2.5 py-1.5 rounded-md border transition-all flex-shrink-0 ${
                 influencerFilter === "true" ? "bg-accent/10 text-accent border-accent/30" : "bg-white dark:bg-gray-800 text-fg-tertiary border-border dark:border-gray-700"
               }`}><StarIcon filled={influencerFilter === "true"}/>Influencer</button>
+            <button onClick={() => setSeriesOnlyFilter(!seriesOnlyFilter)}
+              className={`flex items-center gap-1.5 text-label px-2.5 py-1.5 rounded-md border transition-all flex-shrink-0 ${
+                seriesOnlyFilter ? "bg-primary/10 text-primary border-primary/30" : "bg-white dark:bg-gray-800 text-fg-tertiary border-border dark:border-gray-700"
+              }`}>📹 Series</button>
             <select value={serviceFilter} onChange={e => setServiceFilter(e.target.value)}
               className="select-linear text-label py-1.5 flex-shrink-0 bg-white dark:bg-gray-800">
               <option value="">All Services</option>

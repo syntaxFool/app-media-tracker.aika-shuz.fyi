@@ -21,6 +21,8 @@ model Task {
   rejectionNote String?  @map("rejection_note")
   rejectedBy    String?  @map("rejected_by")
   rejectedAt    DateTime? @map("rejected_at")
+  seriesId     String?   @map("series_id")
+  partNumber   Int?      @map("part_number")
   status       String    @default("New") @map("current_status")
   createdBy    String    @map("created_by")
   createdAt    DateTime  @default(now()) @map("created_at")
@@ -33,6 +35,8 @@ model Task {
   activityLogs  ActivityLog[]
   urls          TaskUrl[]
 
+  @@index([seriesId])
+  @@index([seriesId, partNumber])
   @@map("tasks")
 }
 

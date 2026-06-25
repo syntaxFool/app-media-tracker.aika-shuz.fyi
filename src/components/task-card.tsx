@@ -10,6 +10,9 @@ interface Task {
   service: string; gender: string; isInfluencer: boolean; status: string;
   createdBy: string; assignedTo?: string[]; photoPath?: string | null;
   rejectionNote?: string | null;
+  seriesId?: string | null;
+  partNumber?: number | null;
+  seriesTotal?: number;
 }
 
 interface TaskCardProps {
@@ -62,6 +65,15 @@ export default function TaskCard({ task, selectMode, selected, onToggleSelect }:
             )}
             <span className="text-caption text-fg-tertiary dark:text-gray-400">{task.service}</span>
           </div>
+
+          {/* Series chip */}
+          {task.seriesId && task.seriesTotal && (
+            <div className="flex items-center gap-1 mb-1.5">
+              <span className="text-[10px] font-[590] text-primary bg-primary/10 px-1.5 py-0.5 rounded-sm border border-primary/20">
+                📹 Part {task.partNumber || "?"} of {task.seriesTotal}
+              </span>
+            </div>
+          )}
 
           {/* Row 3: Assigned staff */}
           {assigned.length > 0 && (

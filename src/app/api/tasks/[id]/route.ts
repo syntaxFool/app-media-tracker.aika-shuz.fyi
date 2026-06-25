@@ -24,7 +24,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     if (!task) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
     const body = await req.json();
-    const { customerName, shootDate, dueDate, service, gender, isInfluencer, note, photoPath, status, assignedTo } = body;
+    const { customerName, shootDate, dueDate, service, gender, isInfluencer, note, photoPath, status, assignedTo, seriesId, partNumber } = body;
 
     // Helper: creates an ActivityLog promise (for use inside prisma.$transaction)
     const logActivity = (actor: string, action: string, detail: string, metadata?: any) =>
@@ -99,6 +99,8 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     if (note !== undefined) updateData.note = note;
     if (photoPath !== undefined) updateData.photoPath = photoPath;
     if (assignedTo !== undefined) updateData.assignedTo = assignedTo;
+    if (seriesId !== undefined) updateData.seriesId = seriesId || null;
+    if (partNumber !== undefined) updateData.partNumber = partNumber;
 
     const statusChanged = status !== undefined && status !== task.status;
     if (statusChanged) {
@@ -141,6 +143,8 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     if (assignedTo !== undefined && JSON.stringify(assignedTo) !== JSON.stringify(task.assignedTo)) {
       changedFields.push("assignedTo");
     }
+    if (seriesId !== undefined && seriesId !== task.seriesId) changedFields.push("seriesId");
+    if (partNumber !== undefined && partNumber !== task.partNumber) changedFields.push("partNumber");
 
     // Detect photo change separately for dedicated action types
     const photoChanged = photoPath !== undefined && photoPath !== task.photoPath;

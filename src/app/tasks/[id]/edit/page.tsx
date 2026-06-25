@@ -17,6 +17,8 @@ interface Task {
   photoPath: string | null;
   note: string | null;
   assignedTo: string[];
+  seriesId: string | null;
+  partNumber: number | null;
 }
 
 export default function EditTaskPage() {
@@ -83,6 +85,8 @@ export default function EditTaskPage() {
             isInfluencer: task.isInfluencer,
             note: task.note || "",
             photoPath: task.photoPath,
+            seriesId: task.seriesId,
+            partNumber: task.partNumber,
           }}
         />
       </div>

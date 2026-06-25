@@ -8,7 +8,7 @@ const SERVICES = ["Treatment","Haircut","Perming","Patch","Dread lock","Braid","
 const GENDERS = ["Male","Female","Other"];
 
 interface TaskFormProps {
-  initialData?: { customerName?: string; shootDate?: string; dueDate?: string | null; service?: string; gender?: string; isInfluencer?: boolean; note?: string; photoPath?: string | null; assignedTo?: string[] };
+  initialData?: { customerName?: string; shootDate?: string; dueDate?: string | null; service?: string; gender?: string; isInfluencer?: boolean; note?: string; photoPath?: string | null; assignedTo?: string[]; seriesId?: string | null; partNumber?: number | null };
   mode: "create" | "edit";
   taskId?: string;
 }
@@ -25,11 +25,34 @@ export default function TaskForm({ initialData, mode, taskId }: TaskFormProps) {
     note: initialData?.note || "",
     photoPath: initialData?.photoPath || null as string | null,
     assignedTo: initialData?.assignedTo || [] as string[],
+    seriesId: initialData?.seriesId || null as string | null,
+    partNumber: initialData?.partNumber || null as number | null,
   });
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [staffList, setStaffList] = useState<any[]>([]);
   const [assignedTo, setAssignedTo] = useState<string[]>(initialData?.assignedTo || []);
+  const [isPartOfSeries, setIsPartOfSeries] = useState(!!initialData?.seriesId);
+  const [seriesMode, setSeriesMode] = useState<"existing" | "new">(initialData?.seriesId ? "existing" : "new");
+  const [existingSeries, setExistingSeries] = useState<{ seriesId: string; totalParts: number }[]>([]);
+  const [newSeriesName, setNewSeriesName] = useState("");
+  const [seriesLoading, setSeriesLoading] = useState(false);
+
+  function slugify(text: string): string {
+    return text.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "series";
+  }
+
+  // Fetch existing series for the dropdown
+  useEffect(() => {
+    if (isPartOfSeries && mode === "create") {
+      setSeriesLoading(true);
+      fetch("/api/series")
+        .then(r => r.ok ? r.json() : { series: [] })
+        .then(d => setExistingSeries(d.series || []))
+        .catch(() => {})
+        .finally(() => setSeriesLoading(false));
+    }
+  }, [isPartOfSeries, mode]);
 
   useEffect(() => {
     fetch("/api/auth/me").then(r => { if (r.ok) r.json().then(d => {
@@ -43,12 +66,33 @@ export default function TaskForm({ initialData, mode, taskId }: TaskFormProps) {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault(); setError("");
+    // Auto-compute seriesId for new series
+    if (isPartOfSeries) {
+      if (seriesMode === "new") {
+        const slug = slugify(newSeriesName || form.customerName);
+        updateField("seriesId", slug);
+      }
+    } else {
+      updateField("seriesId", null);
+      updateField("partNumber", null);
+    }
     if (!form.customerName || !form.shootDate || !form.dueDate || !form.service || !form.gender) { setError("Please fill all required fields"); return; }
     setSubmitting(true);
     try {
       const url = mode === "create" ? "/api/tasks" : `/api/tasks/${taskId}`;
       const method = mode === "create" ? "POST" : "PUT";
-      const res = await fetch(url, { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...form, assignedTo }) });
+      // Use current form state for series fields (updated via updateField inside handleSubmit)
+      const body: any = { ...form, assignedTo };
+      if (isPartOfSeries) {
+        if (seriesMode === "new") {
+          body.seriesId = slugify(newSeriesName || form.customerName);
+        }
+        // partNumber is auto-computed server-side if not set, or user-provided
+      } else {
+        body.seriesId = null;
+        body.partNumber = null;
+      }
+      const res = await fetch(url, { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
       const data = await res.json();
       if (!res.ok) { setError(data.error || "Failed"); return; }
       router.push(`/tasks/${data.task.id}`); router.refresh();
@@ -93,6 +137,131 @@ export default function TaskForm({ initialData, mode, taskId }: TaskFormProps) {
           </div>
         </div>
       )}
+
+      {/* Series (Multi-Part) Section */}
+      <div className="border border-border dark:border-gray-700 rounded-md p-4 space-y-3">
+        <label className="flex items-center gap-3 cursor-pointer">
+          <div className="relative">
+            <input
+              type="checkbox"
+              checked={isPartOfSeries}
+              onChange={e => {
+                setIsPartOfSeries(e.target.checked);
+                if (!e.target.checked) {
+                  updateField("seriesId", null);
+                  updateField("partNumber", null);
+                }
+              }}
+              className="sr-only peer"
+            />
+            <div className="w-10 h-6 bg-black/[0.08] border border-border rounded-full peer-checked:bg-primary/40 peer-checked:border-primary transition-all" />
+            <div className="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full peer-checked:translate-x-4 peer-checked:bg-primary transition-all shadow-sm border border-border" />
+          </div>
+          <div>
+            <span className="text-sm text-fg-primary">This task is part of a series</span>
+            <p className="text-micro text-fg-quaternary">Group multi-part videos together (Part 1, Part 2, etc.)</p>
+          </div>
+        </label>
+
+        {isPartOfSeries && (
+          <div className="space-y-3 pl-0.5 animate-fade-in">
+            {mode === "create" && !initialData?.seriesId ? (
+              <>
+                <div>
+                  <label className="block text-label text-fg-tertiary mb-1.5">Series</label>
+                  <div className="flex gap-2 mb-2">
+                    <button
+                      type="button"
+                      onClick={() => setSeriesMode("existing")}
+                      className={`text-label px-3 py-1.5 rounded-sm border transition-colors ${
+                        seriesMode === "existing"
+                          ? "bg-primary text-white border-primary"
+                          : "bg-white dark:bg-gray-800 text-fg-tertiary border-border dark:border-gray-700"
+                      }`}
+                    >Select Existing</button>
+                    <button
+                      type="button"
+                      onClick={() => setSeriesMode("new")}
+                      className={`text-label px-3 py-1.5 rounded-sm border transition-colors ${
+                        seriesMode === "new"
+                          ? "bg-primary text-white border-primary"
+                          : "bg-white dark:bg-gray-800 text-fg-tertiary border-border dark:border-gray-700"
+                      }`}
+                    >Create New</button>
+                  </div>
+
+                  {seriesMode === "existing" ? (
+                    <select
+                      value={form.seriesId || ""}
+                      onChange={e => updateField("seriesId", e.target.value || null)}
+                      className="select-linear w-full"
+                    >
+                      <option value="">Select a series...</option>
+                      {seriesLoading && <option disabled>Loading...</option>}
+                      {existingSeries.map(s => (
+                        <option key={s.seriesId} value={s.seriesId}>
+                          {s.seriesId} ({s.totalParts} part{s.totalParts !== 1 ? "s" : ""})
+                        </option>
+                      ))}
+                    </select>
+                  ) : (
+                    <input
+                      type="text"
+                      value={newSeriesName}
+                      onChange={e => {
+                        setNewSeriesName(e.target.value);
+                        updateField("seriesId", slugify(e.target.value || form.customerName));
+                      }}
+                      className="input-linear w-full"
+                      placeholder="e.g. Wedding Film — Sharma"
+                    />
+                  )}
+                </div>
+
+                <div>
+                  <label className="block text-label text-fg-tertiary mb-1.5">Part Number</label>
+                  <input
+                    type="number"
+                    min={1}
+                    value={form.partNumber || 1}
+                    onChange={e => updateField("partNumber", parseInt(e.target.value) || 1)}
+                    className="input-linear w-24"
+                  />
+                  <p className="text-tiny text-fg-quaternary mt-1">
+                    {seriesMode === "existing" && form.seriesId
+                      ? `Auto-suggested next part. Change if needed.`
+                      : "Leave as 1 for the first part. Increment for each subsequent part."}
+                  </p>
+                </div>
+              </>
+            ) : (
+              /* Edit mode: show current series context (read-only part number) */
+              <>
+                <div className="flex items-center gap-3">
+                  <span className="text-label text-fg-tertiary min-w-[80px]">Series ID</span>
+                  <input
+                    type="text"
+                    value={form.seriesId || ""}
+                    onChange={e => updateField("seriesId", e.target.value || null)}
+                    className="input-linear flex-1"
+                    placeholder="series-id"
+                  />
+                </div>
+                <div className="flex items-center gap-3">
+                  <span className="text-label text-fg-tertiary min-w-[80px]">Part Number</span>
+                  <input
+                    type="number"
+                    min={1}
+                    value={form.partNumber || 1}
+                    onChange={e => updateField("partNumber", parseInt(e.target.value) || null)}
+                    className="input-linear w-24"
+                  />
+                </div>
+              </>
+            )}
+          </div>
+        )}
+      </div>
 
       <div><label className="block text-label text-fg-tertiary mb-1.5">Note</label><textarea value={form.note} onChange={e => updateField("note", e.target.value)} className="input-linear w-full min-h-[80px] resize-y" placeholder="Any additional notes..." rows={3} /></div>
 
