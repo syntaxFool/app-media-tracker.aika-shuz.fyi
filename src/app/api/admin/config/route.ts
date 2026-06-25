@@ -38,6 +38,35 @@ export async function PUT(req: NextRequest) {
       return NextResponse.json({ error: `Invalid config key: ${key}` }, { status: 400 });
     }
 
+    // Type-specific value validation
+    if (key === "branding") {
+      if (!value || !value.appName || !value.appFullName || !value.taskIdPrefix) {
+        return NextResponse.json({
+          error: "Branding requires appName, appFullName, and taskIdPrefix"
+        }, { status: 400 });
+      }
+    }
+    if (key === "services" || key === "genders" || key === "platforms") {
+      if (!Array.isArray(value) || value.length === 0 || !value.every((v: any) => typeof v === "string")) {
+        return NextResponse.json({
+          error: `${key} must be a non-empty array of strings`
+        }, { status: 400 });
+      }
+    }
+    if (key === "status_responsible") {
+      if (typeof value !== "object" || value === null || Array.isArray(value) || Object.keys(value).length === 0) {
+        return NextResponse.json({
+          error: "status_responsible must be a non-empty object"
+        }, { status: 400 });
+      }
+      // Validate all values are strings
+      if (!Object.values(value).every((v: any) => typeof v === "string")) {
+        return NextResponse.json({
+          error: "status_responsible values must be strings"
+        }, { status: 400 });
+      }
+    }
+
     await setConfig(key as keyof AppConfigShape, value, session.username);
     return NextResponse.json({ success: true, key });
   } catch (err: any) {

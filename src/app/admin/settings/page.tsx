@@ -25,6 +25,15 @@ const CATEGORY_DESC: Record<string, string> = {
   status_responsible: "Which role is responsible for each status in the workflow",
 };
 
+// Default values for "Reset to defaults" (must match prisma/seed.ts & lib/config.ts)
+const DEFAULTS: Record<string, any> = {
+  services: ["Treatment","Haircut","Perming","Patch","Dread lock","Braid","Brand promo","Other"],
+  genders: ["Male","Female","Other"],
+  platforms: ["Instagram","YouTube Shorts","YouTube","Snapchat","Facebook","Google Business Profile","Custom"],
+  branding: { appName: "Shanuzz Tracker", appFullName: "Shanuzz Media Tracker", taskIdPrefix: "SHANUZZ", version: "1.1.0" },
+  status_responsible: { "New": "Admin", "Video Shot": "Videographer", "Data Copied": "Editor", "Video Edited": "Reviewer", "Reviewed": "Uploader", "Approved": "Admin", "Uploaded": "Admin", "Task Completed": "—", "Dropped": "—" },
+};
+
 export default function SuSettingsPage() {
   const [configs, setConfigs] = useState<ConfigEntry[]>([]);
   const [loading, setLoading] = useState(true);
@@ -78,7 +87,32 @@ export default function SuSettingsPage() {
     setEditValue(null);
   }
 
+  async function resetToDefaults(key: string) {
+    if (!confirm(`Reset all ${CATEGORY_LABELS[key]} values to their defaults?`)) return;
+    setSaving(true);
+    try {
+      const res = await fetch("/api/admin/config", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ key, value: DEFAULTS[key as keyof typeof DEFAULTS] }),
+      });
+      if (!res.ok) throw new Error("Reset failed");
+      setConfigs(prev => prev.map(c => c.key === key ? { ...c, value: DEFAULTS[key as keyof typeof DEFAULTS] } : c));
+      setEditingKey(null);
+      setEditValue(null);
+      showToast(`${CATEGORY_LABELS[key]} reset to defaults`);
+    } catch {
+      showToast("Reset failed", "error");
+    } finally {
+      setSaving(false);
+    }
+  }
+
   async function saveConfig(key: string) {
+    // Confirm for branding changes
+    if (key === "branding" && !confirm("Changing branding affects the entire app (header, login page, notifications, task IDs). Continue?")) {
+      return;
+    }
     setSaving(true);
     try {
       const res = await fetch("/api/admin/config", {
@@ -266,6 +300,13 @@ export default function SuSettingsPage() {
                       className="btn-ghost text-label px-3 py-1.5 flex items-center gap-1"
                     >
                       <RotateCcw className="w-3.5 h-3.5" /> Cancel
+                    </button>
+                    <button
+                      onClick={() => resetToDefaults(key)}
+                      disabled={saving}
+                      className="btn-ghost text-label px-3 py-1.5 text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-800 hover:bg-amber-50 dark:hover:bg-amber-900/20 flex items-center gap-1"
+                    >
+                      Reset
                     </button>
                     <button
                       onClick={() => saveConfig(key)}
