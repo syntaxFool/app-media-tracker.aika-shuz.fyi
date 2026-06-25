@@ -8,7 +8,7 @@
 
 ## Overview
 
-Add a **Series** (Parent-Child) model to the Task entity so multi-part video projects (e.g., "Wedding Film Part 1", "Wedding Film Part 2") can be grouped, ordered, and tracked independently through the Kanban workflow.
+Add a **Series** (Parent-Child) model to the Task entity so multi-part video projects (e.g., "Salon Influencer Part 1", "Salon Influencer Part 2") can be grouped, ordered, and tracked independently through the Kanban workflow.
 
 Each Task remains an independent database row with its own status, analytics, and metadata. A nullable `seriesId` + `partNumber` pair links them into one logical container — exactly how YouTube models "Official Series Playlists."
 
@@ -43,7 +43,7 @@ model Task {
 
 **Design decisions:**
 - Both fields are **nullable** — existing tasks don't break, and single-part tasks stay un-grouped
-- `seriesId` is a `String` (not Int) so it can hold a UUID or a human-readable slug like `"wedding-sharma-2025"`
+- `seriesId` is a `String` (not Int) so it can hold a UUID or a human-readable slug like `"brand-deal-priya-2025"`
 - `partNumber` is `Int?` (not auto-increment) — the user explicitly assigns part order
 - No separate `Series` table needed yet — the series is defined implicitly by shared `seriesId`. A Series table could be added later for metadata (title, description), but is premature optimization for MVP
 
@@ -64,7 +64,7 @@ When tasks have `seriesId`, the response should include:
 {
   "task": {
     "id": "SHANUZZ-0042",
-    "seriesId": "series_wedding_sharma_2025",
+    "seriesId": "series_salon_influencer_2025",
     "partNumber": 1,
     "seriesTotal": 3,        // computed: count of tasks with same seriesId
     "seriesStatuses": [      // computed: statuses of all siblings
@@ -209,7 +209,7 @@ Each series card in a Kanban column:
 
 ```
 ┌──────────────────────────────────────┐
-│ 📹 Wedding Film — Sharma (3 parts)   │  ← expandable header
+│ 📹 Salon Influencer — Priya (3 parts)   │  ← expandable header
 │ ▸ 2 of 3 completed                   │  ← aggregate progress
 │                                      │
 │ ┌──────────────────────────────────┐ │
@@ -254,9 +254,9 @@ When a task has a `seriesId`, show on the card:
 
 ```
 ┌──────────────────────────────────────┐
-│ Wedding Film — Sharma                │
+│ Salon Influencer — Priya            │
 │ Part 2 of 3  ▸ Video Edited         │  ← micro chip
-│ SHANUZZ-0042 · Wedding              │
+│ SHANUZZ-0042 · Brand Deal           │
 └──────────────────────────────────────┘
 ```
 
@@ -276,7 +276,7 @@ Add a "Series" section between header and details:
 
 ```
 ┌────────────────────────────────────────────────┐
-│ 📹 Part 2 of 3 — Wedding Film (Sharma Series) │
+│ 📹 Part 2 of 3 — Salon Influencer (Priya)       │
 │                                                │
 │ Part 1: Ceremony     → Task Completed          │  ← clickable links
 │ Part 2: Reception    → Video Edited ◄ current  │
@@ -332,7 +332,7 @@ ORDER BY latest_updated_at DESC;
 Returns all tasks in a series, ordered by `partNumber`:
 ```json
 {
-  "seriesId": "wedding_sharma_2025",
+  "seriesId": "salon_influencer_2025",
   "parts": [
     { "id": "SHANUZZ-0041", "partNumber": 1, "status": "Task Completed", ... },
     { "id": "SHANUZZ-0042", "partNumber": 2, "status": "Video Edited", ... }

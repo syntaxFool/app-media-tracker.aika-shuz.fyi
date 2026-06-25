@@ -213,7 +213,7 @@ export default function TaskForm({ initialData, mode, taskId }: TaskFormProps) {
                         updateField("seriesId", slugify(e.target.value || form.customerName));
                       }}
                       className="input-linear w-full"
-                      placeholder="e.g. Wedding Film — Sharma"
+                      placeholder="e.g. Brand Deal — Priya"
                     />
                   )}
                 </div>
