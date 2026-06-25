@@ -216,7 +216,7 @@ export default function TaskDetailPage() {
           <div className={`border rounded-md p-3 flex items-center gap-2 ${
             isOverdue ? "bg-danger/5 border-danger/20 text-danger dark:text-red-300" :
             isDueSoon ? "bg-warning/10 border-warning/20 text-warning dark:text-amber-300" :
-            "bg-white dark:bg-gray-900 border-border dark:border-gray-800"
+            "bg-white dark:bg-gray-900 border-border dark:border-gray-800 dark:text-gray-100"
           }`}>
             <Clock className="w-4 h-4 flex-shrink-0" />
             <span className="text-sm">
