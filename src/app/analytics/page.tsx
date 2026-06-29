@@ -60,6 +60,8 @@ export default function AnalyticsPage() {
   const [exporting, setExporting] = useState<string | null>(null);
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
   const dashboardRef = useRef<HTMLDivElement>(null);
+  const sentinelRef = useRef<HTMLDivElement>(null);
+  const [scrolled, setScrolled] = useState(false);
 
   const showToast = useCallback((message: string, type: "success" | "error" = "success") => {
     setToast({ message, type });
@@ -78,6 +80,19 @@ export default function AnalyticsPage() {
       }
     }).finally(() => setLoading(false));
   }, [filterType]);
+
+  // Detect when the sticky header has detached from the top of the scroll
+  // container so we can paint a subtle shadow under it.
+  useEffect(() => {
+    const sentinel = sentinelRef.current;
+    if (!sentinel || typeof IntersectionObserver === "undefined") return;
+    const observer = new IntersectionObserver(
+      ([entry]) => setScrolled(!entry.isIntersecting),
+      { threshold: 0, rootMargin: "-1px 0px 0px 0px" }
+    );
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, []);
 
   if (loading) return <AppLayout><div className="flex justify-center py-20"><RefreshCw className="w-6 h-6 text-fg-tertiary animate-spin"/></div></AppLayout>;
   if (!data) return <AppLayout><div className="p-4 text-center text-fg-tertiary">Unable to load analytics</div></AppLayout>;
@@ -205,32 +220,63 @@ export default function AnalyticsPage() {
       )}
 
       <div className="p-4 sm:p-6 lg:p-8 max-w-5xl mx-auto space-y-6 animate-fade-in pb-24">
-        {/* Header */}
-        <div className="flex items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <BarChart3 className="w-6 h-6 text-primary" />
-            <h1 className="text-heading-3 text-fg-primary dark:text-white font-semibold">Analytics</h1>
-            <button
-              onClick={() => setShowExport(true)}
-              className="btn-subtle text-micro px-2 py-1 flex items-center gap-1.5"
-              title="Export"
-            >
-              <Download className="w-3.5 h-3.5" />
-              Export
-            </button>
+        {/* Sentinel: when this 1px line leaves the viewport, the sticky
+            header has detached and we paint a shadow under it. */}
+        <div ref={sentinelRef} className="h-px -mb-px" aria-hidden />
+
+        {/* Sticky Header — sticks at the top of <main> (which sits directly
+            below AppLayout's blue 56px top bar).  Row 1 = title + export.
+            Row 2 = segmented filter. */}
+        <div
+          className={`relative sticky top-0 z-20 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 pt-3 pb-4
+                       bg-white/90 dark:bg-gray-950/90
+                       backdrop-blur-xl backdrop-saturate-150
+                       transition-all duration-300 ease-spring ${
+            scrolled
+              ? "shadow-[0_8px_24px_-8px_rgba(0,105,148,0.18),0_2px_6px_rgba(0,0,0,0.04)] dark:shadow-[0_8px_24px_-8px_rgba(0,0,0,0.5),0_2px_6px_rgba(0,0,0,0.3)] ring-1 ring-primary/10 dark:ring-primary/20"
+              : "shadow-none ring-1 ring-transparent"
+          }`}
+        >
+          {/* Brand accent line — always visible at the top of the sticky region */}
+          <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-primary via-ocean to-accent" />
+          {/* Row 1: Title + Export */}
+          <div className="flex items-center justify-between gap-3 mb-3">
+            <div className="flex items-center gap-3 min-w-0">
+              <BarChart3 className="w-6 h-6 text-primary flex-shrink-0" />
+              <h1 className="text-heading-3 text-fg-primary dark:text-white font-semibold">Analytics</h1>
+              <button
+                onClick={() => setShowExport(true)}
+                className="btn-subtle text-micro px-2 py-1 flex items-center gap-1.5"
+                title="Export"
+              >
+                <Download className="w-3.5 h-3.5" />
+                Export
+              </button>
+            </div>
           </div>
-          <div className="flex bg-surface dark:bg-gray-800 border border-border dark:border-gray-700 rounded-sm p-0.5">
+
+          {/* Row 2: Segmented filter control — full-width, evenly distributed */}
+          <div className="flex flex-row items-stretch bg-white dark:bg-gray-800 border border-border dark:border-gray-700 rounded-sm overflow-hidden">
             {(["all", "influencer", "regular"] as const).map((type) => (
               <button
                 key={type}
                 onClick={() => setFilterType(type)}
-                className={`text-micro font-[510] flex-1 text-center py-1 rounded-sm transition-all ${
+                className={`flex-1 flex items-center justify-center text-[11px] sm:text-micro font-[510] py-2 transition-all ${
                   filterType === type
-                    ? "bg-primary text-white shadow-sm"
+                    ? "bg-primary text-white"
                     : "text-fg-tertiary hover:text-fg-primary dark:text-gray-400 dark:hover:text-gray-200"
                 }`}
               >
-                {type === "all" ? "All" : type === "influencer" ? "⭐ Influencer" : "Regular"}
+                {type === "all" ? (
+                  "All"
+                ) : type === "influencer" ? (
+                  <span className="flex items-center gap-[3px]">
+                    <span className="text-[11px]">⭐</span>
+                    <span>Influencer</span>
+                  </span>
+                ) : (
+                  "Regular"
+                )}
               </button>
             ))}
           </div>
