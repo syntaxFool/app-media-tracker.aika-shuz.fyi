@@ -263,12 +263,13 @@ export default function SuSettingsPage() {
       )}
 
       <div className="p-4 max-w-3xl mx-auto space-y-5 animate-fade-in pb-32">
-        <div>
-          <div className="flex items-center gap-3 mb-1">
+        {/* Page heading */}
+        <div className="page-heading">
+          <div className="flex items-center gap-3">
             <Shield className="w-6 h-6 text-amber-500" />
             <h1 className="text-heading-2 text-fg-primary dark:text-white font-semibold">SU Settings</h1>
           </div>
-          <p className="text-caption text-fg-tertiary dark:text-gray-400 mt-1">
+          <p className="text-caption text-fg-tertiary dark:text-gray-400">
             Manage global application configuration. Changes take effect immediately.
           </p>
         </div>
@@ -279,7 +280,7 @@ export default function SuSettingsPage() {
           const value = config?.value;
 
           return (
-            <div key={key} className="bg-white dark:bg-gray-900 border border-border dark:border-gray-800 rounded-md p-4 shadow-sm">
+            <div key={key} className="section-card">
               <div className="flex items-start justify-between mb-3">
                 <div>
                   <h3 className="text-label font-[590] text-fg-primary dark:text-gray-100">{label}</h3>
@@ -319,7 +320,7 @@ export default function SuSettingsPage() {
                 )}
               </div>
 
-              {!isEditing && (
+              {!isEditing && value && (
                 <div className="bg-surface dark:bg-gray-800 rounded-sm p-3 border border-border/50 dark:border-gray-700">
                   {key === "branding" && value ? (
                     <div className="flex flex-wrap gap-x-6 gap-y-1 text-sm">
@@ -352,7 +353,7 @@ export default function SuSettingsPage() {
               )}
 
               {isEditing && (
-                <div className="bg-surface dark:bg-gray-800 rounded-sm p-3 border border-accent/30 dark:border-accent/30">
+                <div className="bg-surface dark:bg-gray-800 rounded-sm p-3 border border-accent/40 dark:border-accent/30 ring-1 ring-accent/10">
                   {renderEditArea(key, editValue)}
                 </div>
               )}

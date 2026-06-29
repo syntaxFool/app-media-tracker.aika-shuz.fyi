@@ -25,7 +25,7 @@ function OrphanPartCard({ task, userRole, onMoveTask, onNavigate }: {
   return (
     <div
       onClick={onNavigate}
-      className={`bg-white dark:bg-gray-800 border border-dashed rounded-md p-3 shadow-sm cursor-pointer hover:shadow-elev-raised hover:border-primary/30 transition-all group ${
+      className={`bg-white dark:bg-gray-800 border border-dashed rounded-md p-3 cursor-pointer hover:shadow-elev-hover hover:-translate-y-0.5 hover:border-primary/30 transition-all duration-200 group ${
         isRejectedTask ? "border-danger/50 ring-1 ring-danger/20" : "border-border dark:border-gray-700"
       }`}
     >
@@ -68,12 +68,12 @@ function OrphanPartCard({ task, userRole, onMoveTask, onNavigate }: {
 
       {/* Quick move buttons */}
       {allowed.length > 0 && (
-        <div className="flex gap-1 pt-1.5 border-t border-border dark:border-gray-700 opacity-0 group-hover:opacity-100 transition-opacity">
+        <div className="flex gap-1 pt-1.5 border-t border-border dark:border-gray-700 opacity-0 group-hover:opacity-100 transition-all duration-200">
           {allowed.map((s: string) => (
             <button
               key={s}
               onClick={(e) => { e.stopPropagation(); onMoveTask(task.id, s); }}
-              className="text-tiny px-2 py-0.5 rounded-sm bg-surface dark:bg-gray-900 text-fg-tertiary dark:text-gray-400 hover:bg-primary hover:text-white transition-colors"
+              className="text-tiny px-2 py-0.5 rounded-sm bg-surface dark:bg-gray-900 text-fg-tertiary dark:text-gray-400 hover:bg-primary hover:text-white transition-colors active:scale-95"
             >→ {s}</button>
           ))}
         </div>
@@ -366,7 +366,7 @@ export default function KanbanPage() {
                           const allowed = getAllowedNextStatuses(task, userRole).slice(0, 3);
                           if (allowed.length === 0) return null;
                           return (
-                            <div className="flex gap-1 pt-2 border-t border-border dark:border-gray-700 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <div className="flex gap-1 pt-2 border-t border-border dark:border-gray-700 opacity-0 group-hover:opacity-100 transition-all duration-200">
                               {allowed.map((s) => (
                                 <button
                                   key={s}

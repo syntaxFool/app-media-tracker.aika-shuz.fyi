@@ -30,8 +30,34 @@
   *:focus-visible {
     outline: none;
     box-shadow:
-      0 0 0 2px color-mix(in oklab, #006994, transparent 60%),
+      0 0 0 2px rgba(0, 105, 148, 0.25),
       0 2px 8px rgba(0,0,0,0.06);
+    transition: box-shadow 150ms cubic-bezier(0.2, 0, 0, 1);
+  }
+
+  /* Tap highlight suppression for mobile */
+  * { -webkit-tap-highlight-color: transparent; }
+
+  /* Focus ring for interactive elements in dark mode */
+  .dark *:focus-visible {
+    box-shadow: 0 0 0 2px rgba(0, 130, 179, 0.4);
+  }
+
+  /* Staggered list item entry */
+  @media (prefers-reduced-motion: no-preference) {
+    .stagger-item {
+      animation: list-item 300ms cubic-bezier(0.16, 1, 0.3, 1) both;
+    }
+    .stagger-item:nth-child(1) { animation-delay: 0ms; }
+    .stagger-item:nth-child(2) { animation-delay: 40ms; }
+    .stagger-item:nth-child(3) { animation-delay: 80ms; }
+    .stagger-item:nth-child(4) { animation-delay: 120ms; }
+    .stagger-item:nth-child(5) { animation-delay: 160ms; }
+    .stagger-item:nth-child(6) { animation-delay: 200ms; }
+    .stagger-item:nth-child(7) { animation-delay: 240ms; }
+    .stagger-item:nth-child(8) { animation-delay: 280ms; }
+    .stagger-item:nth-child(9) { animation-delay: 320ms; }
+    .stagger-item:nth-child(10) { animation-delay: 360ms; }
   }
 }
 
@@ -140,6 +166,89 @@
   }
   .dialog-content {
     @apply fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white border border-black/[0.06] rounded-lg shadow-elev-dialog z-50 w-[90vw] max-w-lg max-h-[85vh] overflow-y-auto animate-scale-in dark:bg-gray-900 dark:border-gray-700;
+  }
+
+  /* --- Skeleton loading placeholder --- */
+  .skeleton {
+    @apply rounded-sm;
+    background: linear-gradient(
+      90deg,
+      rgba(0,0,0,0.03) 25%,
+      rgba(0,0,0,0.06) 50%,
+      rgba(0,0,0,0.03) 75%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.5s ease-in-out infinite;
+  }
+  .dark .skeleton {
+    background: linear-gradient(
+      90deg,
+      rgba(255,255,255,0.03) 25%,
+      rgba(255,255,255,0.06) 50%,
+      rgba(255,255,255,0.03) 75%
+    );
+    background-size: 200% 100%;
+  }
+
+  /* --- Skeleton text lines --- */
+  .skeleton-text {
+    @apply skeleton h-3 w-full mb-2;
+  }
+  .skeleton-text:last-child {
+    @apply w-3/4;
+  }
+
+  /* --- Toast / snackbar --- */
+  .toast {
+    @apply fixed bottom-6 left-1/2 -translate-x-1/2 z-50
+      bg-fg-primary text-white px-4 py-2.5 rounded-md shadow-elev-dialog
+      text-sm font-[510] animate-fade-in-up
+      dark:bg-gray-800 dark:text-gray-100;
+  }
+
+  /* --- Empty state container --- */
+  .empty-state {
+    @apply flex flex-col items-center justify-center py-20 px-4 text-center;
+  }
+  .empty-state-icon {
+    @apply text-5xl mb-5 opacity-30;
+  }
+  .empty-state-title {
+    @apply text-body text-fg-secondary dark:text-gray-300 font-[510];
+  }
+  .empty-state-desc {
+    @apply text-caption text-fg-tertiary dark:text-gray-500 mt-1.5 max-w-sm;
+  }
+  .empty-state-action {
+    @apply mt-5;
+  }
+
+  /* --- Page heading area --- */
+  .page-heading {
+    @apply mb-6;
+  }
+  .page-heading h1 {
+    @apply text-heading-2 text-fg-primary dark:text-gray-100 font-[510];
+  }
+  .page-heading p {
+    @apply text-caption text-fg-tertiary dark:text-gray-400 mt-1;
+  }
+
+  /* --- Section card for admin/settings pages --- */
+  .section-card {
+    @apply bg-white dark:bg-gray-900 border border-border dark:border-gray-800 rounded-md p-5 space-y-4;
+  }
+  .section-card-title {
+    @apply text-body font-[510] text-fg-primary dark:text-gray-100;
+  }
+  .section-card-desc {
+    @apply text-caption text-fg-tertiary dark:text-gray-400;
+  }
+
+  /* --- Stat tile (dashboard stats) --- */
+  .stat-tile {
+    @apply bg-white dark:bg-gray-900 border border-border dark:border-gray-800 rounded-md px-3.5 py-2.5
+      shadow-elev-stats hover:shadow-elev-hover transition-all duration-200 hover:-translate-y-0.5;
   }
 }
 

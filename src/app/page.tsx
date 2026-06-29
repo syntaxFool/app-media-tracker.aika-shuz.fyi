@@ -102,17 +102,19 @@ export default function DashboardPage() {
     <AppLayout>
       <div className="p-4 max-w-3xl mx-auto space-y-4 pb-16">
         {/* Stats Bar — with colored dots */}
-        <div className="flex gap-2 overflow-x-auto pb-1 no-scrollbar">
-          {Object.entries(statusCounts).map(([status, count]) => (
-            <div key={status} className="flex-shrink-0 bg-white dark:bg-gray-900 border border-border dark:border-gray-800 rounded-md px-3 py-2 shadow-sm flex items-center gap-2">
-              <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{backgroundColor: STATUS_DOT_COLORS[status] || "#95a5b5"}}/>
-              <div>
-                <span className="text-micro text-fg-quaternary dark:text-gray-500 block leading-tight">{status}</span>
-                <span className="text-body font-[590] text-fg-primary dark:text-gray-100 leading-tight">{count}</span>
+        {Object.keys(statusCounts).length > 0 && (
+          <div className="flex gap-2 overflow-x-auto pb-1 no-scrollbar">
+            {Object.entries(statusCounts).map(([status, count]) => (
+              <div key={status} className="stat-tile flex items-center gap-2.5 flex-shrink-0">
+                <div className="w-3 h-3 rounded-full flex-shrink-0" style={{backgroundColor: STATUS_DOT_COLORS[status] || "#95a5b5"}}/>
+                <div>
+                  <span className="text-micro text-fg-quaternary dark:text-gray-500 block leading-tight">{status}</span>
+                  <span className="text-body font-[590] text-fg-primary dark:text-gray-100 leading-tight">{count}</span>
+                </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
 
         {/* Unified Action Bar — single scrollable row */}
         <div className="flex items-center gap-2 overflow-x-auto pb-2">
@@ -147,7 +149,7 @@ export default function DashboardPage() {
 
         {/* Expandable Filter Bar — includes CSV */}
         {showFilters && (
-          <div className="flex items-center gap-2 overflow-x-auto pb-2 animate-fade-in">
+          <div className="flex items-center gap-2 overflow-x-auto pb-2 animate-fade-in p-3 bg-white dark:bg-gray-900 border border-border dark:border-gray-800 rounded-md shadow-elev-subtle">
             <button onClick={() => setInfluencerFilter(influencerFilter === "true" ? "" : "true")}
               className={`flex items-center gap-1.5 text-label px-2.5 py-1.5 rounded-md border transition-all flex-shrink-0 ${
                 influencerFilter === "true" ? "bg-accent/10 text-accent border-accent/30" : "bg-white dark:bg-gray-800 text-fg-tertiary border-border dark:border-gray-700"
@@ -176,15 +178,17 @@ export default function DashboardPage() {
         {loading ? (
           <div className="flex justify-center py-8"><Loader2 className="w-6 h-6 text-fg-tertiary animate-spin"/></div>
         ) : displayTasks.length === 0 ? (
-          <div className="text-center py-16">
-            <div className="text-4xl mb-4 opacity-40">📋</div>
-            <p className="text-body text-fg-secondary dark:text-gray-300">No tasks found</p>
-            <p className="text-caption text-fg-tertiary mt-1">Tap the + button to create your first task</p>
+          <div className="empty-state">
+            <div className="empty-state-icon">📋</div>
+            <p className="empty-state-title">No tasks found</p>
+            <p className="empty-state-desc">Tap the + button to create your first task</p>
           </div>
         ) : (
           <div className="space-y-2">
-            {displayTasks.map(task => (
-              <TaskCard key={task.id} task={task} selectMode={selectMode} selected={selectedIds.has(task.id)} onToggleSelect={() => toggleSelect(task.id)}/>
+            {displayTasks.map((task, i) => (
+              <div key={task.id} className="stagger-item" style={{animationDelay: `${Math.min(i * 30, 360)}ms`}}>
+                <TaskCard task={task} selectMode={selectMode} selected={selectedIds.has(task.id)} onToggleSelect={() => toggleSelect(task.id)}/>
+              </div>
             ))}
           </div>
         )}

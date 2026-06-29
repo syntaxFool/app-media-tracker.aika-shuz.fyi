@@ -106,7 +106,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen bg-surface dark:bg-gray-950 flex flex-col">
       {/* Top Bar - gradient poseidon blue */}
-      <header className="sticky top-0 z-40 bg-gradient-to-r from-[#006994] via-[#006994] to-[#0082b3] text-white shadow-md">
+      <header className="sticky top-0 z-40 bg-gradient-to-r from-[#006994] via-[#006994] to-[#0082b3] text-white shadow-[0_2px_8px_rgba(0,105,148,0.12)]">
         <div className="flex items-center justify-between px-4 h-14">
           {/* Brand */}
           <div className="flex items-center gap-2.5">
@@ -129,7 +129,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             </button>
 
             {/* User pill + menu */}
-            <div className="relative flex items-center gap-2 pl-2 border-l border-white/15">
+            <div className="relative flex items-center gap-2 pl-2.5 border-l border-white/15">
               <div className="w-7 h-7 rounded-full bg-white/15 flex items-center justify-center text-sm font-[590]">
                 {initials}
               </div>
@@ -146,7 +146,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
               {menuOpen && (
                 <>
                   <div className="fixed inset-0 z-50" onClick={() => setMenuOpen(false)} />
-                  <div className="absolute right-0 top-full mt-1.5 w-48 bg-white dark:bg-gray-900 border border-border dark:border-gray-700 rounded-lg shadow-elev-dialog z-50 overflow-hidden animate-scale-in origin-top-right">
+                  <div className="absolute right-0 top-full mt-1.5 w-48 bg-white dark:bg-gray-900 border border-border dark:border-gray-700 rounded-lg shadow-elev-dialog z-50 overflow-hidden animate-scale-in origin-top-right divide-y divide-border dark:divide-gray-700/50">
                     {(user?.role === "admin" || user?.role === "su") && (
                       <button onClick={() => { router.push("/admin/users"); setMenuOpen(false); }} className="w-full text-left px-4 py-2.5 text-sm text-fg-primary dark:text-gray-200 hover:bg-surface dark:hover:bg-gray-800 flex items-center gap-2.5 transition-colors">
                         <Users className="w-4 h-4 text-fg-tertiary dark:text-gray-400" />
@@ -170,13 +170,14 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                         Enable Notifications
                       </button>
                     )}
-                    <div className="border-t border-border dark:border-gray-700" />
                     <button onClick={() => { handleLogout(); setMenuOpen(false); }} className="w-full text-left px-4 py-2.5 text-sm text-danger hover:bg-surface dark:hover:bg-gray-800 flex items-center gap-2.5 transition-colors">
                       <LogOut className="w-4 h-4" />
                       Logout
                     </button>
-                    <div className="border-t border-border dark:border-gray-700" />
-                    <div className="px-4 py-2 text-tiny text-fg-quaternary dark:text-gray-500 font-mono">v{appConfig.branding.version}</div>
+                    <div className="px-4 py-2 text-tiny text-fg-quaternary dark:text-gray-500 font-mono flex items-center justify-between">
+                      <span>Media Tracker</span>
+                      <span>v{appConfig.branding.version}</span>
+                    </div>
                   </div>
                 </>
               )}
@@ -188,7 +189,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       {/* Content Area */}
       <div className="flex flex-1">
         {/* Desktop Sidebar */}
-        <aside className="hidden md:flex md:flex-col md:w-52 bg-white dark:bg-gray-900 border-r border-border dark:border-gray-800 py-2">
+        <aside className="hidden md:flex md:flex-col md:w-52 bg-white dark:bg-gray-900 border-r border-border dark:border-gray-800 py-3">
           <nav className="flex-1 px-2 space-y-0.5">
             {navItems.map(item => (
               <button key={item.path} onClick={() => router.push(item.path)}
@@ -198,10 +199,10 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             ))}
           </nav>
           {/* Desktop add task button */}
-          <div className="px-2 pt-2 border-t border-border dark:border-gray-800">
+          <div className="px-2 pt-3 border-t border-border dark:border-gray-800">
             <button
               onClick={() => router.push("/tasks/new")}
-              className="w-full flex items-center gap-2 px-3 py-2.5 rounded-sm bg-primary text-white text-sm font-[510] hover:bg-primary-hover transition-all active:scale-[0.98]"
+              className="w-full flex items-center gap-2 px-3 py-2.5 rounded-md bg-primary text-white text-sm font-[510] hover:bg-primary-hover transition-all active:scale-[0.97] shadow-elev-accent"
             >
               <Plus className="w-4 h-4" />
               New Task
@@ -213,12 +214,12 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       </div>
 
       {/* Mobile Bottom Nav with FAB cutout */}
-      <nav className="fixed bottom-0 left-0 right-0 z-40 md:hidden bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl border-t border-border dark:border-gray-800">
+      <nav className="fixed bottom-0 left-0 right-0 z-40 md:hidden bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl border-t border-border dark:border-gray-800 shadow-[0_-2px_8px_rgba(0,0,0,0.03)]">
         {/* FAB - hidden on admin/settings to avoid accidental navigation */}
         {!isSettingsPage && (
           <div className="absolute left-1/2 -translate-x-1/2 -top-6 z-50 bg-white dark:bg-gray-950 rounded-full px-0.5">
             <button onClick={() => router.push("/tasks/new")}
-              className="w-12 h-12 rounded-full bg-primary hover:bg-primary-hover text-white shadow-lg flex items-center justify-center transition-all active:scale-95 hover:shadow-xl ring-4 ring-white dark:ring-gray-950">
+              className="w-12 h-12 rounded-full bg-primary hover:bg-primary-hover text-white shadow-lg flex items-center justify-center transition-all active:scale-90 hover:shadow-xl ring-4 ring-white dark:ring-gray-950 hover:ring-accent/30 duration-200">
               <Plus className="w-5 h-5" />
             </button>
           </div>
@@ -229,8 +230,12 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           <div className="flex-1 flex justify-around">
             {navItems.slice(0, 2).map(item => (
               <button key={item.path} onClick={() => router.push(item.path)}
-                className={isActive(item.path) ? "bottom-nav-item bottom-nav-item-active" : "bottom-nav-item bottom-nav-item-inactive"}>
-                <item.icon className="w-5 h-5" /><span className="text-tiny font-[510]">{item.label}</span>
+                className={['bottom-nav-item transition-all duration-150', isActive(item.path) ? 'bottom-nav-item-active' : 'bottom-nav-item-inactive'].join(' ')}>
+                <div className="relative">
+                  <item.icon className="w-5 h-5" />
+                  {isActive(item.path) && <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-primary" />}
+                </div>
+                <span className="text-tiny font-[510]">{item.label}</span>
               </button>
             ))}
           </div>
@@ -241,8 +246,12 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           <div className="flex-1 flex justify-around">
             {navItems.slice(2).map(item => (
               <button key={item.path} onClick={() => router.push(item.path)}
-                className={isActive(item.path) ? "bottom-nav-item bottom-nav-item-active" : "bottom-nav-item bottom-nav-item-inactive"}>
-                <item.icon className="w-5 h-5" /><span className="text-tiny font-[510]">{item.label}</span>
+                className={['bottom-nav-item transition-all duration-150', isActive(item.path) ? 'bottom-nav-item-active' : 'bottom-nav-item-inactive'].join(' ')}>
+                <div className="relative">
+                  <item.icon className="w-5 h-5" />
+                  {isActive(item.path) && <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-primary" />}
+                </div>
+                <span className="text-tiny font-[510]">{item.label}</span>
               </button>
             ))}
           </div>

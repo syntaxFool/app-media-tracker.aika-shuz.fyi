@@ -25,17 +25,17 @@ export default function TaskCard({ task, selectMode, selected, onToggleSelect }:
   const dueDateStr = task.dueDate ? new Date(task.dueDate).toLocaleDateString("en-IN", { day:"numeric", month:"short", year:"numeric" }) : null;
   const isTerminal = task.status === "Task Completed" || task.status === "Dropped";
   const isOverdue = !isTerminal && task.dueDate && new Date(task.dueDate) < new Date();
-  const isDueSoon = !isTerminal && task.dueDate && !isOverdue && (new Date(task.dueDate).getTime() - Date.now() < 24*60*60*1000);
+  const isDueSoon = !isTerminal && task.dueDate && !isOverdue && (new Date(task.dueDate).getTime() - Date.now() < 24*60*60*1000 && new Date(task.dueDate).getTime() > Date.now());
   const assigned = Array.isArray(task.assignedTo) ? task.assignedTo : [];
   const rejected = !!task.rejectionNote;
 
   return (
     <div onClick={() => (selectMode ? onToggleSelect?.() : router.push(`/tasks/${task.id}`))}
-      className={`bg-white dark:bg-gray-900 border rounded-md px-4 py-3.5 shadow-sm transition-all duration-200 cursor-pointer animate-fade-in hover:shadow-md hover:-translate-y-0.5 ${
+      className={`bg-white dark:bg-gray-900 border rounded-md px-4 py-3.5 transition-all duration-200 cursor-pointer ${
         rejected ? "border-danger/50 ring-1 ring-danger/20" :
         isOverdue ? "border-danger/30 dark:border-danger/30" :
-        selected ? "border-accent bg-accent/5 dark:bg-accent/10" :
-        "border-border dark:border-gray-800 active:bg-surface dark:active:bg-gray-800"
+        selected ? "border-accent bg-accent/5 dark:bg-accent/10 ring-1 ring-accent/20" :
+        "border-border dark:border-gray-800 hover:shadow-elev-hover hover:-translate-y-0.5 active:translate-y-0 active:bg-surface dark:active:bg-gray-800"
       }`}>
       <div className="flex items-start gap-3">
         {selectMode && (
@@ -50,7 +50,7 @@ export default function TaskCard({ task, selectMode, selected, onToggleSelect }:
             <h3 className="text-body font-[510] text-fg-primary dark:text-gray-100 truncate">{task.customerName}</h3>
             {task.isInfluencer && <Star className="w-3.5 h-3.5 text-accent flex-shrink-0" fill="currentColor" />}
             {isOverdue && <span className="text-micro bg-danger/10 text-danger px-1.5 py-0.5 rounded font-[590] flex-shrink-0">Overdue</span>}
-            {isDueSoon && <span className="text-micro bg-warning/10 text-warning px-1.5 py-0.5 rounded font-[590] flex-shrink-0">Due soon</span>}
+            {isDueSoon && <span className="text-micro bg-warning/10 text-warning px-1.5 py-0.5 rounded-pill font-[590] flex-shrink-0 border border-warning/15">Due soon</span>}
           </div>
 
           {/* Row 2: Dates + Service */}
@@ -69,8 +69,8 @@ export default function TaskCard({ task, selectMode, selected, onToggleSelect }:
           {/* Series chip */}
           {task.seriesId && task.seriesTotal && (
             <div className="flex items-center gap-1 mb-1.5">
-              <span className="text-[10px] font-[590] text-primary bg-primary/10 px-1.5 py-0.5 rounded-sm border border-primary/20">
-                📹 Part {task.partNumber || "?"} of {task.seriesTotal}
+              <span className="text-micro font-[590] text-primary bg-primary/10 px-1.5 py-0.5 rounded-pill border border-primary/20">
+                Part {task.partNumber || "?"} of {task.seriesTotal}
               </span>
             </div>
           )}
@@ -106,7 +106,7 @@ export default function TaskCard({ task, selectMode, selected, onToggleSelect }:
             </div>
             <div className="flex items-center gap-1.5">
               {rejected && (
-                <span className="text-micro bg-danger text-white px-1.5 py-0.5 rounded-pill font-[590]">
+                <span className="text-micro bg-danger text-white px-1.5 py-0.5 rounded-pill font-[590] shadow-elev-subtle">
                   Fix Required
                 </span>
               )}

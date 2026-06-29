@@ -43,19 +43,19 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-surface flex items-center justify-center p-4">
-      <div className="w-full max-w-sm animate-fade-in">
+    <div className="min-h-screen bg-surface dark:bg-gray-950 flex items-center justify-center p-4">
+      <div className="w-full max-w-sm animate-fade-in-up">
         <div className="text-center mb-8">
-          <div className="w-16 h-16 rounded-xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
-            <span className="text-2xl font-[590] text-primary">S</span>
+          <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-primary to-primary-hover flex items-center justify-center mx-auto mb-4 shadow-elev-raised">
+            <span className="text-2xl font-[590] text-white">S</span>
           </div>
-          <h1 className="text-heading-3 text-fg-primary">{config.branding.appFullName}</h1>
-          <p className="text-small text-fg-tertiary mt-1">Sign in to continue</p>
+          <h1 className="text-heading-3 text-fg-primary dark:text-gray-100">{config.branding.appFullName}</h1>
+          <p className="text-caption text-fg-tertiary dark:text-gray-400 mt-1">Sign in to continue</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="bg-white border border-border rounded-md p-6 space-y-4 shadow-sm">
+        <form onSubmit={handleSubmit} className="bg-white dark:bg-gray-900 border border-border dark:border-gray-800 rounded-md p-6 space-y-5 shadow-elev-raised">
           <div>
-            <label className="block text-label text-fg-tertiary mb-1.5">Username</label>
+            <label className="block text-label text-fg-tertiary dark:text-gray-400 mb-1.5">Username</label>
             <input
               type="text"
               value={username}
@@ -68,7 +68,7 @@ export default function LoginPage() {
             />
           </div>
           <div>
-            <label className="block text-label text-fg-tertiary mb-1.5">Password</label>
+            <label className="block text-label text-fg-tertiary dark:text-gray-400 mb-1.5">Password</label>
             <input
               type="password"
               value={password}
@@ -89,10 +89,10 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="btn-primary w-full flex items-center justify-center gap-2 py-3"
+            className="btn-primary w-full flex items-center justify-center gap-2 py-3 text-body"
           >
             {loading ? (
-              <span className="inline-block w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              <span className="inline-block w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />
             ) : (
               <LogIn className="w-4 h-4" />
             )}

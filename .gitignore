@@ -10,3 +10,4 @@ wa-bot/auth/
 wa-bot/node_modules/
 output/
 .pi/
+.od-skills/
