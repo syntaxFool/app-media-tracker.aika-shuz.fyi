@@ -90,6 +90,23 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
       }
     }
 
+    // Photo is mandatory — prevent removal
+    if (photoPath === null || photoPath === "") {
+      return NextResponse.json(
+        { error: "Photo is required" },
+        { status: 400 }
+      );
+    }
+
+    // Due date is required only for influencer tasks
+    const effectiveInfluencer = isInfluencer !== undefined ? isInfluencer : task.isInfluencer;
+    if (effectiveInfluencer && (dueDate === null || dueDate === "")) {
+      return NextResponse.json(
+        { error: "Due date is required for influencer tasks" },
+        { status: 400 }
+      );
+    }
+
     // Validate dates before using them
     const parsedShootDate = shootDate !== undefined ? new Date(shootDate) : undefined;
     if (shootDate !== undefined && isNaN(parsedShootDate!.getTime())) {

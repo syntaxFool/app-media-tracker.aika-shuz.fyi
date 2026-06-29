@@ -79,10 +79,34 @@ export default function TaskForm({ initialData, mode, taskId }: TaskFormProps) {
     const requiredFields = [
       { key: 'customerName', el: document.getElementById('field-customerName') },
       { key: 'shootDate', el: document.getElementById('field-shootDate') },
-      { key: 'dueDate', el: document.getElementById('field-dueDate') },
       { key: 'service', el: document.getElementById('field-service') },
       { key: 'gender', el: document.getElementById('field-gender') },
     ];
+    // Due date is required only for influencer tasks
+    if (form.isInfluencer) {
+      requiredFields.push({ key: 'dueDate', el: document.getElementById('field-dueDate') });
+    }
+    // Photo is always required
+    if (!form.photoPath) {
+      const photoEl = document.getElementById('field-photo');
+      if (photoEl) photoEl.classList.add('border-danger', 'dark:border-danger');
+      setError('Photo is required');
+      // Still check other required fields
+      const otherMissing = requiredFields.filter(({ key }) => {
+        const val = form[key as keyof typeof form];
+        return !val || (typeof val === 'string' && val.trim() === '');
+      });
+      if (otherMissing.length > 0) {
+        setError('Please fill all required fields');
+      }
+      requiredFields.forEach(({ el }) => {
+        if (el) el.classList.remove('border-danger', 'dark:border-danger');
+      });
+      otherMissing.forEach(({ el }) => {
+        if (el) el.classList.add('border-danger', 'dark:border-danger');
+      });
+      return;
+    }
     // Clear existing error styles
     requiredFields.forEach(({ el }) => {
       if (el) el.classList.remove('border-danger', 'dark:border-danger');
@@ -124,7 +148,7 @@ export default function TaskForm({ initialData, mode, taskId }: TaskFormProps) {
     <form onSubmit={handleSubmit} className="space-y-5 animate-fade-in pb-24 md:pb-0">
       <div><label className="block text-label text-fg-tertiary dark:text-gray-400 mb-1.5">Customer Name <span className="text-danger">*</span></label><input type="text" value={form.customerName} onChange={e => updateField("customerName", e.target.value)} className="input-linear w-full" placeholder="Enter customer name" required id="field-customerName" /></div>
       <div><label className="block text-label text-fg-tertiary dark:text-gray-400 mb-1.5">Shoot Date <span className="text-danger">*</span></label><input type="date" value={form.shootDate} onChange={e => updateField("shootDate", e.target.value)} className="input-linear w-full" required id="field-shootDate" /></div>
-      <div><label className="block text-label text-fg-tertiary dark:text-gray-400 mb-1.5">Due Date <span className="text-danger">*</span></label><input type="date" value={form.dueDate||""} onChange={e => updateField("dueDate", e.target.value||null)} className="input-linear w-full" required id="field-dueDate" /></div>
+      <div><label className="block text-label text-fg-tertiary dark:text-gray-400 mb-1.5">Due Date{form.isInfluencer ? <span className="text-danger"> *</span> : <span className="text-fg-quaternary font-normal"> (optional)</span>}</label><input type="date" value={form.dueDate||""} onChange={e => updateField("dueDate", e.target.value||null)} className="input-linear w-full" id="field-dueDate" /></div>
       <div className="grid grid-cols-2 gap-3">
         <div><label className="block text-label text-fg-tertiary dark:text-gray-400 mb-1.5">Service <span className="text-danger">*</span></label><select value={form.service} onChange={e => updateField("service", e.target.value)} className="select-linear w-full" required id="field-service"><option value="">Select...</option>{config.services.map(s => <option key={s} value={s}>{s}</option>)}</select></div>
         <div><label className="block text-label text-fg-tertiary dark:text-gray-400 mb-1.5">Gender <span className="text-danger">*</span></label><select value={form.gender} onChange={e => updateField("gender", e.target.value)} className="select-linear w-full" required id="field-gender"><option value="">Select...</option>{config.genders.map(g => <option key={g} value={g}>{g}</option>)}</select></div>
@@ -141,7 +165,7 @@ export default function TaskForm({ initialData, mode, taskId }: TaskFormProps) {
         </label>
       </div>
 
-      <ImageUploader currentPhoto={form.photoPath} onPhotoChange={(path) => updateField("photoPath", path)} />
+      <div id="field-photo"><label className="block text-label text-fg-tertiary dark:text-gray-400 mb-1.5">Photo <span className="text-danger">*</span></label><ImageUploader currentPhoto={form.photoPath} onPhotoChange={(path) => updateField("photoPath", path)} /></div>
 
       {staffList.length > 0 && (
         <div>

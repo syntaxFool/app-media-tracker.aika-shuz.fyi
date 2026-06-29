@@ -134,9 +134,24 @@ export async function POST(req: NextRequest) {
       resolvedPartNumber = count + 1;
     }
 
-    if (!customerName || !shootDate || !dueDate || !service || !gender) {
+    // Required fields
+    if (!customerName || !shootDate || !service || !gender) {
       return NextResponse.json(
-        { error: "Missing required fields: customerName, shootDate, dueDate, service, gender" },
+        { error: "Missing required fields: customerName, shootDate, service, gender" },
+        { status: 400 }
+      );
+    }
+    // Photo is mandatory
+    if (!photoPath) {
+      return NextResponse.json(
+        { error: "Photo is required" },
+        { status: 400 }
+      );
+    }
+    // Due date is required only for influencer tasks
+    if (isInfluencer && !dueDate) {
+      return NextResponse.json(
+        { error: "Due date is required for influencer tasks" },
         { status: 400 }
       );
     }
