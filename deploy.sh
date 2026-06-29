@@ -24,10 +24,13 @@ ssh "$SERVER" "mkdir -p $DEPLOY_DIR/uploads $DEPLOY_DIR/wa-bot/auth"
 
 # 2. Sync files (exclude node_modules, .next, .git)
 echo "📦 Syncing files..."
-rsync -avz --delete \
+rsync -avz --delete --no-perms --no-group \
   --exclude 'node_modules' \
   --exclude '.next' \
   --exclude '.git' \
+  --exclude '.pi' \
+  --exclude '.od-skills' \
+  --exclude 'output' \
   --exclude 'uploads/*' \
   --exclude 'wa-bot/auth/*' \
   --exclude 'wa-bot/store.json' \

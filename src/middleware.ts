@@ -12,6 +12,11 @@ const ADMIN_PAGE_PREFIXES = ["/admin"];
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
+  // ── Dev mode: bypass all auth checks ─────────────────
+  if (process.env.NODE_ENV === "development") {
+    return NextResponse.next();
+  }
+
   // Allow public paths
   if (PUBLIC_PATHS.some((p) => pathname.startsWith(p))) {
     return NextResponse.next();
