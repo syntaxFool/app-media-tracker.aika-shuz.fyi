@@ -23,9 +23,9 @@ const TIMEFRAMES = [
   { value: "all", label: "All Time" },
 ] as const;
 
-function sortByStatusOrder(items: { status: string; count: number }[]) {
-  const map = new Map(items.map((i) => [i.status, i]));
-  return STATUS_ORDER.filter((s) => map.has(s)).map((s) => map.get(s)!);
+function fillAllStatuses(items: { status: string; count: number }[]) {
+  const map = new Map(items.map((i) => [i.status, i.count]));
+  return STATUS_ORDER.map((s) => ({ status: s, count: map.get(s) || 0 }));
 }
 
 function generateCSV(data: any, timeframe: string): string {
@@ -89,7 +89,7 @@ export default function AnalyticsPage() {
     const rejectedCount = Math.round((data.rejectionRate / 100) * data.totalTasks);
     if (rejectedCount > 0) mergedStatuses.push({ status: "Rejected", count: rejectedCount });
   }
-  const statusBreakdown = sortByStatusOrder(mergedStatuses);
+  const statusBreakdown = fillAllStatuses(mergedStatuses);
   const maxStatus = Math.max(...statusBreakdown.map((s: any) => s.count), 1);
 
   const serviceBreakdown = (data.serviceBreakdown || []).slice().sort((a: any, b: any) => b.count - a.count);
@@ -204,7 +204,7 @@ export default function AnalyticsPage() {
         </div>
       )}
 
-      <div className="p-4 max-w-4xl mx-auto space-y-5 animate-fade-in">
+      <div className="p-4 sm:p-6 lg:p-8 max-w-5xl mx-auto space-y-6 animate-fade-in pb-24">
         {/* Header */}
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-3">
@@ -224,7 +224,7 @@ export default function AnalyticsPage() {
               <button
                 key={type}
                 onClick={() => setFilterType(type)}
-                className={`text-micro font-[510] px-2.5 py-1 rounded-sm transition-all ${
+                className={`text-micro font-[510] flex-1 text-center py-1 rounded-sm transition-all ${
                   filterType === type
                     ? "bg-primary text-white shadow-sm"
                     : "text-fg-tertiary hover:text-fg-primary dark:text-gray-400 dark:hover:text-gray-200"
@@ -318,28 +318,31 @@ export default function AnalyticsPage() {
         {/* Dashboard content — captured for PNG export */}
         <div ref={dashboardRef} className="space-y-5">
           {/* Key Metrics */}
-          <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
             <MetricCard value={data.totalTasks} label="Total Tasks" color="text-primary" />
             <MetricCard value={`${data.influencerRatio}%`} label="Influencer" color="text-accent" />
             <MetricCard value={statusBreakdown.find((s: any) => s.status === "Task Completed")?.count || 0} label="Completed" color="text-success" />
             <MetricCard value={`${data.rejectionRate}%`} label="Rejection Rate" color={data.rejectionRate > 20 ? "text-danger" : data.rejectionRate > 10 ? "text-warning" : "text-success"} />
-            <MetricCard value={data.avgTatDays > 0 ? `${data.avgTatDays}d` : "—"} label="Avg TAT (Shot→Up)" color="text-primary" />
+            <div className="sm:col-span-2 lg:col-span-1">
+              <MetricCard value={data.avgTatDays > 0 ? `${data.avgTatDays}d` : "—"} label="Avg TAT (Shot→Up)" color="text-primary" />
+            </div>
           </div>
 
           {/* Status Distribution */}
-          <div className="bg-white dark:bg-gray-900 border border-border dark:border-gray-800 rounded-md p-4 shadow-sm">
-            <div className="flex items-center gap-2 mb-4">
+          <div className="bg-white dark:bg-gray-900 border border-border dark:border-gray-800 rounded-md p-4 sm:p-5 shadow-sm">
+            <div className="flex items-center gap-2 mb-4 pb-3 border-b border-border/60 dark:border-gray-800">
               <PieChart className="w-4 h-4 text-fg-tertiary" />
               <p className="text-label text-fg-tertiary font-[510] dark:text-gray-300">Status Distribution</p>
+              <span className="text-tiny text-fg-quaternary ml-auto">{statusBreakdown.reduce((a:any,b:any)=>a+b.count,0)} tasks</span>
             </div>
-            <div className="space-y-2">
+            <div className="space-y-2.5">
               {statusBreakdown.map((s: any) => (
                 <div key={s.status} className="flex items-center gap-3">
                   <span className="text-caption text-fg-tertiary dark:text-gray-400 w-28 text-right flex-shrink-0 truncate" title={s.status}>
                     {s.status === "Rejected" ? "⛔ Rejected" : s.status}
                   </span>
-                  <div className="flex-1 bg-surface dark:bg-gray-800 rounded-full h-5 overflow-hidden">
-                    <div className="h-full rounded-full transition-all duration-500" style={{ width: `${(s.count / maxStatus) * 100}%`, backgroundColor: STATUS_COLORS[s.status] || "#95a5b5" }} />
+                  <div className="flex-1 bg-surface dark:bg-gray-800 rounded-full h-4 sm:h-5 overflow-hidden">
+                    <div className="h-full rounded-full transition-all duration-700 ease-out" style={{ width: `${(s.count / maxStatus) * 100}%`, backgroundColor: STATUS_COLORS[s.status] || "#95a5b5" }} />
                   </div>
                   <span className="text-caption font-[510] text-fg-primary dark:text-white min-w-[28px] text-right">{s.count}</span>
                 </div>
@@ -349,12 +352,13 @@ export default function AnalyticsPage() {
 
           {/* Rejection Analysis */}
           {data.rejectionsByStage && Object.keys(data.rejectionsByStage).length > 0 && (
-            <div className="bg-white dark:bg-gray-900 border border-border dark:border-gray-800 rounded-md p-4 shadow-sm">
-              <div className="flex items-center gap-2 mb-4">
+            <div className="bg-white dark:bg-gray-900 border border-border dark:border-gray-800 rounded-md p-4 sm:p-5 shadow-sm">
+              <div className="flex items-center gap-2 mb-4 pb-3 border-b border-border/60 dark:border-gray-800">
                 <AlertTriangle className="w-4 h-4 text-danger" />
                 <p className="text-label text-fg-tertiary font-[510] dark:text-gray-300">Rejection Analysis</p>
+                <span className="text-tiny text-fg-quaternary ml-auto">{Object.values(data.rejectionsByStage as Record<string, number>).reduce((a: number, b: number) => a + b, 0)} total</span>
               </div>
-              <div className="space-y-2">
+              <div className="space-y-2.5">
                 {Object.entries(data.rejectionsByStage as Record<string, number>).sort(([, a], [, b]) => b - a).map(([stage, count]) => {
                   const totalRejections = Object.values(data.rejectionsByStage as Record<string, number>).reduce((a: number, b: number) => a + b, 0);
                   const pct = totalRejections > 0 ? Math.round((count / totalRejections) * 100) : 0;
@@ -375,29 +379,33 @@ export default function AnalyticsPage() {
 
           {/* Monthly Trend */}
           {monthlyTrend.length > 0 && (
-            <div className="bg-white dark:bg-gray-900 border border-border dark:border-gray-800 rounded-md p-4 shadow-sm">
-              <div className="flex items-center gap-2 mb-4">
+            <div className="bg-white dark:bg-gray-900 border border-border dark:border-gray-800 rounded-md p-4 sm:p-5 shadow-sm">
+              <div className="flex items-center gap-2 mb-4 pb-3 border-b border-border/60 dark:border-gray-800">
                 <TrendingUp className="w-4 h-4 text-fg-tertiary" />
                 <p className="text-label text-fg-tertiary font-[510] dark:text-gray-300">Monthly Trend</p>
               </div>
-              <div className="space-y-2.5">
+              <div className="space-y-3">
                 {monthlyTrend.map((m: any) => {
                   const totalBar = (m.total / maxMonthly) * 100;
                   const completedBar = m.total > 0 ? (m.completed / m.total) * totalBar : 0;
                   return (
-                    <div key={m.month} className="flex items-center gap-3">
-                      <span className="text-caption text-fg-tertiary dark:text-gray-400 w-16 flex-shrink-0 font-mono text-xs">{m.month}</span>
+                    <div key={m.month} className="flex items-start gap-3">
+                      <span className="text-caption text-fg-tertiary dark:text-gray-400 w-16 flex-shrink-0 font-mono text-xs mt-1">{m.month}</span>
                       <div className="flex-1 space-y-1">
-                        <div className="flex-1 bg-surface dark:bg-gray-800 rounded-full h-3 overflow-hidden">
-                          <div className="h-full rounded-full bg-primary/60 transition-all duration-500" style={{ width: `${totalBar}%` }} />
+                        <div className="flex items-center justify-between text-tiny">
+                          <span className="text-fg-quaternary">Created</span>
+                          <span className="font-[510] text-fg-primary dark:text-white">{m.total} total</span>
                         </div>
-                        <div className="flex-1 bg-surface dark:bg-gray-800 rounded-full h-3 overflow-hidden">
+                        <div className="flex-1 bg-surface dark:bg-gray-800 rounded-full h-4 overflow-hidden">
+                          <div className="h-full rounded-full bg-primary/60 transition-all duration-700 ease-out" style={{ width: `${totalBar}%` }} />
+                        </div>
+                        <div className="flex items-center justify-between text-tiny">
+                          <span className="text-fg-quaternary">Completed</span>
+                          <span className="text-success">{m.completed} done</span>
+                        </div>
+                        <div className="flex-1 bg-surface dark:bg-gray-800 rounded-full h-4 overflow-hidden">
                           <div className="h-full rounded-full bg-success/70 transition-all duration-500" style={{ width: `${completedBar}%` }} />
                         </div>
-                      </div>
-                      <div className="text-right flex-shrink-0 min-w-[72px]">
-                        <span className="text-tiny font-[510] text-fg-primary dark:text-white">{m.total} total</span>
-                        <span className="text-tiny text-success ml-1.5">{m.completed} done</span>
                       </div>
                     </div>
                   );
@@ -412,13 +420,13 @@ export default function AnalyticsPage() {
 
           {/* Team Performance */}
           {data.assigneeBreakdown && data.assigneeBreakdown.length > 0 && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="bg-white dark:bg-gray-900 border border-border dark:border-gray-800 rounded-md p-4 shadow-sm">
-                <div className="flex items-center gap-2 mb-4">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5">
+              <div className="bg-white dark:bg-gray-900 border border-border dark:border-gray-800 rounded-md p-4 sm:p-5 shadow-sm">
+                <div className="flex items-center gap-2 mb-4 pb-3 border-b border-border/60 dark:border-gray-800">
                   <Users className="w-4 h-4 text-fg-tertiary" />
                   <p className="text-label text-fg-tertiary font-[510] dark:text-gray-300">Assignee Productivity</p>
                 </div>
-                <div className="space-y-2.5">
+                <div className="space-y-3">
                   {data.assigneeBreakdown.slice().sort((a: any, b: any) => b.total - a.total).map((a: any) => {
                     const maxTotal = Math.max(...data.assigneeBreakdown.map((x: any) => x.total), 1);
                     const barWidth = (a.total / maxTotal) * 100;
@@ -426,14 +434,17 @@ export default function AnalyticsPage() {
                       <div key={a.username}>
                         <div className="flex items-center justify-between mb-1">
                           <span className="text-caption font-[510] text-fg-primary dark:text-gray-100">{a.username}</span>
-                          <span className="text-tiny text-fg-tertiary">{a.completed}/{a.total} done</span>
+                          <span className="text-tiny text-fg-tertiary">
+                            <span className="text-success/80">{a.completed}</span>
+                            <span className="text-fg-quaternary">/{a.total} done</span>
+                          </span>
                         </div>
-                        <div className="flex-1 bg-surface dark:bg-gray-800 rounded-full h-3 overflow-hidden">
-                          <div className="h-full rounded-full bg-primary transition-all duration-500" style={{ width: `${barWidth}%` }} />
+                        <div className="flex-1 bg-surface dark:bg-gray-800 rounded-full h-4 overflow-hidden">
+                          <div className="h-full rounded-full bg-primary transition-all duration-700 ease-out" style={{ width: `${barWidth}%` }} />
                         </div>
-                        <div className="flex gap-3 mt-0.5 text-tiny text-fg-quaternary">
-                          <span>{a.pending} pending</span>
-                          {a.rejected > 0 && <span className="text-danger/70">{a.rejected} rejected</span>}
+                        <div className="flex gap-3 mt-1 text-tiny text-fg-quaternary">
+                          <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-warning/60" /> {a.pending} pending</span>
+                          {a.rejected > 0 && <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-danger/60" /> {a.rejected} rejected</span>}
                         </div>
                       </div>
                     );
@@ -442,12 +453,12 @@ export default function AnalyticsPage() {
               </div>
 
               {data.qualityScores && data.qualityScores.length > 0 && (
-                <div className="bg-white dark:bg-gray-900 border border-border dark:border-gray-800 rounded-md p-4 shadow-sm">
-                  <div className="flex items-center gap-2 mb-4">
+                <div className="bg-white dark:bg-gray-900 border border-border dark:border-gray-800 rounded-md p-4 sm:p-5 shadow-sm">
+                  <div className="flex items-center gap-2 mb-4 pb-3 border-b border-border/60 dark:border-gray-800">
                     <UserCheck className="w-4 h-4 text-fg-tertiary" />
                     <p className="text-label text-fg-tertiary font-[510] dark:text-gray-300">Quality Scores</p>
                   </div>
-                  <div className="space-y-3">
+                  <div className="space-y-3.5">
                     {data.qualityScores.slice().sort((a: any, b: any) => b.reworkRate - a.reworkRate).map((q: any) => (
                       <div key={q.username} className="flex items-center justify-between">
                         <div>
@@ -467,12 +478,13 @@ export default function AnalyticsPage() {
 
           {/* By Service */}
           {serviceBreakdown.length > 0 && (
-            <div className="bg-white dark:bg-gray-900 border border-border dark:border-gray-800 rounded-md p-4 shadow-sm">
-              <div className="flex items-center gap-2 mb-4">
+            <div className="bg-white dark:bg-gray-900 border border-border dark:border-gray-800 rounded-md p-4 sm:p-5 shadow-sm">
+              <div className="flex items-center gap-2 mb-4 pb-3 border-b border-border/60 dark:border-gray-800">
                 <TrendingUp className="w-4 h-4 text-fg-tertiary" />
                 <p className="text-label text-fg-tertiary font-[510] dark:text-gray-300">By Service</p>
+                <span className="text-tiny text-fg-quaternary ml-auto">{serviceBreakdown.reduce((a:any,b:any)=>a+b.count,0)} tasks</span>
               </div>
-              <div className="space-y-2">
+              <div className="space-y-2.5">
                 {serviceBreakdown.map((s: any, idx: number) => {
                   const hue = (idx * 37 + 200) % 360;
                   return (
@@ -496,9 +508,11 @@ export default function AnalyticsPage() {
 
 function MetricCard({ value, label, color }: { value: string | number; label: string; color: string }) {
   return (
-    <div className="bg-white dark:bg-gray-900 border border-border dark:border-gray-800 rounded-md p-3 sm:p-4 shadow-sm text-center">
-      <p className={`text-heading-3 sm:text-heading-2 ${color} font-bold`}>{value}</p>
-      <p className="text-micro text-fg-tertiary dark:text-gray-400 mt-0.5">{label}</p>
+    <div className="relative bg-white dark:bg-gray-900 border border-border dark:border-gray-800 rounded-md p-3 sm:p-4 md:p-5 shadow-sm text-center overflow-hidden">
+      {/* Subtle gradient accent at the top */}
+      <div className="absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r from-transparent via-primary/20 to-transparent" />
+      <p className={`text-heading-3 sm:text-heading-3 md:text-heading-2 leading-none ${color} font-bold mt-1.5`}>{value}</p>
+      <p className="text-micro sm:text-caption text-fg-tertiary dark:text-gray-400 mt-1.5 font-[510]">{label}</p>
     </div>
   );
 }
