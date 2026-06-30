@@ -1,0 +1,50 @@
+# ── Local dev only — Postgres + Redis ─────────────────
+# Mirrors production schema, runs on the same ports the
+# existing .env already points to (5433 / 6380), so the
+# .env connection strings work unchanged against a
+# local container instead of the production DB.
+#
+# Usage:
+#   podman compose -f docker-compose.local.yml up -d
+#   cp .env.local.example .env.local   # if not present
+#   npx prisma migrate deploy
+#   npx tsx prisma/seed.ts
+#
+# Safe: does not touch production. .env.local is gitignored.
+services:
+  postgres:
+    image: docker.io/library/postgres:16-alpine
+    container_name: mt-local-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: media
+      POSTGRES_PASSWORD: media
+      POSTGRES_DB: media_tracker
+    ports:
+      - "5433:5432"
+    volumes:
+      - mt-local-pg:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U media -d media_tracker"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  redis:
+    image: docker.io/library/redis:7-alpine
+    container_name: mt-local-redis
+    restart: unless-stopped
+    command: ["redis-server", "--save", "", "--appendonly", "no"]
+    ports:
+      - "6380:6379"
+    volumes:
+      - mt-local-redis:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  mt-local-pg:
+  mt-local-redis:

@@ -28,6 +28,8 @@ rsync -avz --delete --no-perms --no-group \
   --exclude 'node_modules' \
   --exclude '.next' \
   --exclude '.git' \
+  --exclude '.env' \
+  --exclude '.env.local' \
   --exclude '.pi' \
   --exclude '.od-skills' \
   --exclude 'output' \
