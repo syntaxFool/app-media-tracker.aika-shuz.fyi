@@ -313,19 +313,36 @@ export default function TaskDetailPage() {
 
         {/* URLs */}
         {taskUrls.length > 0 && (
-          <div className="bg-white dark:bg-gray-900 border border-border dark:border-gray-800 rounded-md p-4 shadow-sm space-y-2">
+          <div className="bg-white dark:bg-gray-900 border border-border dark:border-gray-800 rounded-md p-4 shadow-sm space-y-3">
             <div className="flex items-center gap-2">
               <ExternalLink className="w-4 h-4 text-fg-tertiary" />
               <p className="text-label text-fg-tertiary font-[510]">URLs</p>
             </div>
-            {taskUrls.map((u: any) => (
-              <a key={u.id} href={u.url} target="_blank" rel="noopener noreferrer"
-                className="flex items-center gap-2 text-sm text-primary hover:underline break-all">
-                <ExternalLink className="w-3 h-3 flex-shrink-0" />
-                <span className="font-[510]">{u.platform === "Custom" ? (u.label || u.platform) : u.platform}:</span>
-                <span className="text-fg-secondary dark:text-gray-300">{u.url}</span>
-              </a>
-            ))}
+            {taskUrls.map((u: any) => {
+              const platformName = u.platform === "Custom" ? (u.label || u.platform) : u.platform;
+              const hostname = (() => { try { return new URL(u.url).hostname; } catch { return u.url; } })();
+              return (
+                <a
+                  key={u.id}
+                  href={u.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-3 text-sm bg-surface dark:bg-gray-800 rounded-md px-3 py-2.5 border border-border dark:border-gray-700 hover:border-primary/30 hover:shadow-sm transition-all active:scale-[0.99]"
+                >
+                  <div className="flex-shrink-0 w-8 h-8 rounded-md bg-primary/10 dark:bg-primary/20 flex items-center justify-center">
+                    <ExternalLink className="w-4 h-4 text-primary" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-[510] text-fg-primary dark:text-gray-100 truncate">
+                      View on {platformName}
+                    </p>
+                    <p className="text-tiny text-fg-quaternary dark:text-gray-500 truncate max-w-full" title={u.url}>
+                      {hostname}
+                    </p>
+                  </div>
+                </a>
+              );
+            })}
           </div>
         )}
 
@@ -378,20 +395,34 @@ export default function TaskDetailPage() {
         {/* Activity */}
         <div className="bg-white dark:bg-gray-900 border border-border dark:border-gray-800 rounded-md p-4 space-y-3 shadow-sm">
           <p className="text-label text-fg-tertiary">Activity</p>
-          {activities.length === 0 && (
+          {consolidatedActivities(activities).length === 0 && (
             <p className="text-caption text-fg-quaternary">No activity recorded yet.</p>
           )}
-          {activities.map((a: any) => (
-            <div key={a.id} className="flex gap-3 text-caption">
-              <span className="text-fg-quaternary dark:text-gray-500 flex-shrink-0 w-[120px]">
-                {formatActivityTime(a.createdAt)}
-              </span>
-              <span className="text-fg-secondary dark:text-gray-300">
-                <span className="text-fg-primary dark:text-gray-100 font-[510]">{a.actor}</span>
-                {" "}{a.detail}
-              </span>
-            </div>
-          ))}
+          {consolidatedActivities(activities).map((a: any, idx: number) => {
+            const detailText = a.detail || "";
+            // Replace raw URLs with a clean anchor snippet
+            const urlPattern = /https?:\/\/[^\s<]+/g;
+            const cleanedDetail = detailText.replace(urlPattern, (url: string) => {
+              try {
+                const host = new URL(url).hostname;
+                return `<a href="${url}" target="_blank" class="text-primary hover:underline">${host}</a>`;
+              } catch {
+                return `<a href="${url}" target="_blank" class="text-primary hover:underline">Link</a>`;
+              }
+            });
+            return (
+              <div key={a.id || idx} className="flex gap-3 text-caption">
+                <span className="text-fg-quaternary dark:text-gray-500 flex-shrink-0 w-[120px]">
+                  {formatActivityTime(a.createdAt)}
+                </span>
+                <span className="text-fg-secondary dark:text-gray-300"
+                  dangerouslySetInnerHTML={{
+                    __html: `<span class="text-fg-primary dark:text-gray-100 font-[510]">${escapeHtml(a.actor)}</span> ${cleanedDetail}`
+                  }}
+                />
+              </div>
+            );
+          })}
         </div>
 
         {/* Status Update */}
@@ -405,11 +436,9 @@ export default function TaskDetailPage() {
                   onChange={(e) => {
                     const newStatus = e.target.value;
                     if (newStatus !== task.status) {
-                      // If moving from Reviewed to Data Copied, show rejection modal
-                      if (task.status === "Reviewed" && (newStatus === "Data Copied" || newStatus === "Dropped")) {
-                        // Track which rejection path was selected
+                      // Dropped always requires a reason, regardless of current status
+                      if (newStatus === "Dropped" || (task.status === "Reviewed" && newStatus === "Data Copied")) {
                         setRejectionTarget(newStatus);
-                        // Fetch staff list for reassignment & pre-fill current assignees
                         fetch("/api/users").then(r => { if (r.ok) r.json().then(d => setStaffList((d.users || []).filter((u: any) => u.role !== "su"))); }).catch(() => {});
                         setSelectedReassignees(task.assignedTo || []);
                         setShowRejectionModal(true);
@@ -573,6 +602,70 @@ export default function TaskDetailPage() {
       )}
     </AppLayout>
   );
+}
+
+/** Escape HTML special chars so we can safely inject user text into innerHTML */
+function escapeHtml(text: string): string {
+  return text
+    .replace(/&/g, "&amp;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+
+/**
+ * Consolidate sequential status changes by the same actor within 5
+ * minutes into a single summary line, and clean up raw URL display.
+ */
+function consolidatedActivities(activities: any[]): any[] {
+  if (!activities || activities.length === 0) return [];
+  const sorted = [...activities].sort(
+    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+  );
+
+  const result: any[] = [];
+  let i = 0;
+  while (i < sorted.length) {
+    const current = sorted[i];
+    const currentTime = new Date(current.createdAt).getTime();
+    const batch: any[] = [current];
+    let j = i + 1;
+    while (j < sorted.length) {
+      const next = sorted[j];
+      const nextTime = new Date(next.createdAt).getTime();
+      if (
+        next.actor === current.actor &&
+        next.action === "status_change" &&
+        currentTime - nextTime < 5 * 60 * 1000
+      ) {
+        batch.push(next);
+        j++;
+      } else {
+        break;
+      }
+    }
+
+    if (batch.length > 1) {
+      const statuses = batch.map((b: any) => {
+        const m = b.detail?.match(/to\s+([A-Za-z ]+)/i);
+        return m ? m[1].trim() : "?";
+      });
+      const from = statuses[statuses.length - 1];
+      const to = statuses[0];
+      result.push({
+        id: batch[0].id,
+        actor: batch[0].actor,
+        createdAt: batch[0].createdAt,
+        action: "status_change",
+        detail: `updated status from ${from} → ${to}`,
+      });
+    } else {
+      result.push(current);
+    }
+    i = j;
+  }
+  return result;
 }
 
 function formatActivityTime(dateStr: string): string {

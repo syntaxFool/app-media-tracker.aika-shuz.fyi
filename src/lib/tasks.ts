@@ -96,11 +96,18 @@ export function getAllowedNextStatuses(
   const base = STATUS_FLOW[task.status] || [];
 
   if (role === "admin" || role === "su") {
-    // Admin gets the full STATUS_FLOW
     return base;
   }
 
-  // Staff: forward-only, but allow Data Copied → Reviewed if rejected
+  // Staff: only forward through the pipeline. They cannot approve (Reviewed→Approved
+  // is an admin decision). They can rework if rejected (Data Copied→Reviewed).
+  // They CAN continue forward after Approved (Approved→Uploaded→Task Completed).
+  if (task.status === "Reviewed") {
+    // Staff can't approve — admin must decide
+    return [];
+  }
+
+  // Staff: allow rejected tasks to go Data Copied → Reviewed
   if (isRejected(task) && task.status === "Data Copied") {
     return [...base, "Reviewed"];
   }

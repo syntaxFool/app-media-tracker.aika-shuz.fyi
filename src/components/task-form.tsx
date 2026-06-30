@@ -37,6 +37,10 @@ export default function TaskForm({ initialData, mode, taskId }: TaskFormProps) {
   const [newSeriesName, setNewSeriesName] = useState("");
   const [seriesLoading, setSeriesLoading] = useState(false);
 
+  function toTitleCase(text: string): string {
+    return text.replace(/\b\w/g, (c) => c.toUpperCase());
+  }
+
   function slugify(text: string): string {
     return text.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "series";
   }
@@ -146,7 +150,7 @@ export default function TaskForm({ initialData, mode, taskId }: TaskFormProps) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5 animate-fade-in pb-24 md:pb-0">
-      <div><label className="block text-label text-fg-tertiary dark:text-gray-400 mb-1.5">Customer Name <span className="text-danger">*</span></label><input type="text" value={form.customerName} onChange={e => updateField("customerName", e.target.value)} className="input-linear w-full" placeholder="Enter customer name" required id="field-customerName" /></div>
+      <div><label className="block text-label text-fg-tertiary dark:text-gray-400 mb-1.5">Customer Name <span className="text-danger">*</span></label><input type="text" value={form.customerName} onChange={e => updateField("customerName", e.target.value)} onBlur={e => updateField("customerName", toTitleCase(e.target.value))} className="input-linear w-full" placeholder="Enter customer name" required id="field-customerName" /></div>
       <div><label className="block text-label text-fg-tertiary dark:text-gray-400 mb-1.5">Shoot Date <span className="text-danger">*</span></label><input type="date" value={form.shootDate} onChange={e => updateField("shootDate", e.target.value)} className="input-linear w-full" required id="field-shootDate" /></div>
       <div><label className="block text-label text-fg-tertiary dark:text-gray-400 mb-1.5">Due Date{form.isInfluencer ? <span className="text-danger"> *</span> : <span className="text-fg-quaternary font-normal"> (optional)</span>}</label><input type="date" value={form.dueDate||""} onChange={e => updateField("dueDate", e.target.value||null)} className="input-linear w-full" id="field-dueDate" /></div>
       <div className="grid grid-cols-2 gap-3">
