@@ -381,7 +381,7 @@ export default function AnalyticsPage() {
             <div className="col-span-2 sm:col-span-2 lg:col-span-1">
               <MetricCard
                 value={data.avgTatDays > 0 ? `${data.avgTatDays}d` : "0.0d"}
-                label="Avg TAT (Shot→Up)"
+                label="Avg TAT (Shot→Approved)"
                 color={data.avgTatDays > 0 ? "text-primary" : "text-fg-quaternary"}
               />
             </div>

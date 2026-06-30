@@ -101,9 +101,9 @@ export async function GET(request: Request) {
     let tatCount = 0;
     Object.values(taskTimeline).forEach((entries) => {
       const shotEntry = entries.find((e) => e.status === "Video Shot");
-      const uploadedEntry = entries.find((e) => e.status === "Uploaded" || e.status === "Task Completed");
-      if (shotEntry && uploadedEntry && uploadedEntry.time > shotEntry.time) {
-        const diffMs = uploadedEntry.time.getTime() - shotEntry.time.getTime();
+      const approvedEntry = entries.find((e) => e.status === "Approved");
+      if (shotEntry && approvedEntry && approvedEntry.time > shotEntry.time) {
+        const diffMs = approvedEntry.time.getTime() - shotEntry.time.getTime();
         totalTatDays += diffMs / (1000 * 60 * 60 * 24);
         tatCount++;
       }
