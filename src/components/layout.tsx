@@ -187,7 +187,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       </header>
 
       {/* Content Area */}
-      <div className="flex flex-1">
+      <div className="flex flex-1 min-h-0">
         {/* Desktop Sidebar */}
         <aside className="hidden md:flex md:flex-col md:w-52 bg-white dark:bg-gray-900 border-r border-border dark:border-gray-800 py-3">
           <nav className="flex-1 px-2 space-y-0.5">
@@ -210,7 +210,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           </div>
         </aside>
 
-        <main className="flex-1 overflow-auto pb-28 md:pb-0">{children}</main>
+        <main className="flex-1 min-h-0 overflow-auto pb-24 md:pb-0">{children}</main>
       </div>
 
       {/* Mobile Bottom Nav with FAB cutout */}

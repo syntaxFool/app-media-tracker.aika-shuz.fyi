@@ -237,8 +237,8 @@ export default function AnalyticsPage() {
               : "shadow-none ring-1 ring-transparent"
           }`}
         >
-          {/* Brand accent line — always visible at the top of the sticky region */}
-          <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-primary via-ocean to-accent" />
+          {/* Subtle separator beneath the top app bar — solid light-grey hairline */}
+          <div className="absolute top-0 left-0 right-0 h-px bg-[#E2E8F0] dark:bg-gray-800" />
           {/* Row 1: Title + Export */}
           <div className="flex items-center justify-between gap-3 mb-3">
             <div className="flex items-center gap-3 min-w-0">
@@ -369,7 +369,7 @@ export default function AnalyticsPage() {
             <MetricCard value={`${data.influencerRatio}%`} label="Influencer" color="text-accent" />
             <MetricCard value={statusBreakdown.find((s: any) => s.status === "Task Completed")?.count || 0} label="Completed" color="text-success" />
             <MetricCard value={`${data.rejectionRate}%`} label="Rejection Rate" color={data.rejectionRate > 20 ? "text-danger" : data.rejectionRate > 10 ? "text-warning" : "text-success"} />
-            <div className="sm:col-span-2 lg:col-span-1">
+            <div className="col-span-2 sm:col-span-2 lg:col-span-1">
               <MetricCard value={data.avgTatDays > 0 ? `${data.avgTatDays}d` : "—"} label="Avg TAT (Shot→Up)" color="text-primary" />
             </div>
           </div>
