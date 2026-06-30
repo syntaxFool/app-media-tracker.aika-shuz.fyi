@@ -647,12 +647,15 @@ function consolidatedActivities(activities: any[]): any[] {
     }
 
     if (batch.length > 1) {
+      // Extract statuses from "Status: From → To" format
       const statuses = batch.map((b: any) => {
-        const m = b.detail?.match(/to\s+([A-Za-z ]+)/i);
-        return m ? m[1].trim() : "?";
-      });
-      const from = statuses[statuses.length - 1];
-      const to = statuses[0];
+        const m = b.detail?.match(/Status:\s+([A-Za-z ]+).*→.*\s+([A-Za-z ]+)/i);
+        if (m) return { from: m[1].trim(), to: m[2].trim() };
+        return null;
+      }).filter(Boolean);
+      // statuses are newest-first; last element is the original "from"
+      const from = statuses.length > 0 ? statuses[statuses.length - 1]!.from : "?";
+      const to = statuses.length > 0 ? statuses[0]!.to : "?";
       result.push({
         id: batch[0].id,
         actor: batch[0].actor,
@@ -661,7 +664,15 @@ function consolidatedActivities(activities: any[]): any[] {
         detail: `updated status from ${from} → ${to}`,
       });
     } else {
-      result.push(current);
+      // Also clean up single status_change entries
+      const cleaned = { ...current };
+      if (current.action === "status_change" && current.detail) {
+        const m = current.detail.match(/Status:\s+([A-Za-z ]+).*→.*\s+([A-Za-z ]+)/i);
+        if (m) {
+          cleaned.detail = `updated status from ${m[1].trim()} → ${m[2].trim()}`;
+        }
+      }
+      result.push(cleaned);
     }
     i = j;
   }
