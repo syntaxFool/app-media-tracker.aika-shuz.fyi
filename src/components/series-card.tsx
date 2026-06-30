@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { ChevronDown, ChevronRight, Star, Clock, Users } from "lucide-react";
 import ImagePreview from "@/components/image-preview";
-import { ALL_STATUSES, isRejected, getAllowedNextStatuses } from "@/lib/tasks";
+import { ALL_STATUSES, isRejected, getAllowedNextStatuses, getDueDateStatus } from "@/lib/tasks";
 
 const STATUS_COLORS: Record<string, string> = {
   New: "bg-ocean",
@@ -72,7 +72,9 @@ export default function SeriesCard({ seriesId, parts, userRole, onMoveTask, onNa
       {expanded && (
         <div className="border-t border-border dark:border-gray-700 divide-y divide-border dark:divide-gray-700/50 animate-fade-in">
           {sortedParts.map((part) => {
-            const isOverdue = part.status !== "Task Completed" && part.status !== "Dropped" && part.dueDate && new Date(part.dueDate) < new Date();
+            const dueStatus = getDueDateStatus(part.dueDate, part.status);
+            const isOverdue = dueStatus === "overdue";
+            const isDueToday = dueStatus === "due-today";
             const assigned = Array.isArray(part.assignedTo) ? part.assignedTo : [];
             const isRejectedTask = isRejected(part);
             const allowedNext = getAllowedNextStatuses(part, userRole).slice(0, 3);
@@ -125,6 +127,9 @@ export default function SeriesCard({ seriesId, parts, userRole, onMoveTask, onNa
                   <span className="text-tiny text-fg-quaternary dark:text-gray-500">{part.service}</span>
                   {isOverdue && (
                     <span className="text-tiny text-danger">⚠ Overdue</span>
+                  )}
+                  {isDueToday && (
+                    <span className="text-tiny text-warning">⏰ Due today</span>
                   )}
                   {assigned.length > 0 && (
                     <span className="text-tiny text-fg-quaternary dark:text-gray-500 truncate">

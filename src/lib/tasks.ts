@@ -54,6 +54,35 @@ export async function generateTaskId(): Promise<string> {
   return `${prefix}-${String(num + 1).padStart(4, "0")}`;
 }
 
+export type DueDateStatus = "overdue" | "due-today" | "due-soon" | "normal";
+
+/**
+ * Compare a task's due date to "now" at calendar-day granularity.
+ * - "overdue"   : due date is strictly before today
+ * - "due-today" : due date is today
+ * - "due-soon"  : due date is within the next 2 days (not including today)
+ * - "normal"    : due date is further out, or task is terminal, or no due date
+ */
+export function getDueDateStatus(
+  dueDate: string | Date | null | undefined,
+  status: string,
+  now: Date = new Date(),
+): DueDateStatus {
+  if (!dueDate) return "normal";
+  if (status === "Task Completed" || status === "Dropped") return "normal";
+
+  const today = new Date(now);
+  today.setHours(0, 0, 0, 0);
+  const due = new Date(dueDate);
+  due.setHours(0, 0, 0, 0);
+
+  if (due.getTime() < today.getTime()) return "overdue";
+  if (due.getTime() === today.getTime()) return "due-today";
+  const diffMs = due.getTime() - today.getTime();
+  if (diffMs <= 2 * 24 * 60 * 60 * 1000) return "due-soon";
+  return "normal";
+}
+
 /** Check if a task has been rejected */
 export function isRejected(task: { rejectionNote?: string | null }): boolean {
   return !!task.rejectionNote;

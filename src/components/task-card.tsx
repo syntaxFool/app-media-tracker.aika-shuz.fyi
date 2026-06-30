@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { Calendar, Star, ChevronRight, Users } from "lucide-react";
 import StatusBadge from "./status-badge";
 import ImagePreview from "./image-preview";
+import { getDueDateStatus } from "@/lib/tasks";
 
 interface Task {
   id: string; customerName: string; shootDate: string; dueDate: string | null;
@@ -24,8 +25,10 @@ export default function TaskCard({ task, selectMode, selected, onToggleSelect }:
   const shootDateStr = new Date(task.shootDate).toLocaleDateString("en-IN", { day:"numeric", month:"short", year:"numeric" });
   const dueDateStr = task.dueDate ? new Date(task.dueDate).toLocaleDateString("en-IN", { day:"numeric", month:"short", year:"numeric" }) : null;
   const isTerminal = task.status === "Task Completed" || task.status === "Dropped";
-  const isOverdue = !isTerminal && task.dueDate && new Date(task.dueDate) < new Date();
-  const isDueSoon = !isTerminal && task.dueDate && !isOverdue && (new Date(task.dueDate).getTime() - Date.now() < 24*60*60*1000 && new Date(task.dueDate).getTime() > Date.now());
+  const dueStatus = getDueDateStatus(task.dueDate, task.status);
+  const isOverdue = dueStatus === "overdue";
+  const isDueToday = dueStatus === "due-today";
+  const isDueSoon = dueStatus === "due-soon";
   const assigned = Array.isArray(task.assignedTo) ? task.assignedTo : [];
   const rejected = !!task.rejectionNote;
 
@@ -50,6 +53,7 @@ export default function TaskCard({ task, selectMode, selected, onToggleSelect }:
             <h3 className="text-body font-[510] text-fg-primary dark:text-gray-100 truncate">{task.customerName}</h3>
             {task.isInfluencer && <Star className="w-3.5 h-3.5 text-accent flex-shrink-0" fill="currentColor" />}
             {isOverdue && <span className="text-micro bg-danger/10 text-danger px-1.5 py-0.5 rounded font-[590] flex-shrink-0">Overdue</span>}
+            {isDueToday && <span className="text-micro bg-warning/10 text-warning px-1.5 py-0.5 rounded-pill font-[590] flex-shrink-0 border border-warning/15">Due today</span>}
             {isDueSoon && <span className="text-micro bg-warning/10 text-warning px-1.5 py-0.5 rounded-pill font-[590] flex-shrink-0 border border-warning/15">Due soon</span>}
           </div>
 

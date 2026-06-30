@@ -8,7 +8,7 @@ import StatusButtons from "@/components/status-buttons";
 import PingAdminButton from "@/components/ping-admin-button";
 import UrlCollector from "@/components/url-collector";
 import { ArrowLeft, Edit, Trash2, Calendar, Star, MessageSquare, CheckSquare, Plus, Clock, ExternalLink, MoreVertical } from "lucide-react";
-import { STATUS_FLOW, getAllowedNextStatuses } from "@/lib/tasks";
+import { STATUS_FLOW, getAllowedNextStatuses, getDueDateStatus } from "@/lib/tasks";
 
 const NEXT_STATUS = STATUS_FLOW;
 
@@ -168,10 +168,12 @@ export default function TaskDetailPage() {
     }
   }
 
-  // Due date check
+  // Due date check (calendar-day granularity)
   const dueDate = task?.dueDate ? new Date(task.dueDate) : null;
-  const isOverdue = dueDate && dueDate < new Date();
-  const isDueSoon = dueDate && !isOverdue && (dueDate.getTime() - Date.now() < 24*60*60*1000);
+  const dueStatus = getDueDateStatus(task?.dueDate, task?.status || "");
+  const isOverdue = dueStatus === "overdue";
+  const isDueToday = dueStatus === "due-today";
+  const isDueSoon = dueStatus === "due-soon";
 
   if (loading) return <AppLayout><div className="flex justify-center py-20"><div className="w-6 h-6 border-2 border-black/10 border-t-primary rounded-full animate-spin" /></div></AppLayout>;
   if (!task) return <AppLayout><div className="text-center py-20"><p className="text-body text-fg-secondary">Task not found</p></div></AppLayout>;

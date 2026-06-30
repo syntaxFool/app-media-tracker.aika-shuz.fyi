@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { Loader2, Star, Clock, Users } from "lucide-react";
 import ImagePreview from "@/components/image-preview";
 import SeriesCard from "@/components/series-card";
-import { ALL_STATUSES, isRejected, getAllowedNextStatuses } from "@/lib/tasks";
+import { ALL_STATUSES, isRejected, getAllowedNextStatuses, getDueDateStatus } from "@/lib/tasks";
 
 // ── OrphanPartCard — a single part of a series shown outside its primary column ──
 
@@ -16,7 +16,9 @@ function OrphanPartCard({ task, userRole, onMoveTask, onNavigate }: {
   onMoveTask: (taskId: string, newStatus: string) => void;
   onNavigate: () => void;
 }) {
-  const isOverdue = task.status !== "Task Completed" && task.status !== "Dropped" && task.dueDate && new Date(task.dueDate) < new Date();
+  const dueStatus = getDueDateStatus(task.dueDate, task.status);
+  const isOverdue = dueStatus === "overdue";
+  const isDueToday = dueStatus === "due-today";
   const assigned = Array.isArray(task.assignedTo) ? task.assignedTo : [];
   const isRejectedTask = !!(task.rejectionNote && task.status !== "Dropped");
   const allowed = getAllowedNextStatuses(task, userRole).slice(0, 3);
@@ -57,6 +59,7 @@ function OrphanPartCard({ task, userRole, onMoveTask, onNavigate }: {
         <span className="text-tiny text-fg-quaternary dark:text-gray-500 font-mono">{task.id}</span>
         <span className="text-tiny text-fg-quaternary dark:text-gray-500">{task.service}</span>
         {isOverdue && <span className="text-tiny text-danger">⚠ Overdue</span>}
+        {isDueToday && <span className="text-tiny text-warning">⏰ Due today</span>}
         {assigned.length > 0 && (
           <span className="text-tiny text-fg-quaternary dark:text-gray-500 truncate">
             <Users className="w-2.5 h-2.5 inline-block align-[-0.0625em] mr-0.5" />
@@ -200,7 +203,7 @@ export default function KanbanPage() {
       ...groupsHere.flatMap(g => g.parts),
     ];
     const overdueCount = allItemsInCol.filter(
-      (t: any) => t.dueDate && new Date(t.dueDate) < new Date() && t.status !== "Task Completed" && t.status !== "Dropped"
+      (t: any) => getDueDateStatus(t.dueDate, t.status) === "overdue"
     ).length;
 
     // Total displayed entities: standalone cards + orphan cards + series group cards
@@ -284,7 +287,8 @@ export default function KanbanPage() {
 
                   {/* Standalone tasks (non-series) */}
                   {col.standaloneTasks.map((task: any) => {
-                    const isOverdue = task.status !== "Task Completed" && task.status !== "Dropped" && task.dueDate && new Date(task.dueDate) < new Date();
+                    const isOverdue = getDueDateStatus(task.dueDate, task.status) === "overdue";
+                    const isDueToday = getDueDateStatus(task.dueDate, task.status) === "due-today";
                     const assigned = Array.isArray(task.assignedTo) ? task.assignedTo : [];
                     const isRejectedTask = !!(task.rejectionNote && task.status !== "Dropped");
 
@@ -343,11 +347,12 @@ export default function KanbanPage() {
                         {/* Due date indicator */}
                         {task.dueDate && (
                           <div className={`flex items-center gap-1 text-tiny mb-1.5 ${
-                            isOverdue ? "text-danger" : "text-fg-quaternary dark:text-gray-500"
+                            isOverdue ? "text-danger" : isDueToday ? "text-warning" : "text-fg-quaternary dark:text-gray-500"
                           }`}>
                             <Clock className="w-3 h-3"/>
                             <span>{new Date(task.dueDate).toLocaleDateString("en-IN", { day:"numeric", month:"short", year:"numeric" })}</span>
                             {isOverdue && <span className="font-[590]">Overdue</span>}
+                            {isDueToday && <span className="font-[590]">Due today</span>}
                           </div>
                         )}
 

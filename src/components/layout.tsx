@@ -227,7 +227,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
         {/* Nav items - Dashboard left, Kanban + History right of FAB */}
         <div className="flex items-center h-16 px-1">
-          <div className="flex-1 flex justify-around">
+          {/* Left group: padded on the right (FAB side) so the edge label clears the notch */}
+          <div className="flex-1 flex justify-around pr-4">
             {navItems.slice(0, 2).map(item => (
               <button key={item.path} onClick={() => router.push(item.path)}
                 className={['bottom-nav-item transition-all duration-150', isActive(item.path) ? 'bottom-nav-item-active' : 'bottom-nav-item-inactive'].join(' ')}>
@@ -243,7 +244,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           {/* Spacer for FAB */}
           <div className="w-14 flex-shrink-0" />
 
-          <div className="flex-1 flex justify-around">
+          {/* Right group: padded on the left (FAB side) so the edge label clears the notch */}
+          <div className="flex-1 flex justify-around pl-4">
             {navItems.slice(2).map(item => (
               <button key={item.path} onClick={() => router.push(item.path)}
                 className={['bottom-nav-item transition-all duration-150', isActive(item.path) ? 'bottom-nav-item-active' : 'bottom-nav-item-inactive'].join(' ')}>
