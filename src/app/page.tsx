@@ -16,7 +16,7 @@ interface Task {
 
 const STATUS_DOT_COLORS: Record<string, string> = {
   New: "#72cdf4", "Video Shot": "#ffd200", "Data Copied": "#006994",
-  "Video Edited": "#6366f1", Reviewed: "#f59e0b", Approved: "#8b5cf6", Uploaded: "#10b981",
+  "Video Edited": "#6366f1", Reviewed: "#f59e0b", Approved: "#14b8a6", Uploaded: "#10b981",
   "Task Completed": "#27a644", Dropped: "#9ca3af",
 };
 

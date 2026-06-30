@@ -4,7 +4,7 @@ const STATUS_COLORS: Record<string, string> = {
   "Data Copied": "bg-[#006994]/8 text-[#006994] border-[#006994]/20 dark:bg-[#006994]/10 dark:text-[#72cdf4] dark:border-[#006994]/20",
   "Video Edited": "bg-indigo-500/8 text-indigo-700 border-indigo-500/15 dark:bg-indigo-500/10 dark:text-indigo-400 dark:border-indigo-500/15",
   Reviewed: "bg-orange-500/8 text-orange-700 border-orange-500/15 dark:bg-orange-500/10 dark:text-orange-400 dark:border-orange-500/15",
-  Approved: "bg-violet-500/8 text-violet-700 border-violet-500/15 dark:bg-violet-500/10 dark:text-violet-400 dark:border-violet-500/15",
+  Approved: "bg-teal-500/8 text-teal-700 border-teal-500/15 dark:bg-teal-500/10 dark:text-teal-400 dark:border-teal-500/15",
   Uploaded: "bg-emerald-500/8 text-emerald-700 border-emerald-500/15 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/15",
   "Task Completed": "bg-green-500/8 text-green-700 border-green-500/15 dark:bg-green-500/10 dark:text-green-400 dark:border-green-500/15",
   Dropped: "bg-black/[0.04] text-fg-quaternary border-black/[0.08] dark:bg-white/[0.04] dark:text-gray-400 dark:border-white/[0.08]",

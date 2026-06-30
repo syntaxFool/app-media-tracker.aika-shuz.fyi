@@ -10,7 +10,7 @@ import {
 
 const STATUS_COLORS: Record<string, string> = {
   New: "#72cdf4", "Video Shot": "#ffd200", "Data Copied": "#006994",
-  "Video Edited": "#6366f1", Reviewed: "#f59e0b", Approved: "#8b5cf6",
+  "Video Edited": "#6366f1", Reviewed: "#f59e0b", Approved: "#14b8a6",
   Rejected: "#ef4444", Uploaded: "#10b981",
   "Task Completed": "#27a644", Dropped: "#9ca3af",
 };
@@ -83,11 +83,22 @@ export default function AnalyticsPage() {
 
   // Detect when the sticky header has detached from the top of the scroll
   // container so we can paint a subtle shadow under it.
+  // IMPORTANT: ignore the initial observer fire — the sentinel sits above
+  // the rootMargin-adjusted top of <main> on mount, which would otherwise
+  // flip `scrolled` to true immediately and render the frosted background
+  // on first paint (the "grey block" above the title).
   useEffect(() => {
     const sentinel = sentinelRef.current;
     if (!sentinel || typeof IntersectionObserver === "undefined") return;
+    let initialFired = false;
     const observer = new IntersectionObserver(
-      ([entry]) => setScrolled(!entry.isIntersecting),
+      ([entry]) => {
+        if (!initialFired) {
+          initialFired = true;
+          return;
+        }
+        setScrolled(!entry.isIntersecting);
+      },
       { threshold: 0, rootMargin: "-1px 0px 0px 0px" }
     );
     observer.observe(sentinel);
@@ -219,7 +230,7 @@ export default function AnalyticsPage() {
         </div>
       )}
 
-      <div className="p-4 sm:p-6 lg:p-8 max-w-5xl mx-auto space-y-6 animate-fade-in pb-24">
+      <div className="px-4 sm:px-6 lg:px-8 pt-0 pb-24 max-w-5xl mx-auto space-y-6 animate-fade-in">
         {/* Sentinel: when this 1px line leaves the viewport, the sticky
             header has detached and we paint a shadow under it. */}
         <div ref={sentinelRef} className="h-px -mb-px" aria-hidden />
@@ -228,17 +239,15 @@ export default function AnalyticsPage() {
             below AppLayout's blue 56px top bar).  Row 1 = title + export.
             Row 2 = segmented filter. */}
         <div
-          className={`relative sticky top-0 z-20 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 pt-3 pb-4
-                       bg-white/90 dark:bg-gray-950/90
-                       backdrop-blur-xl backdrop-saturate-150
+          className={`relative sticky top-0 z-20 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 pt-3 pb-3 -mt-6
+                       bg-surface dark:bg-gray-950
+                       backdrop-blur-md backdrop-saturate-150
                        transition-all duration-300 ease-spring ${
             scrolled
               ? "shadow-[0_8px_24px_-8px_rgba(0,105,148,0.18),0_2px_6px_rgba(0,0,0,0.04)] dark:shadow-[0_8px_24px_-8px_rgba(0,0,0,0.5),0_2px_6px_rgba(0,0,0,0.3)] ring-1 ring-primary/10 dark:ring-primary/20"
-              : "shadow-none ring-1 ring-transparent"
+              : "shadow-none ring-0"
           }`}
         >
-          {/* Subtle separator beneath the top app bar — solid light-grey hairline */}
-          <div className="absolute top-0 left-0 right-0 h-px bg-[#E2E8F0] dark:bg-gray-800" />
           {/* Row 1: Title + Export */}
           <div className="flex items-center justify-between gap-3 mb-3">
             <div className="flex items-center gap-3 min-w-0">
@@ -370,7 +379,11 @@ export default function AnalyticsPage() {
             <MetricCard value={statusBreakdown.find((s: any) => s.status === "Task Completed")?.count || 0} label="Completed" color="text-success" />
             <MetricCard value={`${data.rejectionRate}%`} label="Rejection Rate" color={data.rejectionRate > 20 ? "text-danger" : data.rejectionRate > 10 ? "text-warning" : "text-success"} />
             <div className="col-span-2 sm:col-span-2 lg:col-span-1">
-              <MetricCard value={data.avgTatDays > 0 ? `${data.avgTatDays}d` : "—"} label="Avg TAT (Shot→Up)" color="text-primary" />
+              <MetricCard
+                value={data.avgTatDays > 0 ? `${data.avgTatDays}d` : "0.0d"}
+                label="Avg TAT (Shot→Up)"
+                color={data.avgTatDays > 0 ? "text-primary" : "text-fg-quaternary"}
+              />
             </div>
           </div>
 
@@ -388,7 +401,7 @@ export default function AnalyticsPage() {
                     {s.status === "Rejected" ? "⛔ Rejected" : s.status}
                   </span>
                   <div className="flex-1 bg-surface dark:bg-gray-800 rounded-full h-4 sm:h-5 overflow-hidden">
-                    <div className="h-full rounded-full transition-all duration-700 ease-out" style={{ width: `${(s.count / maxStatus) * 100}%`, backgroundColor: STATUS_COLORS[s.status] || "#95a5b5" }} />
+                    <div className="h-full min-w-[6px] rounded-full transition-all duration-700 ease-out" style={{ width: `${(s.count / maxStatus) * 100}%`, backgroundColor: STATUS_COLORS[s.status] || "#95a5b5" }} />
                   </div>
                   <span className="text-caption font-[510] text-fg-primary dark:text-white min-w-[28px] text-right">{s.count}</span>
                 </div>
@@ -412,7 +425,7 @@ export default function AnalyticsPage() {
                     <div key={stage} className="flex items-center gap-3">
                       <span className="text-caption text-fg-tertiary dark:text-gray-400 w-28 text-right flex-shrink-0">{stage}</span>
                       <div className="flex-1 bg-surface dark:bg-gray-800 rounded-full h-5 overflow-hidden">
-                        <div className="h-full rounded-full bg-danger/70 transition-all duration-500" style={{ width: `${pct}%` }} />
+                        <div className="h-full min-w-[6px] rounded-full bg-danger/70 transition-all duration-500" style={{ width: `${pct}%` }} />
                       </div>
                       <span className="text-caption font-[510] text-fg-primary dark:text-white min-w-[40px] text-right">{count}</span>
                       <span className="text-tiny text-fg-tertiary w-10">{pct}%</span>
@@ -443,14 +456,14 @@ export default function AnalyticsPage() {
                           <span className="font-[510] text-fg-primary dark:text-white">{m.total} total</span>
                         </div>
                         <div className="flex-1 bg-surface dark:bg-gray-800 rounded-full h-4 overflow-hidden">
-                          <div className="h-full rounded-full bg-primary/60 transition-all duration-700 ease-out" style={{ width: `${totalBar}%` }} />
+                          <div className="h-full min-w-[6px] rounded-full bg-primary/60 transition-all duration-700 ease-out" style={{ width: `${totalBar}%` }} />
                         </div>
                         <div className="flex items-center justify-between text-tiny">
                           <span className="text-fg-quaternary">Completed</span>
                           <span className="text-success">{m.completed} done</span>
                         </div>
                         <div className="flex-1 bg-surface dark:bg-gray-800 rounded-full h-4 overflow-hidden">
-                          <div className="h-full rounded-full bg-success/70 transition-all duration-500" style={{ width: `${completedBar}%` }} />
+                          <div className="h-full min-w-[6px] rounded-full bg-success/70 transition-all duration-500" style={{ width: `${completedBar}%` }} />
                         </div>
                       </div>
                     </div>
@@ -486,7 +499,7 @@ export default function AnalyticsPage() {
                           </span>
                         </div>
                         <div className="flex-1 bg-surface dark:bg-gray-800 rounded-full h-4 overflow-hidden">
-                          <div className="h-full rounded-full bg-primary transition-all duration-700 ease-out" style={{ width: `${barWidth}%` }} />
+                          <div className="h-full min-w-[6px] rounded-full bg-primary transition-all duration-700 ease-out" style={{ width: `${barWidth}%` }} />
                         </div>
                         <div className="flex gap-3 mt-1 text-tiny text-fg-quaternary">
                           <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-warning/60" /> {a.pending} pending</span>
@@ -537,7 +550,7 @@ export default function AnalyticsPage() {
                     <div key={s.service} className="flex items-center gap-3">
                       <span className="text-caption text-fg-tertiary dark:text-gray-400 w-32 text-right flex-shrink-0 truncate" title={s.service}>{s.service}</span>
                       <div className="flex-1 bg-surface dark:bg-gray-800 rounded-full h-5 overflow-hidden">
-                        <div className="h-full rounded-full transition-all duration-500" style={{ width: `${(s.count / maxService) * 100}%`, backgroundColor: `hsl(${hue}, 55%, 50%)` }} />
+                        <div className="h-full min-w-[6px] rounded-full transition-all duration-500" style={{ width: `${(s.count / maxService) * 100}%`, backgroundColor: `hsl(${hue}, 55%, 50%)` }} />
                       </div>
                       <span className="text-caption font-[510] text-fg-primary dark:text-white min-w-[28px] text-right">{s.count}</span>
                     </div>

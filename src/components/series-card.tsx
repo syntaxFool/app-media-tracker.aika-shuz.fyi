@@ -11,7 +11,7 @@ const STATUS_COLORS: Record<string, string> = {
   "Data Copied": "bg-primary",
   "Video Edited": "bg-indigo-500",
   Reviewed: "bg-orange-500",
-  Approved: "bg-violet-500",
+  Approved: "bg-teal-500",
   Uploaded: "bg-emerald-500",
   "Task Completed": "bg-green-500",
   Dropped: "bg-gray-400",
