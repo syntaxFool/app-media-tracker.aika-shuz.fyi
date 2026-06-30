@@ -104,7 +104,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const initials = (user?.displayName || user?.username || "?").charAt(0).toUpperCase();
 
   return (
-    <div className="min-h-screen bg-surface dark:bg-gray-950 flex flex-col">
+    <div className="h-dvh bg-surface dark:bg-gray-950 flex flex-col overflow-hidden">
       {/* Top Bar - gradient poseidon blue */}
       <header className="sticky top-0 z-40 bg-gradient-to-r from-[#006994] via-[#006994] to-[#0082b3] text-white shadow-[0_2px_8px_rgba(0,105,148,0.12)]">
         <div className="flex items-center justify-between px-4 h-14">

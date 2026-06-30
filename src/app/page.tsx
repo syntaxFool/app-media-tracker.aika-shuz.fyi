@@ -119,7 +119,7 @@ export default function DashboardPage() {
         {/* Status Pipeline — 2-row layout, centered, no separators */}
         <div className="space-y-1.5">
           {/* Row 1: New, Video Shot, Data Copied, Video Edited, Reviewed */}
-          <div className="flex items-center justify-center gap-1 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden pb-0.5">
+          <div className="flex items-center justify-center gap-1.5 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden pb-0.5">
             {ALL_STATUSES.slice(0, 5).map((status) => {
               const isActive = activeStatuses.has(status);
               const dotColor = STATUS_DOT_COLORS[status] || "#95a5b5";
@@ -129,12 +129,12 @@ export default function DashboardPage() {
                   type="button"
                   onClick={() => toggleStatus(status)}
                   aria-pressed={isActive}
-                  className={`px-2 py-0.5 rounded-full text-tiny font-[510] whitespace-nowrap flex-shrink-0 transition-all duration-200 ${
+                  className={`px-2.5 py-1 rounded-2xl text-tiny font-[510] whitespace-nowrap flex-shrink-0 border bg-white dark:bg-gray-900 transition-all duration-200 active:scale-[0.97] ${
                     isActive
-                      ? "bg-white dark:bg-gray-900"
-                      : "text-fg-tertiary hover:text-fg-primary hover:bg-white/60 dark:hover:bg-gray-800/40"
+                      ? "shadow-sm"
+                      : "border-border dark:border-gray-700 text-fg-tertiary hover:text-fg-primary hover:border-fg-tertiary/50 hover:shadow-sm"
                   }`}
-                  style={isActive ? { color: dotColor, boxShadow: `inset 0 0 0 1.5px ${dotColor}40, 0 1px 2px rgba(0,0,0,0.04)` } : undefined}
+                  style={isActive ? { color: dotColor, borderColor: dotColor } : undefined}
                 >
                   {status}
                 </button>
@@ -142,7 +142,7 @@ export default function DashboardPage() {
             })}
           </div>
           {/* Row 2: Approved, Uploaded, Task Completed, Dropped */}
-          <div className="flex items-center justify-center gap-1 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden pb-0.5">
+          <div className="flex items-center justify-center gap-1.5 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden pb-0.5">
             {ALL_STATUSES.slice(5).map((status) => {
               const isActive = activeStatuses.has(status);
               const dotColor = STATUS_DOT_COLORS[status] || "#95a5b5";
@@ -152,12 +152,12 @@ export default function DashboardPage() {
                   type="button"
                   onClick={() => toggleStatus(status)}
                   aria-pressed={isActive}
-                  className={`px-2 py-0.5 rounded-full text-tiny font-[510] whitespace-nowrap flex-shrink-0 transition-all duration-200 ${
+                  className={`px-2.5 py-1 rounded-2xl text-tiny font-[510] whitespace-nowrap flex-shrink-0 border bg-white dark:bg-gray-900 transition-all duration-200 active:scale-[0.97] ${
                     isActive
-                      ? "bg-white dark:bg-gray-900"
-                      : "text-fg-tertiary hover:text-fg-primary hover:bg-white/60 dark:hover:bg-gray-800/40"
+                      ? "shadow-sm"
+                      : "border-border dark:border-gray-700 text-fg-tertiary hover:text-fg-primary hover:border-fg-tertiary/50 hover:shadow-sm"
                   }`}
-                  style={isActive ? { color: dotColor, boxShadow: `inset 0 0 0 1.5px ${dotColor}40, 0 1px 2px rgba(0,0,0,0.04)` } : undefined}
+                  style={isActive ? { color: dotColor, borderColor: dotColor } : undefined}
                 >
                   {status}
                 </button>

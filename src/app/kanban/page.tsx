@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useCallback, useMemo } from "react";
 import AppLayout from "@/components/layout";
-import PullToRefresh from "@/components/pull-to-refresh";
 import { useRouter } from "next/navigation";
 import { Loader2, Star, Clock, Users } from "lucide-react";
 import ImagePreview from "@/components/image-preview";
@@ -216,7 +215,7 @@ export default function KanbanPage() {
 
   return (
     <AppLayout>
-      <div className="p-4 h-full flex flex-col">
+      <div className="p-4 h-[calc(100dvh-3.5rem)] flex flex-col">
         {/* Compact header */}
         <div className="flex items-center justify-between mb-3 flex-shrink-0">
           <div className="flex items-center gap-2">
@@ -226,16 +225,15 @@ export default function KanbanPage() {
         </div>
 
         {/* Horizontal scroll with snap + peek on mobile */}
-        <PullToRefresh onRefresh={async () => { await fetchTasks(); }}>
-        <div className="flex-1 overflow-x-auto overflow-y-hidden -mx-4 px-4">
-          <div className="flex gap-3 h-full min-h-[60vh] pb-24 snap-x snap-mandatory md:snap-none" style={{ scrollSnapType: "x mandatory" }}>
+        <div className="flex-1 min-h-0 overflow-x-auto overflow-y-hidden -mx-4 px-4">
+          <div className="flex gap-3 h-full min-h-0 pb-24 snap-x snap-mandatory md:snap-none" style={{ scrollSnapType: "x mandatory" }}>
             {columns.map((col) => (
               <div
                 key={col.status}
-                className={`flex-shrink-0 w-[82vw] md:w-72 snap-center flex flex-col rounded-lg border border-border dark:border-gray-800 ${COLUMN_COLORS[col.status] || ""}`}
+                className={`flex-shrink-0 w-full md:w-72 snap-center flex flex-col min-h-0 rounded-lg border border-border dark:border-gray-800 ${COLUMN_COLORS[col.status] || ""}`}
               >
                 {/* Column Header */}
-                <div className={`px-3 py-2.5 border-b border-border dark:border-gray-800 border-l-4 ${COLUMN_COLORS[col.status]?.split(" ")[0] || "border-l-ocean"}`}>
+                <div className={`px-3 py-2.5 border-b border-border dark:border-gray-800 border-l-4 flex-shrink-0 ${COLUMN_COLORS[col.status]?.split(" ")[0] || "border-l-ocean"}`}>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <div className={`w-2 h-2 rounded-full ${COLUMN_DOT[col.status] || "bg-ocean"}`}/>
@@ -253,7 +251,7 @@ export default function KanbanPage() {
                 </div>
 
                 {/* Cards */}
-                <div className="flex-1 overflow-y-auto p-2 space-y-2 pb-16">
+                <div className="flex-1 min-h-0 overflow-y-auto overscroll-y-contain p-2 space-y-2 pb-16">
                   {col.totalDisplayed === 0 && (
                     <div className="flex flex-col items-center justify-center py-10 text-center">
                       <div className="text-2xl mb-2 opacity-30">📭</div>
@@ -385,7 +383,6 @@ export default function KanbanPage() {
             ))}
           </div>
         </div>
-        </PullToRefresh>
       </div>
     </AppLayout>
   );
