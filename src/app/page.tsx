@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useMemo, useRef } from "react";
+import { Fragment, useState, useEffect, useCallback, useMemo, useRef } from "react";
 import AppLayout from "@/components/layout";
 import TaskCard from "@/components/task-card";
 import { Loader2, CheckSquare, Download, SlidersHorizontal, ListFilter } from "lucide-react";
@@ -32,6 +32,20 @@ export default function DashboardPage() {
   const [showFilters, setShowFilters] = useState(false);
   const [influencerFilter, setInfluencerFilter] = useState("");
   const [seriesOnlyFilter, setSeriesOnlyFilter] = useState(false);
+  const [activeStatuses, setActiveStatuses] = useState<Set<string>>(new Set());
+
+  function toggleStatus(status: string) {
+    setActiveStatuses(prev => {
+      const next = new Set(prev);
+      if (next.has(status)) next.delete(status);
+      else next.add(status);
+      return next;
+    });
+  }
+
+  function clearStatuses() {
+    setActiveStatuses(new Set());
+  }
 
   useEffect(() => {
     fetch("/api/auth/me").then(r => { if(r.ok) r.json().then(d => setUserRole(d.user.role)); }).catch(() => {});
@@ -62,6 +76,7 @@ export default function DashboardPage() {
     let result = [...tasks];
     if (myTasksOnly) result = result.filter(t => t.status !== "Task Completed" && t.status !== "Dropped");
     if (seriesOnlyFilter) result = result.filter(t => t.seriesId);
+    if (activeStatuses.size > 0) result = result.filter(t => activeStatuses.has(t.status));
     switch (sortBy) {
       case "newest": result.sort((a,b) => new Date(b.shootDate||0).getTime()-new Date(a.shootDate||0).getTime()); break;
       case "oldest": result.sort((a,b) => new Date(a.shootDate||0).getTime()-new Date(b.shootDate||0).getTime()); break;
@@ -69,7 +84,7 @@ export default function DashboardPage() {
       case "status": result.sort((a,b) => a.status.localeCompare(b.status)); break;
     }
     return result;
-  }, [tasks, sortBy, myTasksOnly]);
+  }, [tasks, sortBy, myTasksOnly, seriesOnlyFilter, activeStatuses]);
 
   const services = Array.from(new Set(tasks.map(t => t.service))).sort();
   const statusCounts: Record<string, number> = {};
@@ -101,20 +116,55 @@ export default function DashboardPage() {
   return (
     <AppLayout>
       <div className="p-4 max-w-3xl mx-auto space-y-4 pb-16">
-        {/* Stats Bar — with colored dots */}
-        {Object.keys(statusCounts).length > 0 && (
-          <div className="flex gap-2 overflow-x-auto pb-1 no-scrollbar">
-            {Object.entries(statusCounts).map(([status, count]) => (
-              <div key={status} className="stat-tile flex items-center gap-2.5 flex-shrink-0">
-                <div className="w-3 h-3 rounded-full flex-shrink-0" style={{backgroundColor: STATUS_DOT_COLORS[status] || "#95a5b5"}}/>
-                <div>
-                  <span className="text-micro text-fg-quaternary dark:text-gray-500 block leading-tight">{status}</span>
-                  <span className="text-body font-[590] text-fg-primary dark:text-gray-100 leading-tight">{count}</span>
-                </div>
-              </div>
-            ))}
+        {/* Status Pipeline — 2-row layout, centered, no separators */}
+        <div className="space-y-1.5">
+          {/* Row 1: New, Video Shot, Data Copied, Video Edited, Reviewed */}
+          <div className="flex items-center justify-center gap-1 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden pb-0.5">
+            {ALL_STATUSES.slice(0, 5).map((status) => {
+              const isActive = activeStatuses.has(status);
+              const dotColor = STATUS_DOT_COLORS[status] || "#95a5b5";
+              return (
+                <button
+                  key={status}
+                  type="button"
+                  onClick={() => toggleStatus(status)}
+                  aria-pressed={isActive}
+                  className={`px-2 py-0.5 rounded-full text-tiny font-[510] whitespace-nowrap flex-shrink-0 transition-all duration-200 ${
+                    isActive
+                      ? "bg-white dark:bg-gray-900"
+                      : "text-fg-tertiary hover:text-fg-primary hover:bg-white/60 dark:hover:bg-gray-800/40"
+                  }`}
+                  style={isActive ? { color: dotColor, boxShadow: `inset 0 0 0 1.5px ${dotColor}40, 0 1px 2px rgba(0,0,0,0.04)` } : undefined}
+                >
+                  {status}
+                </button>
+              );
+            })}
           </div>
-        )}
+          {/* Row 2: Approved, Uploaded, Task Completed, Dropped */}
+          <div className="flex items-center justify-center gap-1 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden pb-0.5">
+            {ALL_STATUSES.slice(5).map((status) => {
+              const isActive = activeStatuses.has(status);
+              const dotColor = STATUS_DOT_COLORS[status] || "#95a5b5";
+              return (
+                <button
+                  key={status}
+                  type="button"
+                  onClick={() => toggleStatus(status)}
+                  aria-pressed={isActive}
+                  className={`px-2 py-0.5 rounded-full text-tiny font-[510] whitespace-nowrap flex-shrink-0 transition-all duration-200 ${
+                    isActive
+                      ? "bg-white dark:bg-gray-900"
+                      : "text-fg-tertiary hover:text-fg-primary hover:bg-white/60 dark:hover:bg-gray-800/40"
+                  }`}
+                  style={isActive ? { color: dotColor, boxShadow: `inset 0 0 0 1.5px ${dotColor}40, 0 1px 2px rgba(0,0,0,0.04)` } : undefined}
+                >
+                  {status}
+                </button>
+              );
+            })}
+          </div>
+        </div>
 
         {/* Unified Action Bar — single scrollable row */}
         <div className="flex items-center gap-2 overflow-x-auto pb-2">
@@ -174,14 +224,96 @@ export default function DashboardPage() {
           </div>
         )}
 
+        {/* Selected-Status Banner — reflects the active filter(s) and their count */}
+        {(() => {
+          const selectedList = Array.from(activeStatuses);
+          const count = displayTasks.length;
+          const singleColor = selectedList.length === 1
+            ? (STATUS_DOT_COLORS[selectedList[0]] || "#95a5b5")
+            : null;
+          const gradientBorder = selectedList.length > 1
+            ? `linear-gradient(90deg, ${selectedList.map(s => STATUS_DOT_COLORS[s] || "#95a5b5").join(", ")})`
+            : null;
+          return (
+            <div
+              className={`rounded-md px-3.5 py-2.5 flex items-center justify-between bg-white dark:bg-gray-900 border-2 transition-colors ${
+                selectedList.length === 0 ? "border-border dark:border-gray-800" : ""
+              }`}
+              style={
+                singleColor
+                  ? { borderColor: singleColor }
+                  : gradientBorder
+                    ? { borderImage: `${gradientBorder} 1`, borderColor: "transparent" }
+                    : undefined
+              }
+            >
+              <div className="flex items-center gap-2 min-w-0">
+                {selectedList.length > 0 && (
+                  <div className="flex items-center gap-1 flex-shrink-0">
+                    {selectedList.map(s => (
+                      <span
+                        key={s}
+                        className="w-2.5 h-2.5 rounded-full"
+                        style={{ backgroundColor: STATUS_DOT_COLORS[s] || "#95a5b5" }}
+                      />
+                    ))}
+                  </div>
+                )}
+                {selectedList.length === 0 ? (
+                  <span className="text-label text-fg-quaternary">All tasks</span>
+                ) : selectedList.length === 1 ? (
+                  <>
+                    <span className="text-label text-fg-quaternary">Showing</span>
+                    <span className="text-label font-[590] text-fg-primary dark:text-gray-100 truncate">
+                      {selectedList[0]}
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    <span className="text-label text-fg-quaternary">Showing</span>
+                    <span className="text-label font-[590] text-fg-primary dark:text-gray-100">
+                      {selectedList.length} statuses
+                    </span>
+                    <span className="text-label text-fg-quaternary hidden sm:inline truncate">
+                      ({selectedList.join(", ")})
+                    </span>
+                  </>
+                )}
+              </div>
+              <div className="flex items-center gap-3 flex-shrink-0">
+                <span className="text-label font-[590] text-fg-primary dark:text-gray-100">
+                  {count} {count === 1 ? "task" : "tasks"}
+                </span>
+                {selectedList.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={clearStatuses}
+                    className="text-label text-fg-quaternary hover:text-fg-tertiary transition-colors"
+                  >
+                    Clear
+                  </button>
+                )}
+              </div>
+            </div>
+          );
+        })()}
+
         {/* Task List */}
         {loading ? (
           <div className="flex justify-center py-8"><Loader2 className="w-6 h-6 text-fg-tertiary animate-spin"/></div>
         ) : displayTasks.length === 0 ? (
           <div className="empty-state">
             <div className="empty-state-icon">📋</div>
-            <p className="empty-state-title">No tasks found</p>
-            <p className="empty-state-desc">Tap the + button to create your first task</p>
+            <p className="empty-state-title">
+              {activeStatuses.size > 0
+                ? activeStatuses.size === 1
+                  ? `No “${Array.from(activeStatuses)[0]}” tasks`
+                  : `No tasks in selected statuses`
+                : "No tasks found"}
+            </p>
+            <p className="empty-state-desc">
+              {activeStatuses.size > 0 ? "Tap “Clear” above to remove the filter" : "Tap the + button to create your first task"}
+            </p>
           </div>
         ) : (
           <div className="space-y-2">
