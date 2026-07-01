@@ -329,7 +329,7 @@ export default function DashboardPage() {
               {searchInput
                 ? "Try a different search term or clear the search"
                 : activeStatuses.size > 0
-                  ? 'Tap \u201cClear\u201d above to remove the filter'
+                  ? 'Tap “Clear” above to remove the filter'
                   : "Tap the + button to create your first task"}
             </p>
           </div>
