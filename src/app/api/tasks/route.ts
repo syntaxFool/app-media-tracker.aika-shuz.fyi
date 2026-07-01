@@ -47,6 +47,8 @@ export async function GET(req: NextRequest) {
         OR: [
           { id: { contains: search, mode: "insensitive" } },
           { customerName: { contains: search, mode: "insensitive" } },
+          { note: { contains: search, mode: "insensitive" } },
+          { seriesId: { contains: search, mode: "insensitive" } },
         ],
       };
       // Merge with existing active-task filter instead of overwriting
