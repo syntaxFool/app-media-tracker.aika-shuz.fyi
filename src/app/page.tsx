@@ -34,6 +34,7 @@ export default function DashboardPage() {
   const [showFilters, setShowFilters] = useState(false);
   const [influencerFilter, setInfluencerFilter] = useState("");
   const [seriesOnlyFilter, setSeriesOnlyFilter] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [searchInput, setSearchInput] = useState("");
   const debouncedSearch = useDebounce(searchInput, 400);
   const [activeStatuses, setActiveStatuses] = useState<Set<string>>(new Set());
@@ -68,9 +69,15 @@ export default function DashboardPage() {
     if (debouncedSearch) params.set("search", debouncedSearch);
     try {
       const res = await fetch(`/api/tasks?${params}`, { signal: controller.signal });
-      if (res.ok) setTasks((await res.json()).tasks);
+      if (res.ok) {
+        setTasks((await res.json()).tasks);
+        setError(null);
+      }
     } catch (e: any) {
-      if (e.name !== "AbortError") console.error("fetchTasks failed:", e);
+      if (e.name !== "AbortError") {
+        console.error("fetchTasks failed:", e);
+        setError("Failed to load tasks. Please check your connection.");
+      }
     }
     setLoading(false);
   }, [influencerFilter, serviceFilter, genderFilter, debouncedSearch]);
@@ -309,6 +316,13 @@ export default function DashboardPage() {
             </div>
           );
         })()}
+
+        {error && (
+          <div className="bg-danger/10 text-danger border border-danger/20 rounded-md px-3 py-2 text-sm flex items-center gap-2">
+            <span>⚠️</span>
+            <span>{error}</span>
+          </div>
+        )}
 
         {/* Task List */}
         {loading ? (

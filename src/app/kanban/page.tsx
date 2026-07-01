@@ -121,22 +121,32 @@ export default function KanbanPage() {
   const [genderFilter, setGenderFilter] = useState("");
   const debouncedSearch = useDebounce(searchInput, 400);
   const [showFilters, setShowFilters] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const fetchTasks = useCallback(async () => {
-    const params = new URLSearchParams();
-    if (debouncedSearch) params.set("search", debouncedSearch);
-    if (influencerFilter) params.set("influencer", influencerFilter);
-    if (serviceFilter) params.set("service", serviceFilter);
-    if (genderFilter) params.set("gender", genderFilter);
-    const queryString = params.toString();
-    const res = await fetch(`/api/tasks${queryString ? `?${queryString}` : ""}`);
-    if (res.ok) {
-      const data = await res.json();
-      setTasks(data.tasks.filter((t: any) =>
-        (t.status !== "Task Completed" && t.status !== "Dropped") ||
-        (t.updatedAt && new Date(t.updatedAt).getTime() > Date.now() - 24*60*60*1000)));
+    try {
+      const params = new URLSearchParams();
+      if (debouncedSearch) params.set("search", debouncedSearch);
+      if (influencerFilter) params.set("influencer", influencerFilter);
+      if (serviceFilter) params.set("service", serviceFilter);
+      if (genderFilter) params.set("gender", genderFilter);
+      const queryString = params.toString();
+      const res = await fetch(`/api/tasks${queryString ? `?${queryString}` : ""}`);
+      if (res.ok) {
+        const data = await res.json();
+        setTasks(data.tasks.filter((t: any) =>
+          (t.status !== "Task Completed" && t.status !== "Dropped") ||
+          (t.updatedAt && new Date(t.updatedAt).getTime() > Date.now() - 24*60*60*1000)));
+        setError(null);
+      } else {
+        setError("Failed to load tasks. Please check your connection.");
+      }
+      setLoading(false);
+    } catch (e: any) {
+      console.error("fetchTasks failed:", e);
+      setError("Failed to load tasks. Please check your connection.");
+      setLoading(false);
     }
-    setLoading(false);
   }, [debouncedSearch, influencerFilter, serviceFilter, genderFilter]);
 
   useEffect(() => { fetchTasks(); }, [fetchTasks]);
@@ -294,9 +304,46 @@ export default function KanbanPage() {
           </div>
         </div>
 
-        {/* Horizontal scroll with snap + peek on mobile */}
-        <div className="flex-1 min-h-0 overflow-x-auto overflow-y-hidden -mx-4 px-4">
-          <div className="flex gap-3 h-full min-h-0 pb-24 snap-x snap-mandatory md:snap-none" style={{ scrollSnapType: "x mandatory" }}>
+        {error && (
+          <div className="bg-danger/10 text-danger border border-danger/20 rounded-md px-3 py-2 text-sm flex items-center gap-2">
+            <span>⚠️</span>
+            <span>{error}</span>
+          </div>
+        )}
+
+        {tasks.length === 0 && !loading ? (
+          <div className="flex flex-col items-center justify-center py-20 text-center">
+            <div className="text-4xl mb-3 opacity-40">🔍</div>
+            <p className="text-body font-[510] text-fg-primary dark:text-gray-100">
+              {searchInput
+                ? `No tasks matching "${searchInput}"`
+                : "No tasks found"}
+            </p>
+            <p className="text-caption text-fg-tertiary dark:text-gray-500 mt-1">
+              {searchInput
+                ? "Try a different search term or clear the search"
+                : influencerFilter || serviceFilter || genderFilter
+                  ? "Try adjusting your filters"
+                  : "No active tasks at the moment"}
+            </p>
+            {(searchInput || influencerFilter || serviceFilter || genderFilter) && (
+              <button
+                onClick={() => {
+                  setSearchInput("");
+                  setInfluencerFilter("");
+                  setServiceFilter("");
+                  setGenderFilter("");
+                  setShowFilters(false);
+                }}
+                className="mt-4 px-4 py-2 rounded-md border border-border dark:border-gray-700 text-label text-fg-secondary hover:bg-surface transition-colors"
+              >
+                Clear all filters
+              </button>
+            )}
+          </div>
+        ) : (
+          <div className="flex-1 min-h-0 overflow-x-auto overflow-y-hidden -mx-4 px-4">
+            <div className="flex gap-3 h-full min-h-0 pb-24 snap-x snap-mandatory md:snap-none" style={{ scrollSnapType: "x mandatory" }}>
             {columns.map((col) => (
               <div
                 key={col.status}
@@ -455,6 +502,7 @@ export default function KanbanPage() {
             ))}
           </div>
         </div>
+        )}
       </div>
     </AppLayout>
   );
