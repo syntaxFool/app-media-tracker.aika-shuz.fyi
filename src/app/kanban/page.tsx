@@ -3,8 +3,10 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import AppLayout from "@/components/layout";
 import { useRouter } from "next/navigation";
-import { Loader2, Star, Clock, Users } from "lucide-react";
+import { Loader2, Star, Clock, Users, SlidersHorizontal } from "lucide-react";
 import ImagePreview from "@/components/image-preview";
+import SearchBar from "@/components/search-bar";
+import { useDebounce } from "@/hooks/use-debounce";
 import SeriesCard from "@/components/series-card";
 import { ALL_STATUSES, isRejected, getAllowedNextStatuses, getDueDateStatus } from "@/lib/tasks";
 
@@ -113,9 +115,21 @@ export default function KanbanPage() {
   const [tasks, setTasks] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [userRole, setUserRole] = useState("staff");
+  const [searchInput, setSearchInput] = useState("");
+  const [influencerFilter, setInfluencerFilter] = useState("");
+  const [serviceFilter, setServiceFilter] = useState("");
+  const [genderFilter, setGenderFilter] = useState("");
+  const debouncedSearch = useDebounce(searchInput, 400);
+  const [showFilters, setShowFilters] = useState(false);
 
   const fetchTasks = useCallback(async () => {
-    const res = await fetch("/api/tasks");
+    const params = new URLSearchParams();
+    if (debouncedSearch) params.set("search", debouncedSearch);
+    if (influencerFilter) params.set("influencer", influencerFilter);
+    if (serviceFilter) params.set("service", serviceFilter);
+    if (genderFilter) params.set("gender", genderFilter);
+    const queryString = params.toString();
+    const res = await fetch(`/api/tasks${queryString ? `?${queryString}` : ""}`);
     if (res.ok) {
       const data = await res.json();
       setTasks(data.tasks.filter((t: any) =>
@@ -123,7 +137,7 @@ export default function KanbanPage() {
         (t.updatedAt && new Date(t.updatedAt).getTime() > Date.now() - 24*60*60*1000)));
     }
     setLoading(false);
-  }, []);
+  }, [debouncedSearch, influencerFilter, serviceFilter, genderFilter]);
 
   useEffect(() => { fetchTasks(); }, [fetchTasks]);
 
@@ -181,6 +195,8 @@ export default function KanbanPage() {
     return groups;
   }, [tasks]);
 
+  const services = Array.from(new Set(tasks.map(t => t.service))).sort();
+
   const columns = useMemo(() => ALL_STATUSES.map((status) => {
     // Series groups where this column is the primary
     const groupsHere = seriesGroups.filter(g => g.primaryStatus === status);
@@ -220,10 +236,61 @@ export default function KanbanPage() {
     <AppLayout>
       <div className="p-4 h-[calc(100dvh-3.5rem)] flex flex-col">
         {/* Compact header */}
-        <div className="flex items-center justify-between mb-3 flex-shrink-0">
+        <div className="flex items-center justify-between mb-2 flex-shrink-0">
           <div className="flex items-center gap-2">
             <h1 className="text-body font-[590] text-fg-primary dark:text-gray-100">Kanban</h1>
             <span className="text-micro text-fg-quaternary bg-surface dark:bg-gray-800 px-2 py-0.5 rounded-pill">{tasks.length} tasks</span>
+          </div>
+        </div>
+
+        {/* Search + Filters */}
+        <div className="space-y-2 mb-3 flex-shrink-0">
+          <SearchBar
+            value={searchInput}
+            onChange={setSearchInput}
+            placeholder="Search by name, note, series, or Task ID..."
+          />
+          <div className="flex items-center gap-2 overflow-x-auto pb-1">
+            <button
+              onClick={() => setInfluencerFilter(influencerFilter === "true" ? "" : "true")}
+              className={`flex items-center gap-1.5 text-label px-2.5 py-1.5 rounded-md border transition-all flex-shrink-0 whitespace-nowrap ${
+                influencerFilter === "true"
+                  ? "bg-accent/10 text-accent border-accent/30"
+                  : "bg-white dark:bg-gray-800 text-fg-tertiary border-border dark:border-gray-700 hover:border-fg-tertiary/30"
+              }`}
+            >
+              <svg className="w-4 h-4" viewBox="0 0 24 24" fill={influencerFilter === "true" ? "currentColor" : "none"} stroke="currentColor" strokeWidth={1.5}>
+                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+              </svg>
+              Influencer
+            </button>
+            <select
+              value={serviceFilter}
+              onChange={e => setServiceFilter(e.target.value)}
+              className="select-linear text-label py-1.5 flex-shrink-0 bg-white dark:bg-gray-800"
+            >
+              <option value="">All Services</option>
+              {services.map(s => <option key={s} value={s}>{s}</option>)}
+            </select>
+            <button onClick={() => setShowFilters(!showFilters)}
+              className={`flex items-center gap-1.5 text-label px-2.5 py-1.5 rounded-md border transition-all flex-shrink-0 whitespace-nowrap ${
+                showFilters ? "bg-primary/10 text-primary border-primary/30" : "bg-white dark:bg-gray-800 text-fg-tertiary border-border dark:border-gray-700"
+              }`}>
+              <SlidersHorizontal className="w-3.5 h-3.5"/> Gender
+            </button>
+            {showFilters && (
+              <div className="animate-fade-in">
+                <select
+                  value={genderFilter}
+                  onChange={e => setGenderFilter(e.target.value)}
+                  className="select-linear text-label py-1.5 flex-shrink-0 bg-white dark:bg-gray-800"
+                >
+                  <option value="">All Genders</option>
+                  {/* Genders from config — use a fallback set */}
+                  {["Male", "Female", "Other"].map(g => <option key={g} value={g}>{g}</option>)}
+                </select>
+              </div>
+            )}
           </div>
         </div>
 

@@ -5,12 +5,14 @@ import AppLayout from "@/components/layout";
 import TaskCard from "@/components/task-card";
 import SearchBar from "@/components/search-bar";
 import { Loader2 } from "lucide-react";
+import { useDebounce } from "@/hooks/use-debounce";
 
 export default function HistoryPage() {
   const [tasks, setTasks] = useState<any[]>([]); const [loading, setLoading] = useState(true); const [search, setSearch] = useState("");
+  const debouncedSearch = useDebounce(search, 400);
 
   const fetchHistory = useCallback(async () => {
-    const params = new URLSearchParams(); params.set("status", "Task Completed"); if (search) params.set("search", search);
+    const params = new URLSearchParams(); params.set("status", "Task Completed"); if (debouncedSearch) params.set("search", debouncedSearch);
     const res = await fetch(`/api/tasks?${params}`);
     if (res.ok) {
       const data = await res.json();
@@ -18,7 +20,7 @@ export default function HistoryPage() {
       setTasks(data.tasks.filter((t:any) => t.updatedAt && new Date(t.updatedAt).getTime() < cutoff));
     }
     setLoading(false);
-  }, [search]);
+  }, [debouncedSearch]);
 
   useEffect(() => { fetchHistory(); }, [fetchHistory]);
 

@@ -1,6 +1,8 @@
 "use client";
 
 import { Fragment, useState, useEffect, useCallback, useMemo, useRef } from "react";
+import SearchBar from "@/components/search-bar";
+import { useDebounce } from "@/hooks/use-debounce";
 import AppLayout from "@/components/layout";
 import TaskCard from "@/components/task-card";
 import { Loader2, CheckSquare, Download, SlidersHorizontal, ListFilter } from "lucide-react";
@@ -32,6 +34,8 @@ export default function DashboardPage() {
   const [showFilters, setShowFilters] = useState(false);
   const [influencerFilter, setInfluencerFilter] = useState("");
   const [seriesOnlyFilter, setSeriesOnlyFilter] = useState(false);
+  const [searchInput, setSearchInput] = useState("");
+  const debouncedSearch = useDebounce(searchInput, 400);
   const [activeStatuses, setActiveStatuses] = useState<Set<string>>(new Set());
 
   function toggleStatus(status: string) {
@@ -61,6 +65,7 @@ export default function DashboardPage() {
     if (influencerFilter) params.set("influencer", influencerFilter);
     if (serviceFilter) params.set("service", serviceFilter);
     if (genderFilter) params.set("gender", genderFilter);
+    if (debouncedSearch) params.set("search", debouncedSearch);
     try {
       const res = await fetch(`/api/tasks?${params}`, { signal: controller.signal });
       if (res.ok) setTasks((await res.json()).tasks);
@@ -68,7 +73,7 @@ export default function DashboardPage() {
       if (e.name !== "AbortError") console.error("fetchTasks failed:", e);
     }
     setLoading(false);
-  }, [influencerFilter, serviceFilter, genderFilter]);
+  }, [influencerFilter, serviceFilter, genderFilter, debouncedSearch]);
 
   useEffect(() => { fetchTasks(); }, [fetchTasks]);
 
@@ -165,6 +170,13 @@ export default function DashboardPage() {
             })}
           </div>
         </div>
+
+        {/* Search Bar */}
+        <SearchBar
+          value={searchInput}
+          onChange={setSearchInput}
+          placeholder="Search by name, note, series, or Task ID..."
+        />
 
         {/* Unified Action Bar — single scrollable row */}
         <div className="flex items-center gap-2 overflow-x-auto pb-2">
@@ -305,14 +317,20 @@ export default function DashboardPage() {
           <div className="empty-state">
             <div className="empty-state-icon">📋</div>
             <p className="empty-state-title">
-              {activeStatuses.size > 0
-                ? activeStatuses.size === 1
-                  ? `No “${Array.from(activeStatuses)[0]}” tasks`
-                  : `No tasks in selected statuses`
-                : "No tasks found"}
+              {searchInput
+                ? `No tasks matching "${searchInput}"`
+                : activeStatuses.size > 0
+                  ? activeStatuses.size === 1
+                    ? `No "${Array.from(activeStatuses)[0]}" tasks`
+                    : `No tasks in selected statuses`
+                  : "No tasks found"}
             </p>
             <p className="empty-state-desc">
-              {activeStatuses.size > 0 ? "Tap “Clear” above to remove the filter" : "Tap the + button to create your first task"}
+              {searchInput
+                ? "Try a different search term or clear the search"
+                : activeStatuses.size > 0
+                  ? 'Tap \u201cClear\u201d above to remove the filter'
+                  : "Tap the + button to create your first task"}
             </p>
           </div>
         ) : (
