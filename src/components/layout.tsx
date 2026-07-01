@@ -3,7 +3,7 @@
 import { useRouter, usePathname } from "next/navigation";
 import { useState, useEffect, useCallback } from "react";
 import {
-  LayoutDashboard, Columns, History, LogOut, Plus, Sun, Moon, BarChart3, Bell, MoreVertical, Users, Settings, Shield,
+  LayoutDashboard, Columns, History, LogOut, Plus, Sun, Moon, BarChart3, Bell, MoreVertical, Users, Settings, Shield, Table,
 } from "lucide-react";
 import { useTheme } from "@/lib/theme";
 import { useAppConfig } from "@/hooks/use-app-config";
@@ -29,7 +29,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     } catch {}
   }, [router]);
 
-  useEffect(() => { fetchUser(); }, [fetchUser, pathname]);
+  useEffect(() => { setUser(null); fetchUser(); }, [fetchUser, pathname]);
 
   // Check notification permission on mount
   useEffect(() => {
@@ -95,11 +95,14 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const navItems = [
     { path: "/", label: "Dashboard", icon: LayoutDashboard },
     { path: "/kanban", label: "Kanban", icon: Columns },
+    { path: "/sheet", label: "Sheet", icon: Table },
     { path: "/history", label: "History", icon: History },
     ...(user?.role === "admin" || user?.role === "su"
       ? [{ path: "/analytics", label: "Analytics", icon: BarChart3 }]
       : []),
   ];
+  // Mobile bottom nav excludes Sheet (moved to header overflow menu on small screens)
+  const mobileNavItems = navItems.filter(i => i.path !== "/sheet");
 
   const initials = (user?.displayName || user?.username || "?").charAt(0).toUpperCase();
 
@@ -147,6 +150,10 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                 <>
                   <div className="fixed inset-0 z-50" onClick={() => setMenuOpen(false)} />
                   <div className="absolute right-0 top-full mt-1.5 w-48 bg-white dark:bg-gray-900 border border-border dark:border-gray-700 rounded-lg shadow-elev-dialog z-50 overflow-hidden animate-scale-in origin-top-right divide-y divide-border dark:divide-gray-700/50">
+                    <button onClick={() => { router.push("/sheet"); setMenuOpen(false); }} className="w-full text-left px-4 py-2.5 text-sm text-fg-primary dark:text-gray-200 hover:bg-surface dark:hover:bg-gray-800 flex items-center gap-2.5 transition-colors md:hidden">
+                      <Table className="w-4 h-4 text-fg-tertiary dark:text-gray-400" />
+                      Sheet
+                    </button>
                     {(user?.role === "admin" || user?.role === "su") && (
                       <button onClick={() => { router.push("/admin/users"); setMenuOpen(false); }} className="w-full text-left px-4 py-2.5 text-sm text-fg-primary dark:text-gray-200 hover:bg-surface dark:hover:bg-gray-800 flex items-center gap-2.5 transition-colors">
                         <Users className="w-4 h-4 text-fg-tertiary dark:text-gray-400" />
@@ -229,7 +236,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         <div className="flex items-center h-16 px-1">
           {/* Left group: padded on the right (FAB side) so the edge label clears the notch */}
           <div className="flex-1 flex justify-around pr-4">
-            {navItems.slice(0, 2).map(item => (
+            {mobileNavItems.slice(0, 2).map(item => (
               <button key={item.path} onClick={() => router.push(item.path)}
                 className={['bottom-nav-item transition-all duration-150', isActive(item.path) ? 'bottom-nav-item-active' : 'bottom-nav-item-inactive'].join(' ')}>
                 <div className="relative">
@@ -246,7 +253,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
           {/* Right group: padded on the left (FAB side) so the edge label clears the notch */}
           <div className="flex-1 flex justify-around pl-4">
-            {navItems.slice(2).map(item => (
+            {mobileNavItems.slice(2).map(item => (
               <button key={item.path} onClick={() => router.push(item.path)}
                 className={['bottom-nav-item transition-all duration-150', isActive(item.path) ? 'bottom-nav-item-active' : 'bottom-nav-item-inactive'].join(' ')}>
                 <div className="relative">
